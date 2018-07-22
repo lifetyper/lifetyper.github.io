@@ -5,8 +5,8 @@
 &lt;p&gt;找了一下发现这个问题其实用cloudflare的DNS很好解决。首先要设置根域名的A记录到Github，让lifetyper.com正常访问，然后给www子域名设置一个page rules.&lt;/p&gt;
 &lt;p&gt;例如我希望把有所www.lifetyper.com的访问都转移到lifetyper.com，同时保持链接不掉，可以这样设置：&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;url description:*www.lifetyper.com/*
-forwarding url:https://lifetyper.com/$2&lt;/p&gt;
+&lt;p&gt;url description:*www.lifetyper.com/*&lt;/p&gt;
+&lt;p&gt;forwarding url:https://lifetyper.com/$2&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;这里$2表示替换为第二个通配符*的值，同理，可以用美元符+数字匹配多个通配符。&lt;/p&gt;
 &lt;p&gt;但这样的设置是不够的，因为www.lifetyper.com并没有任何DNS记录，cloudflare不能接管一个没有任何记录的域名，所以需要给www.lifetyper.com设置一条CNAME记录，值为@，同时保证这条记录是DNS&amp;amp;HTTP Proxied By Cloudflare的橙色。&lt;/p&gt;
