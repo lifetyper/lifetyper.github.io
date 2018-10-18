@@ -30,9 +30,12 @@ apt-get install python-certbot-nginx
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;After installation, run below command to get the ssl certificate
-&lt;code&gt;certbot certonly&lt;/code&gt;
-Just follow the instruction and enter needed info, and when it comes to this step:&lt;/p&gt;
+&lt;p&gt;After installation, run below command to get the ssl certificate&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;certbot certonly
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Just follow the instruction and enter needed info, and when it comes to this step:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;How would you like to authenticate with the ACME CA?
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 1: Nginx Web Server plugin - Alpha (nginx)
@@ -42,7 +45,7 @@ Just follow the instruction and enter needed info, and when it comes to this ste
 
 
 &lt;p&gt;Just type "1" to use nginx web plugin for domain verify.
-After certificate done, take rwallet.dero.cash for example you shall see below message telling you where is your certification and chain stored&lt;/p&gt;
+After certificate done, take rwallet.dero.cash for example, you shall see below message telling you where is your certification and chain stored.&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;- Congratulations! Your certificate and chain have been saved at:
    /etc/letsencrypt/live/rwallet.dero.cash/fullchain.pem
    Your key file has been saved at:
