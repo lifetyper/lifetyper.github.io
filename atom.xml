@@ -3,11 +3,13 @@
 &lt;p&gt;One of the &lt;a href="https://dero.io"&gt;dero&lt;/a&gt; wallet's greatest feature is remote node function,which allows you to sync and use your DERO wallet without sync the whole blockchain.Currently there is only one public node is run by dero Official(https://rwallet.dero.live:443).&lt;/p&gt;
 &lt;p&gt;But a centralized server can crash or the network latency may too large for you due to different network condition, or even worse,you don't trust anyone else except yourself, you might want to run your own remote node for your wallet.&lt;/p&gt;
 &lt;h2&gt;What do you need for a remote node&lt;/h2&gt;
-&lt;p&gt;Here below is what you will need for running a remote node:
-&lt;em&gt; A VPS with public IPV4 address, running ubuntu or debian 
-&lt;/em&gt; A domain for SSL certificate
-* Done
-Then you can create your remote node following below step.&lt;/p&gt;
+&lt;p&gt;Here below is what you will need for running a remote node:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;A VPS with public IPV4 address, running ubuntu or debian &lt;/li&gt;
+&lt;li&gt;A domain for SSL certificate&lt;/li&gt;
+&lt;li&gt;Done&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Then you can create your remote node following below step.&lt;/p&gt;
 &lt;h2&gt;Setup your domain&lt;/h2&gt;
 &lt;p&gt;This step is simple, just point your domain to your VPS's IP address,blabla...If any trouble with this part, ask your domain registar for help.&lt;/p&gt;
 &lt;h2&gt;Install Nginx&lt;/h2&gt;
