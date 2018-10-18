@@ -1,0 +1,336 @@
+﻿<!DOCTYPE html>
+<!--[if IE 8 ]><html class="ie ie8" lang="zh"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!-->
+<html lang="zh">
+<!--<![endif]-->
+	<head>
+            <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+        <meta name="author" content="毕勤">
+
+
+        <link rel="icon" href="../favicon.png" type="image/x-icon" />
+
+        <title>LifeTyper - How to run a remote node for DERO wallet</title>
+
+            <link href="/atom.xml" type="application/atom+xml" rel="alternate" title="LifeTyper Full Atom Feed" />
+
+        <!-- CSS -->
+        <link rel="stylesheet" href="../theme/css/style.css">
+
+        <!-- Custom CSS -->
+        	<link rel="stylesheet" href="../theme/css/colors/blue.css" id="colors">
+
+        <!-- Code highlight color scheme -->
+            <link href="../theme/css/code_blocks/darkly.css" rel="stylesheet">
+
+
+        <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+
+
+
+
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="How to run a remote node for DERO wallet">
+    <meta property="og:url" content="posts/run_remote_node_for_dero_wallet.html">
+    <meta property="og:description" content="One of the dero wallet&#39;s greatest feature is remote node function,which allows you to sync and use your DERO wallet without sync the whole blockchain.">
+    <meta property="article:published_time" content="Thursday, October 18, 2018">
+    <meta name="twitter:title" content="How to run a remote node for DERO wallet">
+    <meta name="twitter:description" content="One of the dero wallet&#39;s greatest feature is remote node function,which allows you to sync and use your DERO wallet without sync the whole blockchain.">
+    <meta name="description" content="One of the dero wallet&#39;s greatest feature is remote node function,which allows you to sync and use your DERO wallet without sync the whole blockchain.">
+    <meta name="twitter:image" content="">
+    <meta property="og:image" content="">
+
+	                <meta property="og:locale" content="">
+		<meta property="og:site_name" content="LifeTyper">
+
+	<meta property="og:type" content="article">
+	<meta property="article:author" content="">
+	<meta property="og:url" content="../posts/run_remote_node_for_dero_wallet.html">
+	<meta property="og:title" content="How to run a remote node for DERO wallet">
+	<meta property="og:description" content="">
+	   <meta property="og:image" content="../images/guilherme-toti.jpg">
+	<meta property="article:published_time" content="2018-10-18 16:55:00+08:00">
+	</head>
+	<body>
+		<header id="header">
+			<!-- Container -->
+			<div class="container">
+				<!-- Logo / Mobile Menu -->
+				<div class="five columns">
+					<div id="textlogo">
+						<h1><a href="../">LifeTyper</a></h1>
+					</div>
+				</div>
+						<!-- Navigation
+				================================================== -->
+				<div class="eleven columns">
+
+					<nav id="navigation" class="menu">
+						<ul id="responsive">
+
+							<li><a href="../">Home</a></li>
+
+
+						</ul>
+					</nav>
+				</div>
+			</div>
+			<!-- Container / End -->
+		</header>
+		<!-- Header / End -->
+
+		<!-- Breadcrumbs Container-->
+		<div id="content-wrapper">
+			<section id="titlebar">
+				<!-- Container -->
+				<div class="container">
+				<div class="thirteen columns">
+					<nav id="breadcrumbs">
+						<ul>
+							<li>You are here:</li>
+							<li><a href="../">Home</a></li>
+<li><a href="../category/misc.html">misc</a></li>
+<li>How to run a remote node for DERO wallet</li>
+						</ul>
+					</nav>
+				</div>
+				</div>
+				<!-- Container / End -->
+			</section>
+
+			<div class="container">
+	<div class="twelve alt columns">
+<article class="post" style="margin: 0; border: 0;">
+
+	<section class="post-content">
+
+		<header class="meta">
+			<h2><a href="../posts/run_remote_node_for_dero_wallet.html">How to run a remote node for DERO wallet</a></h2>
+			<ul>
+				<li>By <a href="../author/lifetyper.html">lifetyper</a></li>
+				<li>Thu 18 October 2018</li>
+			</ul>
+		</header>
+
+		<h2>Why do you need a remote node?</h2>
+<p>One of the dero wallet's greatest feature is remote node function,which allows you to sync and use your DERO wallet without sync the whole blockchain.Currently there is only one public node is run by dero Official(https://rwallet.dero.live:443).</p>
+<p>But a centralized server can crash or the network latency may too large for you due to different network condition, or even worse,you don't trust anyone else except yourself, you might want to run your own remote node for your wallet.</p>
+<h2>What do you need for a remote node</h2>
+<p>Here below is what you will need for running a remote node:
+<em> A VPS with public IPV4 address, running ubuntu or debian 
+</em> A domain for SSL certificate
+* Done
+Then you can create your remote node following below step.</p>
+<h2>Setup your domain</h2>
+<p>This step is simple, just point your domain to your VPS's IP address,blabla...If any trouble with this part, ask your domain registar for help.</p>
+<h2>Install Nginx</h2>
+<p>Nginx is a famous http server which can also works a web proxy, here we use nginx to proxy dero daemon's default rpc service from port 127.0.0.1:20206 to 0.0.0.0:443(port for https web) and expose to public.
+Install nginx is easy on ubuntu, install with root account is ok, but don't run it under root account.</p>
+<div class="highlight"><pre><span></span>apt-get update
+apt-get install nginx
+</pre></div>
+
+
+<h2>Fetch SSL certificate for your domain</h2>
+<p>We have let's encrypt for free SSL certificate, to obtain SSL certificate easyliy we shall install <a href="https://certbot.eff.org/">certbot</a>.</p>
+<div class="highlight"><pre><span></span>apt-get update
+apt-get install software-properties-common
+add-apt-repository ppa:certbot/certbot
+apt-get update
+apt-get install python-certbot-nginx 
+</pre></div>
+
+
+<p>After installation, run below command to get the ssl certificate
+<code>certbot certonly</code>
+Just follow the instruction and enter needed info, and when it comes to this step:</p>
+<div class="highlight"><pre><span></span>How would you like to authenticate with the ACME CA?
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+1: Nginx Web Server plugin - Alpha (nginx)
+2: Spin up a temporary webserver (standalone)
+3: Place files in webroot directory (webroot)
+</pre></div>
+
+
+<p>Just type "1" to use nginx web plugin for domain verify.
+After certificate done, take rwallet.dero.cash for example you shall see below message telling you where is your certification and chain stored</p>
+<div class="highlight"><pre><span></span>- Congratulations! Your certificate and chain have been saved at:
+   /etc/letsencrypt/live/rwallet.dero.cash/fullchain.pem
+   Your key file has been saved at:
+   /etc/letsencrypt/live/rwallet.dero.cash/privkey.pem
+</pre></div>
+
+
+<p>Note down these two paths, we will use them later.</p>
+<h2>Setup Nginx as DERO RPC service proxy</h2>
+<p>Still take rwallet.dero.cash for example, let's create a config file for this proxy in "/etc/nginx/conf.d" and edit it with VIM:
+<code>touch rwallet.conf
+vi rwallet.conf</code>
+Then paste below content in rwallet.conf:</p>
+<div class="highlight"><pre><span></span><span class="nt">server</span> <span class="p">{</span>
+    <span class="err">listen</span>          <span class="err">80</span><span class="p">;</span>
+    <span class="err">server_name</span>     <span class="err">rwallet.dero.cash</span><span class="p">;</span>
+    <span class="err">rewrite</span> <span class="err">^/(.*)</span>  <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">rwallet</span><span class="o">.</span><span class="n">dero</span><span class="o">.</span><span class="n">cash</span><span class="o">/</span><span class="err">$</span><span class="mi">1</span> <span class="n">permanent</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="nt">server</span> <span class="p">{</span>
+    <span class="err">listen</span>          <span class="err">443</span> <span class="err">ssl</span><span class="p">;</span>
+    <span class="err">server_name</span>     <span class="err">rwallet.dero.cash</span><span class="p">;</span>
+    <span class="err">access_log</span>      <span class="err">/var/log/nginx/rwalelt_access.log</span> <span class="err">combined</span><span class="p">;</span>
+    <span class="err">error_log</span>       <span class="err">/var/log/nginx/rwallet_erro.log</span> <span class="err">error</span><span class="p">;</span>
+
+    <span class="err">ssl_certificate</span> <span class="err">/etc/letsencrypt/live/rwallet.dero.cash/fullchain.pem</span><span class="p">;</span>
+    <span class="err">ssl_certificate_key</span> <span class="err">/etc/letsencrypt/live/rwallet.dero.cash/privkey.pem</span><span class="p">;</span>
+
+
+    <span class="err">location</span> <span class="err">/</span> <span class="err">{</span>
+        <span class="err">proxy_pass</span>         <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">localhost</span><span class="o">:</span><span class="mi">20206</span><span class="o">/</span><span class="p">;</span>
+        <span class="err">proxy_redirect</span>     <span class="err">off</span><span class="p">;</span>
+
+        <span class="err">proxy_set_header</span>   <span class="err">Host</span>              <span class="err">$http_host</span><span class="p">;</span>
+        <span class="err">proxy_set_header</span>   <span class="err">X-Real-IP</span>         <span class="err">$remote_addr</span><span class="p">;</span>
+        <span class="err">proxy_set_header</span>   <span class="err">X-Forwarded-For</span>   <span class="err">$proxy_add_x_forwarded_for</span><span class="p">;</span>
+    <span class="p">}</span>
+
+<span class="err">}</span>
+</pre></div>
+
+
+<p>Remember to replace rwallet.dero.cash with your own domain, and set the correct path for your ssl certificate and chain, then restart nginx service:</p>
+<div class="highlight"><pre><span></span>/etc/init.d/nginx restart
+</pre></div>
+
+
+<p>Now let's visit <a href="https://rwallet.dero.cash">https://rwallet.dero.cash</a> you should see a "502 bad gateway" error.This means nginx is working as expected, the only problem is you haven't run dero daemon at port 20206 yet.</p>
+<h2>Run dero daemon</h2>
+<h3>install dero daemon</h3>
+<p>First let's go to <a href="https://github.com/deroproject/derosuite/releases/latest">dero official github</a> to download the latest binaries for dero daemon.
+Since we're using ubuntu 16.04 64bit as our VPS os here, we should download linux_amd64 version, extract the tarball and copy the binaries to "/usr/local/bin" folder to make it global available.</p>
+<div class="highlight"><pre><span></span>wget https://github.com/deroproject/derosuite/releases/download/v2.1.5/dero_linux_amd64_2.1.5-0.alpha.atlantis.10102018.tar.gz
+tar xf dero_linux_amd64_2.1.5-0.alpha.atlantis.10102018.tar.gz
+cp dero_linux_amd64/* /usr/local/bin
+</pre></div>
+
+
+<h3>Create data folder for dero</h3>
+<p>Let's make a folder for dero to store the chain data:</p>
+<div class="highlight"><pre><span></span>mkdir /root/.dero
+</pre></div>
+
+
+<p>using name like ".dero" with a dot in the front will make the folder default hidden for 'ls' command and avoid stupid "rm -rf" command delete it.</p>
+<h3>Run dero daemon</h3>
+<p>Since we create a folder(/root/.dero) for blockchain data store, we should use this folder as data-dir every time we run dero daemon.</p>
+<div class="highlight"><pre><span></span>derod-linux-amd64 --data-dir=/root/.dero
+</pre></div>
+
+
+<p>After this command you should see dero command line daemon start and a folder named "mainnet" created under "/root/.dero" folder.
+This time when you visit https://rwallet.dero.cash, browser should return a "Hello world!" message, which means everything is done.</p>
+<h3>Make dero daemon autostart and run in background</h3>
+<p>Dero daemon is an interactive command line program, the most easy way to run it in background is using screen command.</p>
+<div class="highlight"><pre><span></span>screen -d -m derod-linux-amd64 --data-dir=/root/.dero
+</pre></div>
+
+
+<p>Now a new sub-shell has been created and dero daemon running in it, if you want to check the staus of this sub-shell, just type:</p>
+<div class="highlight"><pre><span></span>screen -r
+</pre></div>
+
+
+<p>if there're more than one sub-shell running on your server, you might need to use </p>
+<div class="highlight"><pre><span></span>screen -ls
+</pre></div>
+
+
+<p>to list all running sub-shell and determine which one to enter.
+if you want to leave the sub-shell, don't use ctrl+c which will end the daemon, use key "ctrl+a+d" and you shall return to main shell.</p>
+<p>To make the daemon auto start when we restart the server, place the command we run daemon in file "/etc/rc.local", edit this file so finally it may looks like:</p>
+<div class="highlight"><pre><span></span># rc.local
+#
+# This script is executed at the end of each multiuser runlevel.
+# Make sure that the script will &quot;exit 0&quot; on success or any other
+# value on error.
+#
+# In order to enable or disable this script just change the execution
+# bits.
+#
+# By default this script does nothing.
+
+/usr/bin/screen -d -m /usr/local/bin/derod-linux-amd64 --data-dir=/root/.dero
+
+exit 0
+</pre></div>
+
+
+<p>Note that this time we shall use full path for both screen and dero daemon.Restart the server and check https://rwallet.dero.cash to see if it works.</p>
+<h2>Using remote node</h2>
+<p>Currently dero GUI wallet doesn't support customized remote node, but we can use it for command line wallet, by using option --data-dir.</p>
+<p>Full command to use the remote node we just set up under mac os is:</p>
+<div class="highlight"><pre><span></span>dero-wallet-cli-darwin-amd64 --daemon-address=https://rwallet.dero.cash
+</pre></div>
+
+
+<p>If your node is full synced, your wallet should be ready for use now.</p>
+
+<div class="sharing">
+</div>
+<hr>
+
+	</section>
+	<div class="clearfix"></div>
+
+</article>
+
+	</div>
+
+	<!-- Sidebar -->
+	<div class="four columns">
+		<!-- About  -->
+		<div class="widget no-mg-top">
+			<h3 class="headline">About</h3><span class="line"></span><div class="clearfix"></div>
+			<p>没有分类，没有tag，机器早晚会读懂一切</p>
+		</div>
+
+		
+	</div>
+			</div>
+			<!-- Container / End -->
+		</div>
+		<!-- Content Wrapper / End -->
+
+		<div id="footer-bottom">
+			<!-- Container -->
+			<div class="container">
+				<div class="eight columns">&copy; All Rights Reserved || Blog powered by <a href="http://getpelican.com">Pelican</a></div>
+					<div class="eight columns">
+						<ul class="social-icons-footer">
+								<li>
+									<a href="https://twitter.com/lifetyper" class="tooltip top" title="twitter">
+										<i class="icon-twitter"></i>
+									</a>
+								</li>
+								<li>
+									<a href="https://github.com/lifetyper" class="tooltip top" title="github">
+										<i class="icon-github"></i>
+									</a>
+								</li>
+							<li><a href="../atom.xml" class="tooltip top" title="RSS"><i class="icon-rss"></i></a></li>
+						</ul>
+					</div>
+			</div>
+			<!-- Container / End -->
+		</div>
+		<!-- Footer Bottom / End -->
+
+	<!-- Javascripts -->
+	<script src="../theme/js/jquery.min.js"></script>
+	</body>
+</html>

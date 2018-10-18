@@ -1,5 +1,641 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>LifeTyper</title><link href="/" rel="alternate"></link><link href="/atom.xml" rel="self"></link><id>/</id><updated>2018-07-22T16:55:00+08:00</updated><entry><title>迁移到GithubPages后的域名设置问题</title><link href="/posts/blog_moved_to_github_pages_and_domain_config.html" rel="alternate"></link><published>2018-07-22T16:55:00+08:00</published><updated>2018-07-22T16:55:00+08:00</updated><author><name>毕勤</name></author><id>tag:None,2018-07-22:/posts/blog_moved_to_github_pages_and_domain_config.html</id><summary type="html">&lt;p&gt;基本上我一年也写不了一篇文章，服务器主要是拿来翻墙的，碰上服务器速度变慢了就得迁移一次，虽然已经是基于pelican的静态网站，但nginx还是得重新配置一次。。。&lt;/p&gt;</summary><content type="html">&lt;p&gt;基本上我一年也写不了一篇文章，服务器主要是拿来翻墙的，碰上服务器速度变慢了就得迁移一次，虽然已经是基于pelican的静态网站，但nginx还是得重新配置一次。&lt;/p&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>LifeTyper</title><link href="/" rel="alternate"></link><link href="atom.xml" rel="self"></link><id>/</id><updated>2018-10-18T16:55:00+08:00</updated><entry><title>How to run a remote node for DERO wallet</title><link href="posts/run_remote_node_for_dero_wallet.html" rel="alternate"></link><published>2018-10-18T16:55:00+08:00</published><updated>2018-10-18T16:55:00+08:00</updated><author><name>lifetyper</name></author><id>tag:None,2018-10-18:posts/run_remote_node_for_dero_wallet.html</id><summary type="html">&lt;p&gt;One of the dero wallet's greatest feature is remote node function,which allows you to sync and use your DERO wallet without sync the whole blockchain.&lt;/p&gt;</summary><content type="html">&lt;h2&gt;Why do you need a remote node?&lt;/h2&gt;
+&lt;p&gt;One of the dero wallet's greatest feature is remote node function,which allows you to sync and use your DERO wallet without sync the whole blockchain.Currently there is only one public node is run by dero Official(https://rwallet.dero.live:443).&lt;/p&gt;
+&lt;p&gt;But a centralized server can crash or the network latency may too large for you due to different network condition, or even worse,you don't trust anyone else except yourself, you might want to run your own remote node for your wallet.&lt;/p&gt;
+&lt;h2&gt;What do you need for a remote node&lt;/h2&gt;
+&lt;p&gt;Here below is what you will need for running a remote node:
+&lt;em&gt; A VPS with public IPV4 address, running ubuntu or debian 
+&lt;/em&gt; A domain for SSL certificate
+* Done
+Then you can create your remote node following below step.&lt;/p&gt;
+&lt;h2&gt;Setup your domain&lt;/h2&gt;
+&lt;p&gt;This step is simple, just point your domain to your VPS's IP address,blabla...If any trouble with this part, ask your domain registar for help.&lt;/p&gt;
+&lt;h2&gt;Install Nginx&lt;/h2&gt;
+&lt;p&gt;Nginx is a famous http server which can also works a web proxy, here we use nginx to proxy dero daemon's default rpc service from port 127.0.0.1:20206 to 0.0.0.0:443(port for https web) and expose to public.
+Install nginx is easy on ubuntu, install with root account is ok, but don't run it under root account.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;apt-get update
+apt-get install nginx
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;Fetch SSL certificate for your domain&lt;/h2&gt;
+&lt;p&gt;We have let's encrypt for free SSL certificate, to obtain SSL certificate easyliy we shall install &lt;a href="https://certbot.eff.org/"&gt;certbot&lt;/a&gt;.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;apt-get update
+apt-get install software-properties-common
+add-apt-repository ppa:certbot/certbot
+apt-get update
+apt-get install python-certbot-nginx 
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;After installation, run below command to get the ssl certificate
+&lt;code&gt;certbot certonly&lt;/code&gt;
+Just follow the instruction and enter needed info, and when it comes to this step:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;How would you like to authenticate with the ACME CA?
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+1: Nginx Web Server plugin - Alpha (nginx)
+2: Spin up a temporary webserver (standalone)
+3: Place files in webroot directory (webroot)
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Just type "1" to use nginx web plugin for domain verify.
+After certificate done, take rwallet.dero.cash for example you shall see below message telling you where is your certification and chain stored&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;- Congratulations! Your certificate and chain have been saved at:
+   /etc/letsencrypt/live/rwallet.dero.cash/fullchain.pem
+   Your key file has been saved at:
+   /etc/letsencrypt/live/rwallet.dero.cash/privkey.pem
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Note down these two paths, we will use them later.&lt;/p&gt;
+&lt;h2&gt;Setup Nginx as DERO RPC service proxy&lt;/h2&gt;
+&lt;p&gt;Still take rwallet.dero.cash for example, let's create a config file for this proxy in "/etc/nginx/conf.d" and edit it with VIM:
+&lt;code&gt;touch rwallet.conf
+vi rwallet.conf&lt;/code&gt;
+Then paste below content in rwallet.conf:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nt"&gt;server&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="err"&gt;listen&lt;/span&gt;          &lt;span class="err"&gt;80&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="err"&gt;server_name&lt;/span&gt;     &lt;span class="err"&gt;rwallet.dero.cash&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="err"&gt;rewrite&lt;/span&gt; &lt;span class="err"&gt;^/(.*)&lt;/span&gt;  &lt;span class="n"&gt;https&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="o"&gt;//&lt;/span&gt;&lt;span class="n"&gt;rwallet&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;dero&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;cash&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="err"&gt;$&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt; &lt;span class="n"&gt;permanent&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+
+&lt;span class="nt"&gt;server&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="err"&gt;listen&lt;/span&gt;          &lt;span class="err"&gt;443&lt;/span&gt; &lt;span class="err"&gt;ssl&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="err"&gt;server_name&lt;/span&gt;     &lt;span class="err"&gt;rwallet.dero.cash&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="err"&gt;access_log&lt;/span&gt;      &lt;span class="err"&gt;/var/log/nginx/rwalelt_access.log&lt;/span&gt; &lt;span class="err"&gt;combined&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="err"&gt;error_log&lt;/span&gt;       &lt;span class="err"&gt;/var/log/nginx/rwallet_erro.log&lt;/span&gt; &lt;span class="err"&gt;error&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+    &lt;span class="err"&gt;ssl_certificate&lt;/span&gt; &lt;span class="err"&gt;/etc/letsencrypt/live/rwallet.dero.cash/fullchain.pem&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="err"&gt;ssl_certificate_key&lt;/span&gt; &lt;span class="err"&gt;/etc/letsencrypt/live/rwallet.dero.cash/privkey.pem&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+
+    &lt;span class="err"&gt;location&lt;/span&gt; &lt;span class="err"&gt;/&lt;/span&gt; &lt;span class="err"&gt;{&lt;/span&gt;
+        &lt;span class="err"&gt;proxy_pass&lt;/span&gt;         &lt;span class="n"&gt;http&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="o"&gt;//&lt;/span&gt;&lt;span class="n"&gt;localhost&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;20206&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="err"&gt;proxy_redirect&lt;/span&gt;     &lt;span class="err"&gt;off&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+        &lt;span class="err"&gt;proxy_set_header&lt;/span&gt;   &lt;span class="err"&gt;Host&lt;/span&gt;              &lt;span class="err"&gt;$http_host&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="err"&gt;proxy_set_header&lt;/span&gt;   &lt;span class="err"&gt;X-Real-IP&lt;/span&gt;         &lt;span class="err"&gt;$remote_addr&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="err"&gt;proxy_set_header&lt;/span&gt;   &lt;span class="err"&gt;X-Forwarded-For&lt;/span&gt;   &lt;span class="err"&gt;$proxy_add_x_forwarded_for&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+
+&lt;span class="err"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Remember to replace rwallet.dero.cash with your own domain, and set the correct path for your ssl certificate and chain, then restart nginx service:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;/etc/init.d/nginx restart
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Now let's visit &lt;a href="https://rwallet.dero.cash"&gt;https://rwallet.dero.cash&lt;/a&gt; you should see a "502 bad gateway" error.This means nginx is working as expected, the only problem is you haven't run dero daemon at port 20206 yet.&lt;/p&gt;
+&lt;h2&gt;Run dero daemon&lt;/h2&gt;
+&lt;h3&gt;install dero daemon&lt;/h3&gt;
+&lt;p&gt;First let's go to &lt;a href="https://github.com/deroproject/derosuite/releases/latest"&gt;dero official github&lt;/a&gt; to download the latest binaries for dero daemon.
+Since we're using ubuntu 16.04 64bit as our VPS os here, we should download linux_amd64 version, extract the tarball and copy the binaries to "/usr/local/bin" folder to make it global available.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;wget https://github.com/deroproject/derosuite/releases/download/v2.1.5/dero_linux_amd64_2.1.5-0.alpha.atlantis.10102018.tar.gz
+tar xf dero_linux_amd64_2.1.5-0.alpha.atlantis.10102018.tar.gz
+cp dero_linux_amd64/* /usr/local/bin
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3&gt;Create data folder for dero&lt;/h3&gt;
+&lt;p&gt;Let's make a folder for dero to store the chain data:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;mkdir /root/.dero
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;using name like ".dero" with a dot in the front will make the folder default hidden for 'ls' command and avoid stupid "rm -rf" command delete it.&lt;/p&gt;
+&lt;h3&gt;Run dero daemon&lt;/h3&gt;
+&lt;p&gt;Since we create a folder(/root/.dero) for blockchain data store, we should use this folder as data-dir every time we run dero daemon.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;derod-linux-amd64 --data-dir=/root/.dero
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;After this command you should see dero command line daemon start and a folder named "mainnet" created under "/root/.dero" folder.
+This time when you visit https://rwallet.dero.cash, browser should return a "Hello world!" message, which means everything is done.&lt;/p&gt;
+&lt;h3&gt;Make dero daemon autostart and run in background&lt;/h3&gt;
+&lt;p&gt;Dero daemon is an interactive command line program, the most easy way to run it in background is using screen command.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;screen -d -m derod-linux-amd64 --data-dir=/root/.dero
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Now a new sub-shell has been created and dero daemon running in it, if you want to check the staus of this sub-shell, just type:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;screen -r
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;if there're more than one sub-shell running on your server, you might need to use &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;screen -ls
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;to list all running sub-shell and determine which one to enter.
+if you want to leave the sub-shell, don't use ctrl+c which will end the daemon, use key "ctrl+a+d" and you shall return to main shell.&lt;/p&gt;
+&lt;p&gt;To make the daemon auto start when we restart the server, place the command we run daemon in file "/etc/rc.local", edit this file so finally it may looks like:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# rc.local
+#
+# This script is executed at the end of each multiuser runlevel.
+# Make sure that the script will &amp;quot;exit 0&amp;quot; on success or any other
+# value on error.
+#
+# In order to enable or disable this script just change the execution
+# bits.
+#
+# By default this script does nothing.
+
+/usr/bin/screen -d -m /usr/local/bin/derod-linux-amd64 --data-dir=/root/.dero
+
+exit 0
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Note that this time we shall use full path for both screen and dero daemon.Restart the server and check https://rwallet.dero.cash to see if it works.&lt;/p&gt;
+&lt;h2&gt;Using remote node&lt;/h2&gt;
+&lt;p&gt;Currently dero GUI wallet doesn't support customized remote node, but we can use it for command line wallet, by using option --data-dir.&lt;/p&gt;
+&lt;p&gt;Full command to use the remote node we just set up under mac os is:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;dero-wallet-cli-darwin-amd64 --daemon-address=https://rwallet.dero.cash
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;If your node is full synced, your wallet should be ready for use now.&lt;/p&gt;</content></entry><entry><title>How to run a remote node for DERO wallet</title><link href="posts/run_remote_node_for_dero_wallet.html" rel="alternate"></link><published>2018-10-18T16:55:00+08:00</published><updated>2018-10-18T16:55:00+08:00</updated><author><name>lifetyper</name></author><id>tag:None,2018-10-18:posts/run_remote_node_for_dero_wallet.html</id><summary type="html">&lt;p&gt;One of the dero wallet's greatest feature is remote node function,which allows you to sync and use your DERO wallet without sync the whole blockchain.&lt;/p&gt;</summary><content type="html">&lt;h2&gt;Why do you need a remote node?&lt;/h2&gt;
+&lt;p&gt;One of the dero wallet's greatest feature is remote node function,which allows you to sync and use your DERO wallet without sync the whole blockchain.Currently there is only one public node is run by dero Official(https://rwallet.dero.live:443).&lt;/p&gt;
+&lt;p&gt;But a centralized server can crash or the network latency may too large for you due to different network condition, or even worse,you don't trust anyone else except yourself, you might want to run your own remote node for your wallet.&lt;/p&gt;
+&lt;h2&gt;What do you need for a remote node&lt;/h2&gt;
+&lt;p&gt;Here below is what you will need for running a remote node:
+&lt;em&gt; A VPS with public IPV4 address, running ubuntu or debian 
+&lt;/em&gt; A domain for SSL certificate
+* Done
+Then you can create your remote node following below step.&lt;/p&gt;
+&lt;h2&gt;Setup your domain&lt;/h2&gt;
+&lt;p&gt;This step is simple, just point your domain to your VPS's IP address,blabla...If any trouble with this part, ask your domain registar for help.&lt;/p&gt;
+&lt;h2&gt;Install Nginx&lt;/h2&gt;
+&lt;p&gt;Nginx is a famous http server which can also works a web proxy, here we use nginx to proxy dero daemon's default rpc service from port 127.0.0.1:20206 to 0.0.0.0:443(port for https web) and expose to public.
+Install nginx is easy on ubuntu, install with root account is ok, but don't run it under root account.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;apt-get update
+apt-get install nginx
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;Fetch SSL certificate for your domain&lt;/h2&gt;
+&lt;p&gt;We have let's encrypt for free SSL certificate, to obtain SSL certificate easyliy we shall install &lt;a href="https://certbot.eff.org/"&gt;certbot&lt;/a&gt;.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;apt-get update
+apt-get install software-properties-common
+add-apt-repository ppa:certbot/certbot
+apt-get update
+apt-get install python-certbot-nginx 
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;After installation, run below command to get the ssl certificate
+&lt;code&gt;certbot certonly&lt;/code&gt;
+Just follow the instruction and enter needed info, and when it comes to this step:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;How would you like to authenticate with the ACME CA?
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+1: Nginx Web Server plugin - Alpha (nginx)
+2: Spin up a temporary webserver (standalone)
+3: Place files in webroot directory (webroot)
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Just type "1" to use nginx web plugin for domain verify.
+After certificate done, take rwallet.dero.cash for example you shall see below message telling you where is your certification and chain stored&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;- Congratulations! Your certificate and chain have been saved at:
+   /etc/letsencrypt/live/rwallet.dero.cash/fullchain.pem
+   Your key file has been saved at:
+   /etc/letsencrypt/live/rwallet.dero.cash/privkey.pem
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Note down these two paths, we will use them later.&lt;/p&gt;
+&lt;h2&gt;Setup Nginx as DERO rpc service proxy&lt;/h2&gt;
+&lt;p&gt;Still take rwallet.dero.cash for example, let's create a config file for this proxy in "/etc/nginx/conf.d" and edit it with VIM:
+&lt;code&gt;touch rwallet.conf
+vi rwallet.conf&lt;/code&gt;
+Then paste below content in rwallet.conf:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nt"&gt;server&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="err"&gt;listen&lt;/span&gt;          &lt;span class="err"&gt;80&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="err"&gt;server_name&lt;/span&gt;     &lt;span class="err"&gt;rwallet.dero.cash&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="err"&gt;rewrite&lt;/span&gt; &lt;span class="err"&gt;^/(.*)&lt;/span&gt;  &lt;span class="n"&gt;https&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="o"&gt;//&lt;/span&gt;&lt;span class="n"&gt;rwallet&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;dero&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;cash&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="err"&gt;$&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt; &lt;span class="n"&gt;permanent&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+
+&lt;span class="nt"&gt;server&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="err"&gt;listen&lt;/span&gt;          &lt;span class="err"&gt;443&lt;/span&gt; &lt;span class="err"&gt;ssl&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="err"&gt;server_name&lt;/span&gt;     &lt;span class="err"&gt;rwallet.dero.cash&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="err"&gt;access_log&lt;/span&gt;      &lt;span class="err"&gt;/var/log/nginx/rwalelt_access.log&lt;/span&gt; &lt;span class="err"&gt;combined&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="err"&gt;error_log&lt;/span&gt;       &lt;span class="err"&gt;/var/log/nginx/rwallet_erro.log&lt;/span&gt; &lt;span class="err"&gt;error&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+    &lt;span class="err"&gt;ssl_certificate&lt;/span&gt; &lt;span class="err"&gt;/etc/letsencrypt/live/rwallet.dero.cash/fullchain.pem&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="err"&gt;ssl_certificate_key&lt;/span&gt; &lt;span class="err"&gt;/etc/letsencrypt/live/rwallet.dero.cash/privkey.pem&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+
+    &lt;span class="err"&gt;location&lt;/span&gt; &lt;span class="err"&gt;/&lt;/span&gt; &lt;span class="err"&gt;{&lt;/span&gt;
+        &lt;span class="err"&gt;proxy_pass&lt;/span&gt;         &lt;span class="n"&gt;http&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="o"&gt;//&lt;/span&gt;&lt;span class="n"&gt;localhost&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;20206&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="err"&gt;proxy_redirect&lt;/span&gt;     &lt;span class="err"&gt;off&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+        &lt;span class="err"&gt;proxy_set_header&lt;/span&gt;   &lt;span class="err"&gt;Host&lt;/span&gt;              &lt;span class="err"&gt;$http_host&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="err"&gt;proxy_set_header&lt;/span&gt;   &lt;span class="err"&gt;X-Real-IP&lt;/span&gt;         &lt;span class="err"&gt;$remote_addr&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="err"&gt;proxy_set_header&lt;/span&gt;   &lt;span class="err"&gt;X-Forwarded-For&lt;/span&gt;   &lt;span class="err"&gt;$proxy_add_x_forwarded_for&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+
+&lt;span class="err"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Remember to replace rwallet.dero.cash with your own domain, and set the correct path for your ssl certificate and chain, then restart nginx service:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;/etc/init.d/nginx restart
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Now let's visit &lt;a href="https://rwallet.dero.cash"&gt;https://rwallet.dero.cash&lt;/a&gt; you should see a "502 bad gateway" error.This means nginx is working as expected, the only problem is you haven't run dero daemon at port 20206 yet.&lt;/p&gt;
+&lt;h2&gt;Run dero daemon&lt;/h2&gt;
+&lt;h3&gt;install dero daemon&lt;/h3&gt;
+&lt;p&gt;First let's go to &lt;a href="https://github.com/deroproject/derosuite/releases/latest"&gt;dero official github&lt;/a&gt; to download the latest binaries for dero daemon.
+Since we're using ubuntu 16.04 64bit as our VPS os here, we should download linux_amd64 version, extract the tarball and copy the binaries to "/usr/local/bin" folder to make it global available.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;wget https://github.com/deroproject/derosuite/releases/download/v2.1.5/dero_linux_amd64_2.1.5-0.alpha.atlantis.10102018.tar.gz
+tar xf dero_linux_amd64_2.1.5-0.alpha.atlantis.10102018.tar.gz
+cp dero_linux_amd64/* /usr/local/bin
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3&gt;Create data folder for dero&lt;/h3&gt;
+&lt;p&gt;Let's make a folder for dero to store the chain data:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;mkdir /root/.dero
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;using name like ".dero" with a dot in the front will make the folder default hidden for 'ls' command and avoid stupid "rm -rf" command delete it.&lt;/p&gt;
+&lt;h3&gt;Run dero daemon&lt;/h3&gt;
+&lt;p&gt;Since we create a folder(/root/.dero) for blockchain data store, we should use this folder as data-dir every time we run dero daemon.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;derod-linux-amd64 --data-dir=/root/.dero
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;After this command you should see dero command line daemon start and a folder named "mainnet" created under "/root/.dero" folder.
+This time when you visit https://rwallet.dero.cash, browser should return a "Hello world!" message, which means everything is done.&lt;/p&gt;
+&lt;h3&gt;Make dero daemon autostart and run in background&lt;/h3&gt;
+&lt;p&gt;Dero daemon is an interactive command line program, the most easy way to run it in background is using screen command.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;screen -d -m derod-linux-amd64 --data-dir=/root/.dero
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Now a new sub-shell has been created and dero daemon running in it, if you want to check the staus of this sub-shell, just type:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;screen -r
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;if there're more than one sub-shell running on your server, you might need to use &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;screen -ls
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;to list all running sub-shell and determine which one to enter.
+if you want to leave the sub-shell, don't use ctrl+c which will end the daemon, use key "ctrl+a+d" and you shall return to main shell.&lt;/p&gt;
+&lt;p&gt;To make the daemon auto start when we restart the server, place the command we run daemon in file "/etc/rc.local", edit this file so finally it may looks like:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# rc.local
+#
+# This script is executed at the end of each multiuser runlevel.
+# Make sure that the script will &amp;quot;exit 0&amp;quot; on success or any other
+# value on error.
+#
+# In order to enable or disable this script just change the execution
+# bits.
+#
+# By default this script does nothing.
+
+/usr/bin/screen -d -m /usr/local/bin/derod-linux-amd64 --data-dir=/root/.dero
+
+exit 0
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Note that this time we shall use full path for both screen and dero daemon.Restart the server and check https://rwallet.dero.cash to see if it works.&lt;/p&gt;
+&lt;h2&gt;Using remote node&lt;/h2&gt;
+&lt;p&gt;Currently dero GUI wallet doesn't support customized remote node, but we can use it for command line wallet, by using option --data-dir.&lt;/p&gt;
+&lt;p&gt;Full command to use the remote node we just set up under mac os is:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;dero-wallet-cli-darwin-amd64 --daemon-address=https://rwallet.dero.cash
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;If your node is full synced, your wallet should be ready for use now.&lt;/p&gt;</content></entry><entry><title>How to run a remote node for DERO wallet</title><link href="posts/run_remote_node_for_dero_wallet.html" rel="alternate"></link><published>2018-10-18T16:55:00+08:00</published><updated>2018-10-18T16:55:00+08:00</updated><author><name>lifetyper</name></author><id>tag:None,2018-10-18:posts/run_remote_node_for_dero_wallet.html</id><summary type="html">&lt;p&gt;One of the dero wallet's greatest feature is remote node function,which allows you to sync and use your DERO wallet without sync the whole blockchain.&lt;/p&gt;</summary><content type="html">&lt;h2&gt;Why do you need a remote node?&lt;/h2&gt;
+&lt;p&gt;One of the dero wallet's greatest feature is remote node function,which allows you to sync and use your DERO wallet without sync the whole blockchain.Currently there is only one public node is run by dero Official(https://rwallet.dero.live:443).&lt;/p&gt;
+&lt;p&gt;But a centralized server can crash or the network latency may too large for you due to different network condition, or even worse,you don't trust anyone else except yourself, you might want to run your own remote node for your wallet.&lt;/p&gt;
+&lt;h2&gt;What do you need for a remote node&lt;/h2&gt;
+&lt;p&gt;Here below is what you will need for running a remote node:
+&lt;em&gt; A VPS with public IPV4 address, running ubuntu or debian 
+&lt;/em&gt; A domain for SSL certificate
+* Done
+Then you can create your remote node following below step.&lt;/p&gt;
+&lt;h2&gt;Setup your domain&lt;/h2&gt;
+&lt;p&gt;This step is simple, just point your domain to your VPS's IP address,blabla...If any trouble with this part, ask your domain registar for help.&lt;/p&gt;
+&lt;h2&gt;Install Nginx&lt;/h2&gt;
+&lt;p&gt;Nginx is a famous http server which can also works a web proxy, here we use nginx to proxy dero daemon's default rpc service from port 127.0.0.1:20206 to 0.0.0.0:443(port for https web) and expose to public.
+Install nginx is easy on ubuntu, install with root account is ok, but don't run it under root account.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;apt-get update
+apt-get install nginx
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;Fetch SSL certificate for your domain&lt;/h2&gt;
+&lt;p&gt;We have let's encrypt for free SSL certificate, to obtain SSL certificate easyliy we shall install &lt;a href="https://certbot.eff.org/"&gt;certbot&lt;/a&gt;.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;apt-get update
+apt-get install software-properties-common
+add-apt-repository ppa:certbot/certbot
+apt-get update
+apt-get install python-certbot-nginx 
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;After installation, run below command to get the ssl certificate
+&lt;code&gt;certbot certonly&lt;/code&gt;
+Just follow the instruction and enter needed info, and when it comes to this step:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;How would you like to authenticate with the ACME CA?
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+1: Nginx Web Server plugin - Alpha (nginx)
+2: Spin up a temporary webserver (standalone)
+3: Place files in webroot directory (webroot)
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Just type "1" to use nginx web plugin for domain verify.
+After certificate done, take rwallet.dero.cash for example you shall see below message telling you where is your certification and chain stored&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;- Congratulations! Your certificate and chain have been saved at:
+   /etc/letsencrypt/live/rwallet.dero.cash/fullchain.pem
+   Your key file has been saved at:
+   /etc/letsencrypt/live/rwallet.dero.cash/privkey.pem
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Note down these two paths, we will use them later.&lt;/p&gt;
+&lt;h2&gt;Setup Nginx as DERO rpc service proxy&lt;/h2&gt;
+&lt;p&gt;Still take rwallet.dero.cash for example, let's create a config file for this proxy in "/etc/nginx/conf.d" and edit it with VIM:
+&lt;code&gt;touch rwallet.conf
+vi rwallet.conf&lt;/code&gt;
+Then paste below content in rwallet.conf:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nt"&gt;server&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="err"&gt;listen&lt;/span&gt;          &lt;span class="err"&gt;80&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="err"&gt;server_name&lt;/span&gt;     &lt;span class="err"&gt;rwallet.dero.cash&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="err"&gt;rewrite&lt;/span&gt; &lt;span class="err"&gt;^/(.*)&lt;/span&gt;  &lt;span class="n"&gt;https&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="o"&gt;//&lt;/span&gt;&lt;span class="n"&gt;rwallet&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;dero&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;cash&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="err"&gt;$&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt; &lt;span class="n"&gt;permanent&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+
+&lt;span class="nt"&gt;server&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="err"&gt;listen&lt;/span&gt;          &lt;span class="err"&gt;443&lt;/span&gt; &lt;span class="err"&gt;ssl&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="err"&gt;server_name&lt;/span&gt;     &lt;span class="err"&gt;rwallet.dero.cash&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="err"&gt;access_log&lt;/span&gt;      &lt;span class="err"&gt;/var/log/nginx/rwalelt_access.log&lt;/span&gt; &lt;span class="err"&gt;combined&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="err"&gt;error_log&lt;/span&gt;       &lt;span class="err"&gt;/var/log/nginx/rwallet_erro.log&lt;/span&gt; &lt;span class="err"&gt;error&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+    &lt;span class="err"&gt;ssl_certificate&lt;/span&gt; &lt;span class="err"&gt;/etc/letsencrypt/live/rwallet.dero.cash/fullchain.pem&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="err"&gt;ssl_certificate_key&lt;/span&gt; &lt;span class="err"&gt;/etc/letsencrypt/live/rwallet.dero.cash/privkey.pem&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+
+    &lt;span class="err"&gt;location&lt;/span&gt; &lt;span class="err"&gt;/&lt;/span&gt; &lt;span class="err"&gt;{&lt;/span&gt;
+        &lt;span class="err"&gt;proxy_pass&lt;/span&gt;         &lt;span class="n"&gt;http&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="o"&gt;//&lt;/span&gt;&lt;span class="n"&gt;localhost&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;20206&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="err"&gt;proxy_redirect&lt;/span&gt;     &lt;span class="err"&gt;off&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+        &lt;span class="err"&gt;proxy_set_header&lt;/span&gt;   &lt;span class="err"&gt;Host&lt;/span&gt;              &lt;span class="err"&gt;$http_host&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="err"&gt;proxy_set_header&lt;/span&gt;   &lt;span class="err"&gt;X-Real-IP&lt;/span&gt;         &lt;span class="err"&gt;$remote_addr&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="err"&gt;proxy_set_header&lt;/span&gt;   &lt;span class="err"&gt;X-Forwarded-For&lt;/span&gt;   &lt;span class="err"&gt;$proxy_add_x_forwarded_for&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+
+&lt;span class="err"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Remember to replace rwallet.dero.cash with your own domain, and set the correct path for your ssl certificate and chain, then restart nginx service:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;/etc/init.d/nginx restart
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Now let's visit &lt;a href="https://rwallet.dero.cash"&gt;https://rwallet.dero.cash&lt;/a&gt; you should see a "502 bad gateway" error.This means nginx is working as expected, the only problem is you haven't run dero daemon at port 20206 yet.&lt;/p&gt;
+&lt;h2&gt;Run dero daemon&lt;/h2&gt;
+&lt;h3&gt;install dero daemon&lt;/h3&gt;
+&lt;p&gt;First let's go to &lt;a href="https://github.com/deroproject/derosuite/releases/latest"&gt;dero official github&lt;/a&gt; to download the latest binaries for dero daemon.
+Since we're using ubuntu 16.04 64bit as our VPS os here, we should download linux_amd64 version, extract the tarball and copy the binaries to "/usr/local/bin" folder to make it global available.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;wget https://github.com/deroproject/derosuite/releases/download/v2.1.5/dero_linux_amd64_2.1.5-0.alpha.atlantis.10102018.tar.gz
+tar xf dero_linux_amd64_2.1.5-0.alpha.atlantis.10102018.tar.gz
+cp dero_linux_amd64/* /usr/local/bin
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3&gt;Create data folder for dero&lt;/h3&gt;
+&lt;p&gt;Let's make a folder for dero to store the chain data:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;mkdir /root/.dero
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;using name like ".dero" with a dot in the front will make the folder default hidden for 'ls' command and avoid stupid "rm -rf" command delete it.&lt;/p&gt;
+&lt;h3&gt;Run dero daemon&lt;/h3&gt;
+&lt;p&gt;Since we create a folder(/root/.dero) for blockchain data store, we should use this folder as data-dir every time we run dero daemon.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;derod-linux-amd64 --data-dir=/root/.dero
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;After this command you should see dero command line daemon start and a folder named "mainnet" created under "/root/.dero" folder.
+This time when you visit https://rwallet.dero.cash, browser should return a "Hello world!" message, which means everything is done.&lt;/p&gt;
+&lt;h3&gt;Make dero daemon autostart and run in background&lt;/h3&gt;
+&lt;p&gt;Dero daemon is an interactive command line program, the most easy way to run it in background is using screen command.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;screen -d -m derod-linux-amd64 --data-dir=/root/.dero
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Now a new sub-shell has been created and dero daemon running in it, if you want to check the staus of this sub-shell, just type:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;screen -r
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;if there're more than one sub-shell running on your server, you might need to use &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;screen -ls
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;to list all running sub-shell and determine which one to enter.
+if you want to leave the sub-shell, don't use ctrl+c which will end the daemon, use key "ctrl+a+d" and you shall return to main shell.&lt;/p&gt;
+&lt;p&gt;To make the daemon auto start when we restart the server, place the command we run daemon in file "/etc/rc.local", edit this file so finally it may looks like:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# rc.local
+#
+# This script is executed at the end of each multiuser runlevel.
+# Make sure that the script will &amp;quot;exit 0&amp;quot; on success or any other
+# value on error.
+#
+# In order to enable or disable this script just change the execution
+# bits.
+#
+# By default this script does nothing.
+
+/usr/bin/screen -d -m /usr/local/bin/derod-linux-amd64 --data-dir=/root/.dero
+
+exit 0
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Note that this time we shall use full path for both screen and dero daemon.Restart the server and check https://rwallet.dero.cash to see if it works.&lt;/p&gt;
+&lt;h2&gt;Using remote node&lt;/h2&gt;
+&lt;p&gt;Currently dero GUI wallet doesn't support customized remote node, but we can use it for command line wallet, by using option --data-dir.&lt;/p&gt;
+&lt;p&gt;Full command to use the remote node we just set up under mac os is:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;dero-wallet-cli-darwin-amd64 --daemon-address=https://rwallet.dero.cash
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;If your node is full synced, your wallet should be ready for use now.&lt;/p&gt;</content></entry><entry><title>How to run a remote node for DERO wallet</title><link href="posts/run_remote_node_for_dero_wallet.html" rel="alternate"></link><published>2018-10-18T16:55:00+08:00</published><updated>2018-10-18T16:55:00+08:00</updated><author><name>lifetyper</name></author><id>tag:None,2018-10-18:posts/run_remote_node_for_dero_wallet.html</id><summary type="html">&lt;p&gt;One of the dero wallet's greatest feature is remote node function,which allows you to sync and use your DERO wallet without sync the whole blockchain.&lt;/p&gt;</summary><content type="html">&lt;h2&gt;Why do you need a remote node?&lt;/h2&gt;
+&lt;p&gt;One of the dero wallet's greatest feature is remote node function,which allows you to sync and use your DERO wallet without sync the whole blockchain.Currently there is only one public node is run by dero Official(https://rwallet.dero.live:443).&lt;/p&gt;
+&lt;p&gt;But a centralized server can crash or the network latency may too large for you due to different network condition, or even worse,you don't trust anyone else except yourself, you might want to run your own remote node for your wallet.&lt;/p&gt;
+&lt;h2&gt;What do you need for a remote node&lt;/h2&gt;
+&lt;p&gt;Here below is what you will need for running a remote node:
+&lt;em&gt; A VPS with public IPV4 address, running ubuntu or debian 
+&lt;/em&gt; A domain for SSL certificate
+* Done
+Then you can create your remote node following below step.&lt;/p&gt;
+&lt;h2&gt;Setup your domain&lt;/h2&gt;
+&lt;p&gt;This step is simple, just point your domain to your VPS's IP address,blabla...If any trouble with this part, ask your domain registar for help.&lt;/p&gt;
+&lt;h2&gt;Install Nginx&lt;/h2&gt;
+&lt;p&gt;Nginx is a famous http server which can also works a web proxy, here we use nginx to proxy dero daemon's default rpc service from port 127.0.0.1:20206 to 0.0.0.0:443(port for https web) and expose to public.
+Install nginx is easy on ubuntu, install with root account is ok, but don't run it under root account.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;apt-get update
+apt-get install nginx
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;Fetch SSL certificate for your domain&lt;/h2&gt;
+&lt;p&gt;We have let's encrypt for free SSL certificate, to obtain SSL certificate easyliy we shall install &lt;a href="https://certbot.eff.org/"&gt;certbot&lt;/a&gt;.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;apt-get update
+apt-get install software-properties-common
+add-apt-repository ppa:certbot/certbot
+apt-get update
+apt-get install python-certbot-nginx 
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;After installation, run below command to get the ssl certificate
+&lt;code&gt;certbot certonly&lt;/code&gt;
+Just follow the instruction and enter needed info, and when it comes to this step:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;How would you like to authenticate with the ACME CA?
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+1: Nginx Web Server plugin - Alpha (nginx)
+2: Spin up a temporary webserver (standalone)
+3: Place files in webroot directory (webroot)
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Just type "1" to use nginx web plugin for domain verify.
+After certificate done, take rwallet.dero.cash for example you shall see below message telling you where is your certification and chain stored&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;- Congratulations! Your certificate and chain have been saved at:
+   /etc/letsencrypt/live/rwallet.dero.cash/fullchain.pem
+   Your key file has been saved at:
+   /etc/letsencrypt/live/rwallet.dero.cash/privkey.pem
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Note down these two paths, we will use them later.&lt;/p&gt;
+&lt;h2&gt;Setup Nginx as DERO RPC service proxy&lt;/h2&gt;
+&lt;p&gt;Still take rwallet.dero.cash for example, let's create a config file for this proxy in "/etc/nginx/conf.d" and edit it with VIM:
+&lt;code&gt;touch rwallet.conf
+vi rwallet.conf&lt;/code&gt;
+Then paste below content in rwallet.conf:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nt"&gt;server&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="err"&gt;listen&lt;/span&gt;          &lt;span class="err"&gt;80&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="err"&gt;server_name&lt;/span&gt;     &lt;span class="err"&gt;rwallet.dero.cash&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="err"&gt;rewrite&lt;/span&gt; &lt;span class="err"&gt;^/(.*)&lt;/span&gt;  &lt;span class="n"&gt;https&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="o"&gt;//&lt;/span&gt;&lt;span class="n"&gt;rwallet&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;dero&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;cash&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="err"&gt;$&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt; &lt;span class="n"&gt;permanent&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+
+&lt;span class="nt"&gt;server&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="err"&gt;listen&lt;/span&gt;          &lt;span class="err"&gt;443&lt;/span&gt; &lt;span class="err"&gt;ssl&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="err"&gt;server_name&lt;/span&gt;     &lt;span class="err"&gt;rwallet.dero.cash&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="err"&gt;access_log&lt;/span&gt;      &lt;span class="err"&gt;/var/log/nginx/rwalelt_access.log&lt;/span&gt; &lt;span class="err"&gt;combined&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="err"&gt;error_log&lt;/span&gt;       &lt;span class="err"&gt;/var/log/nginx/rwallet_erro.log&lt;/span&gt; &lt;span class="err"&gt;error&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+    &lt;span class="err"&gt;ssl_certificate&lt;/span&gt; &lt;span class="err"&gt;/etc/letsencrypt/live/rwallet.dero.cash/fullchain.pem&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="err"&gt;ssl_certificate_key&lt;/span&gt; &lt;span class="err"&gt;/etc/letsencrypt/live/rwallet.dero.cash/privkey.pem&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+
+    &lt;span class="err"&gt;location&lt;/span&gt; &lt;span class="err"&gt;/&lt;/span&gt; &lt;span class="err"&gt;{&lt;/span&gt;
+        &lt;span class="err"&gt;proxy_pass&lt;/span&gt;         &lt;span class="n"&gt;http&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="o"&gt;//&lt;/span&gt;&lt;span class="n"&gt;localhost&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;20206&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="err"&gt;proxy_redirect&lt;/span&gt;     &lt;span class="err"&gt;off&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+        &lt;span class="err"&gt;proxy_set_header&lt;/span&gt;   &lt;span class="err"&gt;Host&lt;/span&gt;              &lt;span class="err"&gt;$http_host&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="err"&gt;proxy_set_header&lt;/span&gt;   &lt;span class="err"&gt;X-Real-IP&lt;/span&gt;         &lt;span class="err"&gt;$remote_addr&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="err"&gt;proxy_set_header&lt;/span&gt;   &lt;span class="err"&gt;X-Forwarded-For&lt;/span&gt;   &lt;span class="err"&gt;$proxy_add_x_forwarded_for&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+
+&lt;span class="err"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Remember to replace rwallet.dero.cash with your own domain, and set the correct path for your ssl certificate and chain, then restart nginx service:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;/etc/init.d/nginx restart
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Now let's visit &lt;a href="https://rwallet.dero.cash"&gt;https://rwallet.dero.cash&lt;/a&gt; you should see a "502 bad gateway" error.This means nginx is working as expected, the only problem is you haven't run dero daemon at port 20206 yet.&lt;/p&gt;
+&lt;h2&gt;Run dero daemon&lt;/h2&gt;
+&lt;h3&gt;install dero daemon&lt;/h3&gt;
+&lt;p&gt;First let's go to &lt;a href="https://github.com/deroproject/derosuite/releases/latest"&gt;dero official github&lt;/a&gt; to download the latest binaries for dero daemon.
+Since we're using ubuntu 16.04 64bit as our VPS os here, we should download linux_amd64 version, extract the tarball and copy the binaries to "/usr/local/bin" folder to make it global available.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;wget https://github.com/deroproject/derosuite/releases/download/v2.1.5/dero_linux_amd64_2.1.5-0.alpha.atlantis.10102018.tar.gz
+tar xf dero_linux_amd64_2.1.5-0.alpha.atlantis.10102018.tar.gz
+cp dero_linux_amd64/* /usr/local/bin
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3&gt;Create data folder for dero&lt;/h3&gt;
+&lt;p&gt;Let's make a folder for dero to store the chain data:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;mkdir /root/.dero
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;using name like ".dero" with a dot in the front will make the folder default hidden for 'ls' command and avoid stupid "rm -rf" command delete it.&lt;/p&gt;
+&lt;h3&gt;Run dero daemon&lt;/h3&gt;
+&lt;p&gt;Since we create a folder(/root/.dero) for blockchain data store, we should use this folder as data-dir every time we run dero daemon.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;derod-linux-amd64 --data-dir=/root/.dero
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;After this command you should see dero command line daemon start and a folder named "mainnet" created under "/root/.dero" folder.
+This time when you visit https://rwallet.dero.cash, browser should return a "Hello world!" message, which means everything is done.&lt;/p&gt;
+&lt;h3&gt;Make dero daemon autostart and run in background&lt;/h3&gt;
+&lt;p&gt;Dero daemon is an interactive command line program, the most easy way to run it in background is using screen command.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;screen -d -m derod-linux-amd64 --data-dir=/root/.dero
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Now a new sub-shell has been created and dero daemon running in it, if you want to check the staus of this sub-shell, just type:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;screen -r
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;if there're more than one sub-shell running on your server, you might need to use &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;screen -ls
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;to list all running sub-shell and determine which one to enter.
+if you want to leave the sub-shell, don't use ctrl+c which will end the daemon, use key "ctrl+a+d" and you shall return to main shell.&lt;/p&gt;
+&lt;p&gt;To make the daemon auto start when we restart the server, place the command we run daemon in file "/etc/rc.local", edit this file so finally it may looks like:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# rc.local
+#
+# This script is executed at the end of each multiuser runlevel.
+# Make sure that the script will &amp;quot;exit 0&amp;quot; on success or any other
+# value on error.
+#
+# In order to enable or disable this script just change the execution
+# bits.
+#
+# By default this script does nothing.
+
+/usr/bin/screen -d -m /usr/local/bin/derod-linux-amd64 --data-dir=/root/.dero
+
+exit 0
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Note that this time we shall use full path for both screen and dero daemon.Restart the server and check https://rwallet.dero.cash to see if it works.&lt;/p&gt;
+&lt;h2&gt;Using remote node&lt;/h2&gt;
+&lt;p&gt;Currently dero GUI wallet doesn't support customized remote node, but we can use it for command line wallet, by using option --data-dir.&lt;/p&gt;
+&lt;p&gt;Full command to use the remote node we just set up under mac os is:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;dero-wallet-cli-darwin-amd64 --daemon-address=https://rwallet.dero.cash
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;If your node is full synced, your wallet should be ready for use now.&lt;/p&gt;</content></entry><entry><title>迁移到GithubPages后的域名设置问题</title><link href="posts/blog_moved_to_github_pages_and_domain_config.html" rel="alternate"></link><published>2018-07-22T16:55:00+08:00</published><updated>2018-07-22T16:55:00+08:00</updated><author><name>毕勤</name></author><id>tag:None,2018-07-22:posts/blog_moved_to_github_pages_and_domain_config.html</id><summary type="html">&lt;p&gt;基本上我一年也写不了一篇文章，服务器主要是拿来翻墙的，碰上服务器速度变慢了就得迁移一次，虽然已经是基于pelican的静态网站，但nginx还是得重新配置一次。。。&lt;/p&gt;</summary><content type="html">&lt;p&gt;基本上我一年也写不了一篇文章，服务器主要是拿来翻墙的，碰上服务器速度变慢了就得迁移一次，虽然已经是基于pelican的静态网站，但nginx还是得重新配置一次。&lt;/p&gt;
 &lt;p&gt;刚好发现github pages已经对custom domain开放https功能了，这样基本上也就够了。静态blog基本上迁移没什么好废话的，就是这个custom domain的设置有点麻烦。&lt;/p&gt;
 &lt;p&gt;其实如果我只需要绑定lifetyper.com的话也没什么问题，但我一直都是lifetyper.com和www.lifetyper.com同时绑定的，githubpages上设置的域名是根域名，如果直接把两个域名的A记录都解析到github的地址，结果是访问www子域名的时候会爆一个https证书错误，因为证书是为根域名颁发的，子域名并不能直接用这个证书。&lt;/p&gt;
 &lt;p&gt;找了一下发现这个问题其实用cloudflare的DNS很好解决。首先要设置根域名的A记录到Github，让lifetyper.com正常访问，然后给www子域名设置一个page rules.&lt;/p&gt;
@@ -10,7 +646,7 @@
 &lt;/blockquote&gt;
 &lt;p&gt;这里$2表示替换为第二个通配符*的值，同理，可以用美元符+数字匹配多个通配符。&lt;/p&gt;
 &lt;p&gt;但这样的设置是不够的，因为www.lifetyper.com并没有任何DNS记录，cloudflare不能接管一个没有任何记录的域名，所以需要给www.lifetyper.com设置一条CNAME记录，值为@，同时保证这条记录是DNS&amp;amp;HTTP Proxied By Cloudflare的橙色。&lt;/p&gt;
-&lt;p&gt;都设置成功后，稍等一段时间就可以生效了，这样所有的访问都被导向根域名了。&lt;/p&gt;</content></entry><entry><title>制作你自己的终极X86软路由</title><link href="/posts/build_your_own_x86_router.html" rel="alternate"></link><published>2017-04-02T14:59:49+08:00</published><updated>2017-04-02T14:59:49+08:00</updated><author><name>毕勤</name></author><id>tag:None,2017-04-02:/posts/build_your_own_x86_router.html</id><summary type="html">&lt;p&gt;自从当年被&lt;a href="https://code.google.com/archive/p/autoddvpn/"&gt;AutoddVPN&lt;/a&gt;项目带入路由器翻墙的坑，断断续续买过的路由器有差不多二十来个了。从最低端的400Mhz单核的Atheros芯片到双核1G的高端路由，从小到只有火柴盒大小的WT-32020到比砖头还大的R7000，基本都玩了个遍,但也都很无聊，因为最终都是刷openwrt或者dd-wrt，后者的可玩性其实还更差...&lt;/p&gt;</summary><content type="html">&lt;h2&gt;原因&lt;/h2&gt;
+&lt;p&gt;都设置成功后，稍等一段时间就可以生效了，这样所有的访问都被导向根域名了。&lt;/p&gt;</content></entry><entry><title>制作你自己的终极X86软路由</title><link href="posts/build_your_own_x86_router.html" rel="alternate"></link><published>2017-04-02T14:59:49+08:00</published><updated>2017-04-02T14:59:49+08:00</updated><author><name>毕勤</name></author><id>tag:None,2017-04-02:posts/build_your_own_x86_router.html</id><summary type="html">&lt;p&gt;自从当年被&lt;a href="https://code.google.com/archive/p/autoddvpn/"&gt;AutoddVPN&lt;/a&gt;项目带入路由器翻墙的坑，断断续续买过的路由器有差不多二十来个了。从最低端的400Mhz单核的Atheros芯片到双核1G的高端路由，从小到只有火柴盒大小的WT-32020到比砖头还大的R7000，基本都玩了个遍,但也都很无聊，因为最终都是刷openwrt或者dd-wrt，后者的可玩性其实还更差...&lt;/p&gt;</summary><content type="html">&lt;h2&gt;原因&lt;/h2&gt;
 &lt;p&gt;自从当年被&lt;a href="https://code.google.com/archive/p/autoddvpn/"&gt;AutoddVPN&lt;/a&gt;项目带入路由器翻墙的坑，断断续续买过的路由器有差不多二十来个了。从最低端的400Mhz单核的Atheros芯片到双核1G的高端路由，从小到只有火柴盒大小的WT-32020到比砖头还大的R7000，基本都玩了个遍，但也都很无聊，因为最终都是刷openwrt或者dd-wrt，后者的可玩性其实还更差。&lt;/p&gt;
 &lt;p&gt;直到年初入了EdgerouterX，才发现路由只做路由，无线交给AP，配合上linux系统才是真正的路由器王道。各司其职可以充分发挥各个环节的顶级性能，越接近原生linux的系统也越容易解决各类软件的安装问题，需要的软件包甚至可以直接在路由器上编译和部署。&lt;/p&gt;
 &lt;p&gt;虽然基于ASIC芯片的路由在效率上更高，可以用更低的主频实现百兆甚至千兆的转发，但那是在路由主控CPU普遍主频只有300~400Mhz的时代的必需产物。当Intel把双核、四核的x86功率做到个位数以后，直接用高性能的x86搭建路由已经绝对是性能溢出的选择。&lt;/p&gt;
@@ -18,7 +654,7 @@
 &lt;h2&gt;硬件部分&lt;/h2&gt;
 &lt;h3&gt;主机的选择&lt;/h3&gt;
 &lt;p&gt;感谢万能的淘宝，我在上面找到了一款有4个千兆以太网和一个RF45接口形式的RS232串口的J1900 CPU的小主机，店铺本身对这货的定义就是软路由主机。这个完全满足我的需求：&lt;/p&gt;
-&lt;p&gt;&lt;img alt="J1900软路由" src="/images/j1900_x86_router.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="J1900软路由" src="images/j1900_x86_router.png"&gt;&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;只要有线路由功能，无线功能可以交给专业的AP去处理。&lt;/li&gt;
 &lt;li&gt;金属机身且体积小巧(15cmx13cmx3cm)，比很多外壳是塑料但里面全是空气的家庭路由还要小，可以轻松放进弱电箱，反正不涉及无线，不担心信号衰减。&lt;/li&gt;
@@ -27,7 +663,7 @@
 &lt;/ol&gt;
 &lt;p&gt;这个小主机基本是完美的，除了一个地方:串口。这其实是个很尴尬的不满，因为机器上的串口是按照标准的EIA-561标注来接的，这看起来很合理，问题是这年头你一旦把串口做成RJ45的接口，10台机器有9台都是按照思科的那套标准来接的。以至于你现在去买USB Console调试线，只能买到思科标准的线，EIA-561标准的线只能自己做，如果用思科的Console线去调试，你会发下从主机出来的TX是好的，但RX永远收不到数据。&lt;/p&gt;
 &lt;p&gt;于是我找了一根铜芯比较硬的网线，从实验室翻出一个DB9母头和塑料卡壳，自己做了一个RJ45转DB9母头的转接线，后面再接上普通的USB转DB9工头的USB串口线就可以了。其实RJ45转DB9那里，只需要把地线和TX、RX三根线接出来就可以了，因为大部分情况下我们并不会用到流控。&lt;/p&gt;
-&lt;p&gt;&lt;img alt="RJ45转DB9母头" src="/images/rj45_to_db9_female.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="RJ45转DB9母头" src="images/rj45_to_db9_female.png"&gt;&lt;/p&gt;
 &lt;h3&gt;这里简单说一下RJ45转DB9该怎么接线:&lt;/h3&gt;
 &lt;ol&gt;
 &lt;li&gt;首先明确我们不用流控，只需要找GND\TX\RX三根线。&lt;/li&gt;
@@ -318,7 +954,7 @@ adduser your_user_name sudo
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;退出之后再用刚才添加的用户名登录，就可以使用sudo了，如果有太多sudo命令要做，直接&lt;code&gt;sudo bash&lt;/code&gt;就可以切到root用户了。&lt;/p&gt;</content></entry><entry><title>Initial</title><link href="/posts/blog_initial.html" rel="alternate"></link><published>2017-03-03T14:32:12+08:00</published><updated>2017-03-03T14:32:12+08:00</updated><author><name>毕勤</name></author><id>tag:None,2017-03-03:/posts/blog_initial.html</id><summary type="html">&lt;p&gt;因为实在不知道怎么给这个场景取标题了，也不记得是这里第几次自杀后重生了。没有丢数据，也没有任何其他的问题，只是忽然觉得一个blog要配置php，要配置mysql，要配置nginx来支持实在太多余。我想要一个可以随便找块磁盘就可以完整备份全站，随便找个空间上传一下就可以重新部署的系统，一个像latex一样合理的受代码精准控制格式的撰写语言，另外我要看得懂他们系统的语言，所以是pelican...&lt;/p&gt;</summary><content type="html">&lt;p&gt;因为实在不知道怎么给这个场景取标题了，也不记得是这里第几次自杀后重生了。&lt;/p&gt;
+&lt;p&gt;退出之后再用刚才添加的用户名登录，就可以使用sudo了，如果有太多sudo命令要做，直接&lt;code&gt;sudo bash&lt;/code&gt;就可以切到root用户了。&lt;/p&gt;</content></entry><entry><title>Initial</title><link href="posts/blog_initial.html" rel="alternate"></link><published>2017-03-03T14:32:12+08:00</published><updated>2017-03-03T14:32:12+08:00</updated><author><name>毕勤</name></author><id>tag:None,2017-03-03:posts/blog_initial.html</id><summary type="html">&lt;p&gt;因为实在不知道怎么给这个场景取标题了，也不记得是这里第几次自杀后重生了。没有丢数据，也没有任何其他的问题，只是忽然觉得一个blog要配置php，要配置mysql，要配置nginx来支持实在太多余。我想要一个可以随便找块磁盘就可以完整备份全站，随便找个空间上传一下就可以重新部署的系统，一个像latex一样合理的受代码精准控制格式的撰写语言，另外我要看得懂他们系统的语言，所以是pelican...&lt;/p&gt;</summary><content type="html">&lt;p&gt;因为实在不知道怎么给这个场景取标题了，也不记得是这里第几次自杀后重生了。&lt;/p&gt;
 &lt;p&gt;没有丢数据，也没有任何其他的问题，只是忽然觉得一个blog要配置php，要配置mysql，要配置nginx来支持实在太多余。我想要一个可以随便找块磁盘就可以完整备份全站，随便找个空间上传一下就可以重新部署的系统，一个像latex一样合理的受代码精准控制格式的撰写语言，另外我要看得懂他们系统的语言，所以是&lt;a href="https://blog.getpelican.com/"&gt;pelican&lt;/a&gt;。&lt;/p&gt;
 &lt;p&gt;昨天看了一下才发现lifetyper.com这个域名竟然注册了快10年了,就连域名的灵感来源lifetype.net都接近半死状态了，论坛很多板块多年没人发言，有也就是一两年偶尔有人冒个泡。&lt;/p&gt;
 &lt;p&gt;至于用lifetype的人，hipeople跳转到了小程序，秋月白不知道毕业后在干啥，winman也不在&lt;a href="http://forum.lifetype.org.cn/"&gt;lifetype中文论坛&lt;/a&gt;上线好久好久了。&lt;/p&gt;
