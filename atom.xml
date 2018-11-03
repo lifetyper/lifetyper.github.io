@@ -47,7 +47,7 @@ apt-get install python-certbot-nginx
 &lt;p&gt;Just type "1" to use nginx web plugin for domain verify.
 After certificate done, take derowallet.com for example, you shall see below message telling you where is your certification and chain stored.&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;- Congratulations! Your certificate and chain have been saved at:
-   /etc/letsencrypt/live/rwallet.derowallet.com/fullchain.pem
+   /etc/letsencrypt/live/derowallet.com/fullchain.pem
    Your key file has been saved at:
    /etc/letsencrypt/live/derowallet.com/privkey.pem
 &lt;/pre&gt;&lt;/div&gt;
