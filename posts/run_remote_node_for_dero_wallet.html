@@ -165,34 +165,34 @@ apt-get install python-certbot-nginx
 
 
 <p>Just type "1" to use nginx web plugin for domain verify.
-After certificate done, take rwallet.dero.cash for example, you shall see below message telling you where is your certification and chain stored.</p>
+After certificate done, take derowallet.com for example, you shall see below message telling you where is your certification and chain stored.</p>
 <div class="highlight"><pre><span></span>- Congratulations! Your certificate and chain have been saved at:
-   /etc/letsencrypt/live/rwallet.dero.cash/fullchain.pem
+   /etc/letsencrypt/live/rwallet.derowallet.com/fullchain.pem
    Your key file has been saved at:
-   /etc/letsencrypt/live/rwallet.dero.cash/privkey.pem
+   /etc/letsencrypt/live/derowallet.com/privkey.pem
 </pre></div>
 
 
 <p>Note down these two paths, we will use them later.</p>
 <h2>Setup Nginx as DERO rpc service proxy</h2>
-<p>Still take rwallet.dero.cash for example, let's create a config file for this proxy in "/etc/nginx/conf.d" and edit it with VIM:
+<p>Still take derowallet.com for example, let's create a config file for this proxy in "/etc/nginx/conf.d" and edit it with VIM:
 <code>touch rwallet.conf
 vi rwallet.conf</code>
 Then paste below content in rwallet.conf:</p>
 <div class="highlight"><pre><span></span><span class="nt">server</span> <span class="p">{</span>
     <span class="err">listen</span>          <span class="err">80</span><span class="p">;</span>
-    <span class="err">server_name</span>     <span class="err">rwallet.dero.cash</span><span class="p">;</span>
-    <span class="err">rewrite</span> <span class="err">^/(.*)</span>  <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">rwallet</span><span class="o">.</span><span class="n">dero</span><span class="o">.</span><span class="n">cash</span><span class="o">/</span><span class="err">$</span><span class="mi">1</span> <span class="n">permanent</span><span class="p">;</span>
+    <span class="err">server_name</span>     <span class="err">derowallet.com</span><span class="p">;</span>
+    <span class="err">rewrite</span> <span class="err">^/(.*)</span>  <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">derowallet</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="err">$</span><span class="mi">1</span> <span class="n">permanent</span><span class="p">;</span>
 <span class="p">}</span>
 
 <span class="nt">server</span> <span class="p">{</span>
     <span class="err">listen</span>          <span class="err">443</span> <span class="err">ssl</span><span class="p">;</span>
-    <span class="err">server_name</span>     <span class="err">rwallet.dero.cash</span><span class="p">;</span>
+    <span class="err">server_name</span>     <span class="err">derowallet.com</span><span class="p">;</span>
     <span class="err">access_log</span>      <span class="err">/var/log/nginx/rwalelt_access.log</span> <span class="err">combined</span><span class="p">;</span>
     <span class="err">error_log</span>       <span class="err">/var/log/nginx/rwallet_erro.log</span> <span class="err">error</span><span class="p">;</span>
 
-    <span class="err">ssl_certificate</span> <span class="err">/etc/letsencrypt/live/rwallet.dero.cash/fullchain.pem</span><span class="p">;</span>
-    <span class="err">ssl_certificate_key</span> <span class="err">/etc/letsencrypt/live/rwallet.dero.cash/privkey.pem</span><span class="p">;</span>
+    <span class="err">ssl_certificate</span> <span class="err">/etc/letsencrypt/live/derowallet.com/fullchain.pem</span><span class="p">;</span>
+    <span class="err">ssl_certificate_key</span> <span class="err">/etc/letsencrypt/live/derowallet.com/privkey.pem</span><span class="p">;</span>
 
 
     <span class="err">location</span> <span class="err">/</span> <span class="err">{</span>
@@ -208,12 +208,12 @@ Then paste below content in rwallet.conf:</p>
 </pre></div>
 
 
-<p>Remember to replace rwallet.dero.cash with your own domain, and set the correct path for your ssl certificate and chain, then restart nginx service:</p>
+<p>Remember to replace derowallet.com with your own domain, and set the correct path for your ssl certificate and chain, then restart nginx service:</p>
 <div class="highlight"><pre><span></span>/etc/init.d/nginx restart
 </pre></div>
 
 
-<p>Now let's visit <a href="https://rwallet.dero.cash">https://rwallet.dero.cash</a> you should see a "502 bad gateway" error.This means nginx is working as expected, the only problem is you haven't run dero daemon at port 20206 yet.</p>
+<p>Now let's visit <a href="https://derowallet.com">https://derowallet.com</a> you should see a "502 bad gateway" error.This means nginx is working as expected, the only problem is you haven't run dero daemon at port 20206 yet.</p>
 <h2>Run dero daemon</h2>
 <h3>install dero daemon</h3>
 <p>First let's go to <a href="https://github.com/deroproject/derosuite/releases/latest">dero official github</a> to download the latest binaries for dero daemon.
@@ -238,7 +238,7 @@ cp dero_linux_amd64/* /usr/local/bin
 
 
 <p>After this command you should see dero command line daemon start and a folder named "mainnet" created under "/root/.dero" folder.
-This time when you visit https://rwallet.dero.cash, browser should return a "Hello world!" message, which means everything is done.</p>
+This time when you visit https://derowallet.com, browser should return a "Hello world!" message, which means everything is done.</p>
 <h3>Make dero daemon autostart and run in background</h3>
 <p>Dero daemon is an interactive command line program, the most easy way to run it in background is using screen command.</p>
 <div class="highlight"><pre><span></span>screen -d -m derod-linux-amd64 --data-dir=/root/.dero
@@ -275,11 +275,11 @@ exit 0
 </pre></div>
 
 
-<p>Note that this time we shall use full path for both screen and dero daemon.Restart the server and check https://rwallet.dero.cash to see if it works.</p>
+<p>Note that this time we shall use full path for both screen and dero daemon.Restart the server and check https://derowallet.com to see if it works.</p>
 <h2>Using remote node</h2>
 <p>Currently dero GUI wallet doesn't support customized remote node, but we can use it for command line wallet, by using option --data-dir.</p>
 <p>Full command to use the remote node we just set up under mac os is:</p>
-<div class="highlight"><pre><span></span>dero-wallet-cli-darwin-amd64 --daemon-address=https://rwallet.dero.cash
+<div class="highlight"><pre><span></span>dero-wallet-cli-darwin-amd64 --daemon-address=https://derowallet.com
 </pre></div>
 
 
