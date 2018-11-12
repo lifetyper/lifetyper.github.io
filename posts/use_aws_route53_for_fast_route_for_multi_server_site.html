@@ -12,7 +12,7 @@
 
         <link rel="icon" href="../favicon.png" type="image/x-icon" />
 
-        <title>LifeTyper - 迁移到GithubPages后的域名设置问题</title>
+        <title>LifeTyper - Use AWS Route 53 for fast route for multi server site</title>
 
             <link href="/atom.xml" type="application/atom+xml" rel="alternate" title="LifeTyper Full Atom Feed" />
 
@@ -37,13 +37,13 @@
 
 
     <meta property="og:type" content="article">
-    <meta property="og:title" content="迁移到GithubPages后的域名设置问题">
-    <meta property="og:url" content="posts/blog_moved_to_github_pages_and_domain_config.html">
-    <meta property="og:description" content="基本上我一年也写不了一篇文章，服务器主要是拿来翻墙的，碰上服务器速度变慢了就得迁移一次，虽然已经是基于pelican的静态网站，但nginx还是得重新配置一次。。。">
-    <meta property="article:published_time" content="Sunday, July 22, 2018">
-    <meta name="twitter:title" content="迁移到GithubPages后的域名设置问题">
-    <meta name="twitter:description" content="基本上我一年也写不了一篇文章，服务器主要是拿来翻墙的，碰上服务器速度变慢了就得迁移一次，虽然已经是基于pelican的静态网站，但nginx还是得重新配置一次。。。">
-    <meta name="description" content="基本上我一年也写不了一篇文章，服务器主要是拿来翻墙的，碰上服务器速度变慢了就得迁移一次，虽然已经是基于pelican的静态网站，但nginx还是得重新配置一次。。。">
+    <meta property="og:title" content="Use AWS Route 53 for fast route for multi server site">
+    <meta property="og:url" content="posts/use_aws_route53_for_fast_route_for_multi_server_site.html">
+    <meta property="og:description" content="For normal website with only one server in one location, the best strategy for faster website load time is using CDN services like cloudflare. But CDN has many limits, the major one is it only works for static content.">
+    <meta property="article:published_time" content="Saturday, November 03, 2018">
+    <meta name="twitter:title" content="Use AWS Route 53 for fast route for multi server site">
+    <meta name="twitter:description" content="For normal website with only one server in one location, the best strategy for faster website load time is using CDN services like cloudflare. But CDN has many limits, the major one is it only works for static content.">
+    <meta name="description" content="For normal website with only one server in one location, the best strategy for faster website load time is using CDN services like cloudflare. But CDN has many limits, the major one is it only works for static content.">
     <meta name="twitter:image" content="">
     <meta property="og:image" content="">
 
@@ -52,11 +52,11 @@
 
 	<meta property="og:type" content="article">
 	<meta property="article:author" content="">
-	<meta property="og:url" content="../posts/blog_moved_to_github_pages_and_domain_config.html">
-	<meta property="og:title" content="迁移到GithubPages后的域名设置问题">
+	<meta property="og:url" content="../posts/use_aws_route53_for_fast_route_for_multi_server_site.html">
+	<meta property="og:title" content="Use AWS Route 53 for fast route for multi server site">
 	<meta property="og:description" content="">
 	   <meta property="og:image" content="../images/guilherme-toti.jpg">
-	<meta property="article:published_time" content="2018-07-22 16:55:00+08:00">
+	<meta property="article:published_time" content="2018-11-03 16:55:00+08:00">
 	</head>
 	<body>
 		<header id="header">
@@ -97,7 +97,7 @@
 							<li>You are here:</li>
 							<li><a href="../">Home</a></li>
 <li><a href="../category/misc.html">misc</a></li>
-<li>迁移到GithubPages后的域名设置问题</li>
+<li>Use AWS Route 53 for fast route for multi server site</li>
 						</ul>
 					</nav>
 				</div>
@@ -112,25 +112,14 @@
 	<section class="post-content">
 
 		<header class="meta">
-			<h2><a href="../posts/blog_moved_to_github_pages_and_domain_config.html">迁移到GithubPages后的域名设置问题</a></h2>
+			<h2><a href="../posts/use_aws_route53_for_fast_route_for_multi_server_site.html">Use AWS Route 53 for fast route for multi server site</a></h2>
 			<ul>
-				<li>By <a href="../author/bi-qin.html">毕勤</a></li>
-				<li>Sun 22 July 2018</li>
+				<li>By <a href="../author/lifetyper.html">lifetyper</a></li>
+				<li>Sat 03 November 2018</li>
 			</ul>
 		</header>
 
-		<p>基本上我一年也写不了一篇文章，服务器主要是拿来翻墙的，碰上服务器速度变慢了就得迁移一次，虽然已经是基于pelican的静态网站，但nginx还是得重新配置一次。</p>
-<p>刚好发现github pages已经对custom domain开放https功能了，这样基本上也就够了。静态blog基本上迁移没什么好废话的，就是这个custom domain的设置有点麻烦。</p>
-<p>其实如果我只需要绑定lifetyper.com的话也没什么问题，但我一直都是lifetyper.com和www.lifetyper.com同时绑定的，githubpages上设置的域名是根域名，如果直接把两个域名的A记录都解析到github的地址，结果是访问www子域名的时候会爆一个https证书错误，因为证书是为根域名颁发的，子域名并不能直接用这个证书。</p>
-<p>找了一下发现这个问题其实用cloudflare的DNS很好解决。首先要设置根域名的A记录到Github，让lifetyper.com正常访问，然后给www子域名设置一个page rules.</p>
-<p>例如我希望把有所www.lifetyper.com的访问都转移到lifetyper.com，同时保持链接不掉，可以这样设置：</p>
-<blockquote>
-<p>url description:*www.lifetyper.com/*</p>
-<p>forwarding url:https://lifetyper.com/$2</p>
-</blockquote>
-<p>这里$2表示替换为第二个通配符*的值，同理，可以用美元符+数字匹配多个通配符。</p>
-<p>但这样的设置是不够的，因为www.lifetyper.com并没有任何DNS记录，cloudflare不能接管一个没有任何记录的域名，所以需要给www.lifetyper.com设置一条CNAME记录，值为@，同时保证这条记录是DNS&amp;HTTP Proxied By Cloudflare的橙色。</p>
-<p>都设置成功后，稍等一段时间就可以生效了，这样所有的访问都被导向根域名了。</p>
+		
 
 <div class="sharing">
 </div>
