@@ -1,0 +1,215 @@
+﻿<!DOCTYPE html>
+<!--[if IE 8 ]><html class="ie ie8" lang="zh"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!-->
+<html lang="zh">
+<!--<![endif]-->
+	<head>
+            <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+        <meta name="author" content="毕勤">
+
+
+        <link rel="icon" href="../favicon.png" type="image/x-icon" />
+
+        <title>LifeTyper - How to setup your own dero web wallet</title>
+
+            <link href="/atom.xml" type="application/atom+xml" rel="alternate" title="LifeTyper Full Atom Feed" />
+
+        <!-- CSS -->
+        <link rel="stylesheet" href="../theme/css/style.css">
+
+        <!-- Custom CSS -->
+        	<link rel="stylesheet" href="../theme/css/colors/blue.css" id="colors">
+
+        <!-- Code highlight color scheme -->
+            <link href="../theme/css/code_blocks/darkly.css" rel="stylesheet">
+
+
+        <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+
+
+
+
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="How to setup your own dero web wallet">
+    <meta property="og:url" content="posts/setup_dero_web_wallet.html">
+    <meta property="og:description" content="Dero nightly build has already support a very useful new funtion:Web Wallet.It&#39;s archived by using golang web assembly build,totally run in your browser.As mentioned by dero dev team, dero gui wallet will be abandoned, all resouce will focused on web wallet.">
+    <meta property="article:published_time" content="Monday, November 26, 2018">
+    <meta name="twitter:title" content="How to setup your own dero web wallet">
+    <meta name="twitter:description" content="Dero nightly build has already support a very useful new funtion:Web Wallet.It&#39;s archived by using golang web assembly build,totally run in your browser.As mentioned by dero dev team, dero gui wallet will be abandoned, all resouce will focused on web wallet.">
+    <meta name="description" content="Dero nightly build has already support a very useful new funtion:Web Wallet.It&#39;s archived by using golang web assembly build,totally run in your browser.As mentioned by dero dev team, dero gui wallet will be abandoned, all resouce will focused on web wallet.">
+    <meta name="twitter:image" content="">
+    <meta property="og:image" content="">
+
+	                <meta property="og:locale" content="">
+		<meta property="og:site_name" content="LifeTyper">
+
+	<meta property="og:type" content="article">
+	<meta property="article:author" content="">
+	<meta property="og:url" content="../posts/setup_dero_web_wallet.html">
+	<meta property="og:title" content="How to setup your own dero web wallet">
+	<meta property="og:description" content="">
+	   <meta property="og:image" content="../images/guilherme-toti.jpg">
+	<meta property="article:published_time" content="2018-11-26 10:55:00+08:00">
+	</head>
+	<body>
+		<header id="header">
+			<!-- Container -->
+			<div class="container">
+				<!-- Logo / Mobile Menu -->
+				<div class="five columns">
+					<div id="textlogo">
+						<h1><a href="../">LifeTyper</a></h1>
+					</div>
+				</div>
+						<!-- Navigation
+				================================================== -->
+				<div class="eleven columns">
+
+					<nav id="navigation" class="menu">
+						<ul id="responsive">
+
+							<li><a href="../">Home</a></li>
+
+
+						</ul>
+					</nav>
+				</div>
+			</div>
+			<!-- Container / End -->
+		</header>
+		<!-- Header / End -->
+
+		<!-- Breadcrumbs Container-->
+		<div id="content-wrapper">
+			<section id="titlebar">
+				<!-- Container -->
+				<div class="container">
+				<div class="thirteen columns">
+					<nav id="breadcrumbs">
+						<ul>
+							<li>You are here:</li>
+							<li><a href="../">Home</a></li>
+<li><a href="../category/misc.html">misc</a></li>
+<li>How to setup your own dero web wallet</li>
+						</ul>
+					</nav>
+				</div>
+				</div>
+				<!-- Container / End -->
+			</section>
+
+			<div class="container">
+	<div class="twelve alt columns">
+<article class="post" style="margin: 0; border: 0;">
+
+	<section class="post-content">
+
+		<header class="meta">
+			<h2><a href="../posts/setup_dero_web_wallet.html">How to setup your own dero web wallet</a></h2>
+			<ul>
+				<li>By <a href="../author/lifetyper.html">lifetyper</a></li>
+				<li>Mon 26 November 2018</li>
+			</ul>
+		</header>
+
+		<h1>The future for dero wallet</h1>
+<p>Dero nightly build has already support a very useful new funtion:Web Wallet.It's archived by using golang web assembly build,totally run in your browser.As mentioned by dero dev team, dero gui wallet will be abandoned, all resouce will focused on web wallet.</p>
+<p>Besides the official derowallet.io, you may want to setup your own web wallet, host on a server for public use or just run it locally.Here is  the step for set up your own dero web wallet.</p>
+<h2>Compile new version of dero daemon to support web wallet</h2>
+<p>To support web assembly funtion, you need to use minimum Golang version 1.11.1 for this  build, old version will not work.</p>
+<p>git clone the code from dero offcial git repo <a href="https://git.dero.io/DeroProject/derosuite_webwallet">https://git.dero.io/DeroProject/derosuite_webwallet</a>. You'd better move the code to your Gopath source folder, the source path for me is </p>
+<div class="highlight"><pre><span></span>~/go/src/github.com/deroproject/derosuite
+</pre></div>
+
+
+<p>Then build it with command:</p>
+<div class="highlight"><pre><span></span>go install github.com/deroproject/derosuite/cmd/...
+</pre></div>
+
+
+<p>You shall find binary file under $GOPATH/bin folder.</p>
+<p>If you want to deploy your web wallet to a linux web server but your building system is others, you can specify the GOOS and GOARCH for this build</p>
+<div class="highlight"><pre><span></span>GOOS=linux GOARH=amd64 go install github.com/deroproject/derosuite/cmd/...
+</pre></div>
+
+
+<h2>Compile web assembly file for web wallet</h2>
+<p>All core wallet function is implemented in the web wallet web assembly file, you can build it with command:</p>
+<div class="highlight"><pre><span></span>cd ~/go/src/github.com/deroproject/derosuite/
+GOOS=js GOARCH=wasm go build -o wallet.wasm cmd/webwallet/main.go
+</pre></div>
+
+
+<p>You will find a file named wallet.wasm where you excute this command.</p>
+<h2>Get the web root for web wallet</h2>
+<p>Simple git clone the web root from Get from <a href="https://git.dero.io/DeroProject/webroot">https://git.dero.io/DeroProject/webroot</a>, then move the wallet.wasm file we just compiled into the webroot/static/ folder.</p>
+<h2>Place the webroot folder to correct place</h2>
+<p>You need to place the webroot folder to the folder <strong>where you run the dero daemon</strong>,if we place it under ~/dero/ folder,  then we should start dero daemon from that folder.</p>
+<h2>Use the web wallet</h2>
+<p>After start the dero daemon from correct folder, you can visit http://127.0.0.1:20206/ to access the web wallet.</p>
+<h2>Host it to a public web server</h2>
+<p>In fact, host it to a public web server is almost the same as run a remote node, please read <a href="https://lifetyper.com/posts/run_remote_node_for_dero_wallet.html">my previous article</a> for the detailed guide.</p>
+<h2>My Dero Web Wallet</h2>
+<p>So, here is my public <a href="https://derowallet.com/">dero web wallet</a> you can use for free.No private data will be send to my server, since web wallet server works just like a remote node.</p>
+
+<div class="sharing">
+</div>
+<hr>
+
+	</section>
+	<div class="clearfix"></div>
+
+</article>
+
+	</div>
+
+	<!-- Sidebar -->
+	<div class="four columns">
+		<!-- About  -->
+		<div class="widget no-mg-top">
+			<h3 class="headline">About</h3><span class="line"></span><div class="clearfix"></div>
+			<p>没有分类，没有tag，机器早晚会读懂一切</p>
+		</div>
+
+		
+	</div>
+			</div>
+			<!-- Container / End -->
+		</div>
+		<!-- Content Wrapper / End -->
+
+		<div id="footer-bottom">
+			<!-- Container -->
+			<div class="container">
+				<div class="eight columns">&copy; All Rights Reserved |<a href="https://derowallet.com">DERO Web Wallet</a>| Blog powered by <a href="http://getpelican.com">Pelican</a></div>
+					<div class="eight columns">
+						<ul class="social-icons-footer">
+								<li>
+									<a href="https://twitter.com/lifetyper" class="tooltip top" title="twitter">
+										<i class="icon-twitter"></i>
+									</a>
+								</li>
+								<li>
+									<a href="https://github.com/lifetyper" class="tooltip top" title="github">
+										<i class="icon-github"></i>
+									</a>
+								</li>
+							<li><a href="../atom.xml" class="tooltip top" title="RSS"><i class="icon-rss"></i></a></li>
+						</ul>
+					</div>
+			</div>
+			<!-- Container / End -->
+		</div>
+		<!-- Footer Bottom / End -->
+
+	<!-- Javascripts -->
+	<script src="../theme/js/jquery.min.js"></script>
+	</body>
+</html>
