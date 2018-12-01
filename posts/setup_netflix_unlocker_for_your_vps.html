@@ -1,0 +1,231 @@
+﻿<!DOCTYPE html>
+<!--[if IE 8 ]><html class="ie ie8" lang="zh"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!-->
+<html lang="zh">
+<!--<![endif]-->
+	<head>
+            <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+        <meta name="author" content="毕勤">
+
+
+        <link rel="icon" href="../favicon.png" type="image/x-icon" />
+
+        <title>LifeTyper - 自制版的VPS Netflix IP解锁服务</title>
+
+            <link href="/atom.xml" type="application/atom+xml" rel="alternate" title="LifeTyper Full Atom Feed" />
+
+        <!-- CSS -->
+        <link rel="stylesheet" href="../theme/css/style.css">
+
+        <!-- Custom CSS -->
+        	<link rel="stylesheet" href="../theme/css/colors/blue.css" id="colors">
+
+        <!-- Code highlight color scheme -->
+            <link href="../theme/css/code_blocks/darkly.css" rel="stylesheet">
+
+
+        <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+
+
+
+
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="自制版的VPS Netflix IP解锁服务">
+    <meta property="og:url" content="posts/setup_netflix_unlocker_for_your_vps.html">
+    <meta property="og:description" content="翻墙也是有不同等级的，最基础的翻墙只是看某些网站，正常点的翻墙是看绝大部分网站，最高级的翻墙是看比没墙还多的网站？">
+    <meta property="article:published_time" content="Thursday, November 29, 2018">
+    <meta name="twitter:title" content="自制版的VPS Netflix IP解锁服务">
+    <meta name="twitter:description" content="翻墙也是有不同等级的，最基础的翻墙只是看某些网站，正常点的翻墙是看绝大部分网站，最高级的翻墙是看比没墙还多的网站？">
+    <meta name="description" content="翻墙也是有不同等级的，最基础的翻墙只是看某些网站，正常点的翻墙是看绝大部分网站，最高级的翻墙是看比没墙还多的网站？">
+    <meta name="twitter:image" content="">
+    <meta property="og:image" content="">
+
+	                <meta property="og:locale" content="">
+		<meta property="og:site_name" content="LifeTyper">
+
+	<meta property="og:type" content="article">
+	<meta property="article:author" content="">
+	<meta property="og:url" content="../posts/setup_netflix_unlocker_for_your_vps.html">
+	<meta property="og:title" content="自制版的VPS Netflix IP解锁服务">
+	<meta property="og:description" content="">
+	   <meta property="og:image" content="../images/guilherme-toti.jpg">
+	<meta property="article:published_time" content="2018-11-29 22:00:00+08:00">
+	</head>
+	<body>
+		<header id="header">
+			<!-- Container -->
+			<div class="container">
+				<!-- Logo / Mobile Menu -->
+				<div class="five columns">
+					<div id="textlogo">
+						<h1><a href="../">LifeTyper</a></h1>
+					</div>
+				</div>
+						<!-- Navigation
+				================================================== -->
+				<div class="eleven columns">
+
+					<nav id="navigation" class="menu">
+						<ul id="responsive">
+
+							<li><a href="../">Home</a></li>
+
+
+						</ul>
+					</nav>
+				</div>
+			</div>
+			<!-- Container / End -->
+		</header>
+		<!-- Header / End -->
+
+		<!-- Breadcrumbs Container-->
+		<div id="content-wrapper">
+			<section id="titlebar">
+				<!-- Container -->
+				<div class="container">
+				<div class="thirteen columns">
+					<nav id="breadcrumbs">
+						<ul>
+							<li>You are here:</li>
+							<li><a href="../">Home</a></li>
+<li><a href="../category/misc.html">misc</a></li>
+<li>自制版的VPS Netflix IP解锁服务</li>
+						</ul>
+					</nav>
+				</div>
+				</div>
+				<!-- Container / End -->
+			</section>
+
+			<div class="container">
+	<div class="twelve alt columns">
+<article class="post" style="margin: 0; border: 0;">
+
+	<section class="post-content">
+
+		<header class="meta">
+			<h2><a href="../posts/setup_netflix_unlocker_for_your_vps.html">自制版的VPS Netflix IP解锁服务</a></h2>
+			<ul>
+				<li>By <a href="../author/bi-qin.html">毕勤</a></li>
+				<li>Thu 29 November 2018</li>
+			</ul>
+		</header>
+
+		<h2>Netflix的墙</h2>
+<p>翻墙也是有不同等级的，最基础的翻墙只是看某些网站，正常点的翻墙是看绝大部分网站，最高级的翻墙是看比没墙还多的网站？
+还有这种事？当然有，Netflix就是个典型代表，基于严苛的版权考虑，Netflix会根据你的IP决定你能观看哪个区的内容，而且会严厉封锁所有可能是代理和VPN服务的IP，这就是Netflix的墙。
+无论你是身在中国这种Netflix根本不对它开放的国家(全世界也没几个了)，还是身在自由世界但是想看别的区的内容（以日本区的独有资源和美区的丰富资源尤甚），都需要找合适的VPS来做代理绕过这个墙。而这类VPS可以说不算少，但也不是那么好找，基本上大厂的VPS都是在Netflix封禁列表的，吾等只有不断的寻找新的VPS。</p>
+<h2>更现实的需求</h2>
+<p>一个更现实的问题是，你有两个VPS，一个速度很快但不能看Netflix，另一个速度比较差但可以看Netflix。正常情况下你只能视不同时候的需求，在两个VPS代理之前来回切换，极其麻烦。</p>
+<p>这两天刚好发现某VPS服务商提供了一种Netflix IP解锁服务，也就是说可以让你不能访问Netflix的VPS解锁Netflix某个区的访问权限。刚开始我以为这商家是有多高的权限，能让数据中心IP变成家庭宽带IP不成？后来问了一下需要提供VPS的root密码，让商家来设置才可以。</p>
+<p>大概也就猜到是如何实现的了，自己DIY一下试了确实可以，在此分享给各位。</p>
+<h2>前提条件</h2>
+<ul>
+<li>一台能访问Netflix的VPS A</li>
+<li>一台不能访问Netflix的VPS B</li>
+<li>A和B之间连通性没有问题</li>
+</ul>
+<p>我们假定A到你本地的速度不是很理想，但B却很快，你希望Netflix的流量从B，经过A代理去访问Netflix服务器。基本的思路就是在A上架设Sniproxy反代，而B上进行DNS劫持，把Netflix的域名劫持到A服务器上，经过A的代理访问Netflix；但其他域名不受影响，继续走B本身的路由。</p>
+<h2>设置A上的Sniproxy</h2>
+<p>废话就不多说了，先安装sniproxy：</p>
+<div class="highlight"><pre><span></span>apt-get install netflix
+</pre></div>
+
+
+<p>便捷Sniproxy配置文件：</p>
+<div class="highlight"><pre><span></span>vi /etc/sniproxy.conf
+</pre></div>
+
+
+<p>内容如下：</p>
+<div class="highlight"><pre><span></span>user nobody
+resolver {
+    nameserver 8.8.8.8
+    mode ipv4_only
+}
+
+listen 0.0.0.0:443 {
+proto tls
+table https_hosts
+access_log {
+  filename /var/log/https_access.log
+  priority notice
+ }
+}
+
+table https_hosts {
+    (.*.|)netflix.com$ *
+    (.*.|)netflix.net$ *
+    (.*.|)nflxext.com$ *
+    (.*.|)nflxso.net$ *
+    (.*.|)nflximg.net$ *
+    (.*.|)nflxvideo.net$ *
+}
+</pre></div>
+
+
+<p>这里的Nameserver可以继续保留8.8.8.8，也可以换成任何你喜欢的墙外DNS服务器。
+因为netflix的所有服务都是基于</p>
+
+<div class="sharing">
+</div>
+<hr>
+
+	</section>
+	<div class="clearfix"></div>
+
+</article>
+
+	</div>
+
+	<!-- Sidebar -->
+	<div class="four columns">
+		<!-- About  -->
+		<div class="widget no-mg-top">
+			<h3 class="headline">About</h3><span class="line"></span><div class="clearfix"></div>
+			<p>没有分类，没有tag，机器早晚会读懂一切</p>
+		</div>
+
+		
+	</div>
+			</div>
+			<!-- Container / End -->
+		</div>
+		<!-- Content Wrapper / End -->
+
+		<div id="footer-bottom">
+			<!-- Container -->
+			<div class="container">
+				<div class="eight columns">&copy; All Rights Reserved |<a href="https://derowallet.com">DERO Web Wallet</a>| Blog powered by <a href="http://getpelican.com">Pelican</a></div>
+					<div class="eight columns">
+						<ul class="social-icons-footer">
+								<li>
+									<a href="https://twitter.com/lifetyper" class="tooltip top" title="twitter">
+										<i class="icon-twitter"></i>
+									</a>
+								</li>
+								<li>
+									<a href="https://github.com/lifetyper" class="tooltip top" title="github">
+										<i class="icon-github"></i>
+									</a>
+								</li>
+							<li><a href="../atom.xml" class="tooltip top" title="RSS"><i class="icon-rss"></i></a></li>
+						</ul>
+					</div>
+			</div>
+			<!-- Container / End -->
+		</div>
+		<!-- Footer Bottom / End -->
+
+	<!-- Javascripts -->
+	<script src="../theme/js/jquery.min.js"></script>
+	</body>
+</html>

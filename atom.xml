@@ -1,5 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>LifeTyper</title><link href="/" rel="alternate"></link><link href="atom.xml" rel="self"></link><id>/</id><updated>2018-11-26T10:55:00+08:00</updated><entry><title>How to setup your own dero web wallet</title><link href="posts/setup_dero_web_wallet.html" rel="alternate"></link><published>2018-11-26T10:55:00+08:00</published><updated>2018-11-26T10:55:00+08:00</updated><author><name>lifetyper</name></author><id>tag:None,2018-11-26:posts/setup_dero_web_wallet.html</id><summary type="html">&lt;p&gt;Dero nightly build has already support a very useful new funtion:Web Wallet.It's archived by using golang web assembly build,totally run in your browser.As mentioned by dero dev team, dero gui wallet will be abandoned, all resouce will focused on web wallet.&lt;/p&gt;</summary><content type="html">&lt;h1&gt;The future for dero wallet&lt;/h1&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>LifeTyper</title><link href="/" rel="alternate"></link><link href="atom.xml" rel="self"></link><id>/</id><updated>2018-11-29T22:00:00+08:00</updated><entry><title>自制版的VPS Netflix IP解锁服务</title><link href="posts/setup_netflix_unlocker_for_your_vps.html" rel="alternate"></link><published>2018-11-29T22:00:00+08:00</published><updated>2018-11-29T22:00:00+08:00</updated><author><name>毕勤</name></author><id>tag:None,2018-11-29:posts/setup_netflix_unlocker_for_your_vps.html</id><summary type="html">&lt;p&gt;翻墙也是有不同等级的，最基础的翻墙只是看某些网站，正常点的翻墙是看绝大部分网站，最高级的翻墙是看比没墙还多的网站？&lt;/p&gt;</summary><content type="html">&lt;h2&gt;Netflix的墙&lt;/h2&gt;
+&lt;p&gt;翻墙也是有不同等级的，最基础的翻墙只是看某些网站，正常点的翻墙是看绝大部分网站，最高级的翻墙是看比没墙还多的网站？
+还有这种事？当然有，Netflix就是个典型代表，基于严苛的版权考虑，Netflix会根据你的IP决定你能观看哪个区的内容，而且会严厉封锁所有可能是代理和VPN服务的IP，这就是Netflix的墙。
+无论你是身在中国这种Netflix根本不对它开放的国家(全世界也没几个了)，还是身在自由世界但是想看别的区的内容（以日本区的独有资源和美区的丰富资源尤甚），都需要找合适的VPS来做代理绕过这个墙。而这类VPS可以说不算少，但也不是那么好找，基本上大厂的VPS都是在Netflix封禁列表的，吾等只有不断的寻找新的VPS。&lt;/p&gt;
+&lt;h2&gt;更现实的需求&lt;/h2&gt;
+&lt;p&gt;一个更现实的问题是，你有两个VPS，一个速度很快但不能看Netflix，另一个速度比较差但可以看Netflix。正常情况下你只能视不同时候的需求，在两个VPS代理之前来回切换，极其麻烦。&lt;/p&gt;
+&lt;p&gt;这两天刚好发现某VPS服务商提供了一种Netflix IP解锁服务，也就是说可以让你不能访问Netflix的VPS解锁Netflix某个区的访问权限。刚开始我以为这商家是有多高的权限，能让数据中心IP变成家庭宽带IP不成？后来问了一下需要提供VPS的root密码，让商家来设置才可以。&lt;/p&gt;
+&lt;p&gt;大概也就猜到是如何实现的了，自己DIY一下试了确实可以，在此分享给各位。&lt;/p&gt;
+&lt;h2&gt;前提条件&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;一台能访问Netflix的VPS A&lt;/li&gt;
+&lt;li&gt;一台不能访问Netflix的VPS B&lt;/li&gt;
+&lt;li&gt;A和B之间连通性没有问题&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;我们假定A到你本地的速度不是很理想，但B却很快，你希望Netflix的流量从B，经过A代理去访问Netflix服务器。基本的思路就是在A上架设Sniproxy反代，而B上进行DNS劫持，把Netflix的域名劫持到A服务器上，经过A的代理访问Netflix；但其他域名不受影响，继续走B本身的路由。&lt;/p&gt;
+&lt;h2&gt;设置A上的Sniproxy&lt;/h2&gt;
+&lt;p&gt;废话就不多说了，先安装sniproxy：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;apt-get install netflix
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;便捷Sniproxy配置文件：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;vi /etc/sniproxy.conf
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;内容如下：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;user nobody
+resolver {
+    nameserver 8.8.8.8
+    mode ipv4_only
+}
+
+listen 0.0.0.0:443 {
+proto tls
+table https_hosts
+access_log {
+  filename /var/log/https_access.log
+  priority notice
+ }
+}
+
+table https_hosts {
+    (.*.|)netflix.com$ *
+    (.*.|)netflix.net$ *
+    (.*.|)nflxext.com$ *
+    (.*.|)nflxso.net$ *
+    (.*.|)nflximg.net$ *
+    (.*.|)nflxvideo.net$ *
+}
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这里的Nameserver可以继续保留8.8.8.8，也可以换成任何你喜欢的墙外DNS服务器。
+因为netflix的所有服务都是基于&lt;/p&gt;</content></entry><entry><title>How to setup your own dero web wallet</title><link href="posts/setup_dero_web_wallet.html" rel="alternate"></link><published>2018-11-26T10:55:00+08:00</published><updated>2018-11-26T10:55:00+08:00</updated><author><name>lifetyper</name></author><id>tag:None,2018-11-26:posts/setup_dero_web_wallet.html</id><summary type="html">&lt;p&gt;Dero nightly build has already support a very useful new funtion:Web Wallet.It's archived by using golang web assembly build,totally run in your browser.As mentioned by dero dev team, dero gui wallet will be abandoned, all resouce will focused on web wallet.&lt;/p&gt;</summary><content type="html">&lt;h1&gt;The future for dero wallet&lt;/h1&gt;
 &lt;p&gt;Dero nightly build has already support a very useful new funtion:Web Wallet.It's archived by using golang web assembly build,totally run in your browser.As mentioned by dero dev team, dero gui wallet will be abandoned, all resouce will focused on web wallet.&lt;/p&gt;
 &lt;p&gt;Besides the official derowallet.io, you may want to setup your own web wallet, host on a server for public use or just run it locally.Here is  the step for set up your own dero web wallet.&lt;/p&gt;
 &lt;h2&gt;Compile new version of dero daemon to support web wallet&lt;/h2&gt;
