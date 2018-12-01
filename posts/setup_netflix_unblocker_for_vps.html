@@ -1,0 +1,333 @@
+﻿<!DOCTYPE html>
+<!--[if IE 8 ]><html class="ie ie8" lang="zh"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!-->
+<html lang="zh">
+<!--<![endif]-->
+	<head>
+            <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+        <meta name="author" content="毕勤">
+
+
+        <link rel="icon" href="../favicon.png" type="image/x-icon" />
+
+        <title>LifeTyper - VPS的Netflix IP解锁服务自制版</title>
+
+            <link href="/atom.xml" type="application/atom+xml" rel="alternate" title="LifeTyper Full Atom Feed" />
+
+        <!-- CSS -->
+        <link rel="stylesheet" href="../theme/css/style.css">
+
+        <!-- Custom CSS -->
+        	<link rel="stylesheet" href="../theme/css/colors/blue.css" id="colors">
+
+        <!-- Code highlight color scheme -->
+            <link href="../theme/css/code_blocks/darkly.css" rel="stylesheet">
+
+
+        <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+
+
+
+
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="VPS的Netflix IP解锁服务自制版">
+    <meta property="og:url" content="posts/setup_netflix_unblocker_for_vps.html">
+    <meta property="og:description" content="最近已经基本上把看片的平台转移到Netflix了，确实节省了很多下片找片的时间，而且，不考虑防火墙和代理的问题下，这好歹是正版的付费看片。鉴于中国的现状，看Netflix翻墙是必须的，而且还挑梯子，Netflix基本上把大厂的IP都给列入封锁列表了，指望用Google Cloud搭酸酸乳看Netflix是个比较遥远的梦想。">
+    <meta property="article:published_time" content="Saturday, December 01, 2018">
+    <meta name="twitter:title" content="VPS的Netflix IP解锁服务自制版">
+    <meta name="twitter:description" content="最近已经基本上把看片的平台转移到Netflix了，确实节省了很多下片找片的时间，而且，不考虑防火墙和代理的问题下，这好歹是正版的付费看片。鉴于中国的现状，看Netflix翻墙是必须的，而且还挑梯子，Netflix基本上把大厂的IP都给列入封锁列表了，指望用Google Cloud搭酸酸乳看Netflix是个比较遥远的梦想。">
+    <meta name="description" content="最近已经基本上把看片的平台转移到Netflix了，确实节省了很多下片找片的时间，而且，不考虑防火墙和代理的问题下，这好歹是正版的付费看片。鉴于中国的现状，看Netflix翻墙是必须的，而且还挑梯子，Netflix基本上把大厂的IP都给列入封锁列表了，指望用Google Cloud搭酸酸乳看Netflix是个比较遥远的梦想。">
+    <meta name="twitter:image" content="">
+    <meta property="og:image" content="">
+
+	                <meta property="og:locale" content="">
+		<meta property="og:site_name" content="LifeTyper">
+
+	<meta property="og:type" content="article">
+	<meta property="article:author" content="">
+	<meta property="og:url" content="../posts/setup_netflix_unblocker_for_vps.html">
+	<meta property="og:title" content="VPS的Netflix IP解锁服务自制版">
+	<meta property="og:description" content="">
+	   <meta property="og:image" content="../images/guilherme-toti.jpg">
+	<meta property="article:published_time" content="2018-12-01 23:55:00+08:00">
+	</head>
+	<body>
+		<header id="header">
+			<!-- Container -->
+			<div class="container">
+				<!-- Logo / Mobile Menu -->
+				<div class="five columns">
+					<div id="textlogo">
+						<h1><a href="../">LifeTyper</a></h1>
+					</div>
+				</div>
+						<!-- Navigation
+				================================================== -->
+				<div class="eleven columns">
+
+					<nav id="navigation" class="menu">
+						<ul id="responsive">
+
+							<li><a href="../">Home</a></li>
+
+
+						</ul>
+					</nav>
+				</div>
+			</div>
+			<!-- Container / End -->
+		</header>
+		<!-- Header / End -->
+
+		<!-- Breadcrumbs Container-->
+		<div id="content-wrapper">
+			<section id="titlebar">
+				<!-- Container -->
+				<div class="container">
+				<div class="thirteen columns">
+					<nav id="breadcrumbs">
+						<ul>
+							<li>You are here:</li>
+							<li><a href="../">Home</a></li>
+<li><a href="../category/misc.html">misc</a></li>
+<li>VPS的Netflix IP解锁服务自制版</li>
+						</ul>
+					</nav>
+				</div>
+				</div>
+				<!-- Container / End -->
+			</section>
+
+			<div class="container">
+	<div class="twelve alt columns">
+<article class="post" style="margin: 0; border: 0;">
+
+	<section class="post-content">
+
+		<header class="meta">
+			<h2><a href="../posts/setup_netflix_unblocker_for_vps.html">VPS的Netflix IP解锁服务自制版</a></h2>
+			<ul>
+				<li>By <a href="../author/bi-qin.html">毕勤</a></li>
+				<li>Sat 01 December 2018</li>
+			</ul>
+		</header>
+
+		<h2>需求的起源</h2>
+<p>最近已经基本上把看片的平台转移到Netflix了，确实节省了很多下片找片的时间，而且，不考虑防火墙和代理的问题下，这好歹是正版的付费看片。鉴于中国的现状，看Netflix翻墙是必须的，而且还挑梯子，Netflix基本上把大厂的IP都给列入封锁列表了，指望用Google Cloud搭酸酸乳看Netflix是个比较遥远的梦想。</p>
+<p>最近在某VPS服务商那里看到他们提供一个Netflix IP解锁服务，也就是说让那些本来不能播放Netflix的VPS，通过他们的服务可以播放指定区域的VPS。刚开始我脑子一抽还以为他们能把数据中心的IP变成家庭宽带的IP来骗过Netflix，后来闻了一下需要提供VPS的root密码来让他们设置，我一看这不就是个代理服务吗？</p>
+<p>其实这个也挺好的，因为在墙外的VPS之间，也就是数据中心之前其实速度还是很快的，基本上不用担心带宽不足延迟太大或者速度不稳定这些问题，即使经过一次转发，也不太影响使用体验。</p>
+<h2>否定的第一套方案</h2>
+<p>最开始的方案基本上就是靠着Google搜Netflix Proxy找到的，简单的说就是在可以看Netflix的VPS A上搭一个TCP反代，在VPS B上用dnsmasq之类的工具劫持DNS解析，把Netflix的相关域名都解析到VPS A上，这样VPS B就可以借用A的反代来访问Netflix了。
+废话不多少直接上代码，VPS A上安装sniproxy，配置如下：</p>
+<div class="highlight"><pre><span></span>user nobody
+resolver {
+    nameserver 8.8.8.8
+    mode ipv4_only
+}
+
+listen 0.0.0.0:443 {
+proto tls
+table https_hosts
+access_log {
+  filename /var/log/https_access.log
+  priority notice
+ }
+}
+
+table https_hosts {
+    (.*.|)netflix.com$ *
+    (.*.|)netflix.net$ *
+    (.*.|)nflxext.com$ *
+    (.*.|)nflxso.net$ *
+    (.*.|)nflximg.net$ *
+    (.*.|)nflxvideo.net$ *
+}
+</pre></div>
+
+
+<p>VPS B上安装dnsmasq，配置如下：</p>
+<div class="highlight"><pre><span></span>no-resolv
+no-poll
+server=1.1.1.1
+address=/netflix.com/18.215.191.191
+address=/nflxext.com/18.215.191.191
+address=/nflximg.net/18.215.191.191
+address=/nflxext.com/18.215.191.191
+address=/nflxso.net/18.215.191.191
+address=/nflxvideo.net/18.215.191.191
+</pre></div>
+
+
+<p>这种方案之所以被否定，是因为本质上依赖DNS劫持。你可以劫持VPS B本身的DNS解析，但你在VPS B上搭建梯子后，你并没有办法劫持连上这个梯子的用户的DNS。所以用户还是会经过VPS B的代理，但访问原始的Netflix服务器，最终导致播放失败。</p>
+<h2>新方案</h2>
+<p>其实我把问题想得太复杂了，这不就是普通的透明代理转发吗？shadowsocks(R)就可以实现啊，只不过两台墙外的VPS用加密代理实在是浪费CPU资源，普通的代理就足够了。所以我决定在VPS A用Tinyproxy架设https代理，然后在VPS B用redsocks转成透明代理然后转发。</p>
+<h3>架设Tinyproxy Https代理</h3>
+<p>其实很简单，直接apt-get install tinyproxy就可以了。设置上我也几乎没有修改，仅仅是添加了一个Allow语句，给VPS B的IP放行，否则是无法使用的。而且这样默认也屏蔽了其他IP的访问，避免了变成冤大头。
+最后的配置如下：</p>
+<div class="highlight"><pre><span></span>User tinyproxy
+Group tinyproxy
+Port 8888
+Timeout 600
+DefaultErrorFile &quot;/usr/share/tinyproxy/default.html&quot;
+StatFile &quot;/usr/share/tinyproxy/stats.html&quot;
+Logfile &quot;/var/log/tinyproxy/tinyproxy.log&quot;
+LogLevel Info
+PidFile &quot;/run/tinyproxy/tinyproxy.pid&quot;
+MaxClients 100
+MinSpareServers 5
+MaxSpareServers 20
+StartServers 10
+MaxRequestsPerChild 0
+Allow 127.0.0.1
+Allow YOUR_VPS_B_IP
+ViaProxyName &quot;tinyproxy&quot;
+ConnectPort 443
+ConnectPort 563
+</pre></div>
+
+
+<h3>架设Redsocks代理</h3>
+<p>也是直接apt-get install redsocks，配置中只需要设置好https代理的IP和端口就行，记得https代理的类型是填http-connect。</p>
+<div class="highlight"><pre><span></span><span class="nt">base</span> <span class="p">{</span>
+    <span class="err">//</span> <span class="n">debug</span><span class="p">:</span> <span class="n">connection</span> <span class="kc">progress</span> <span class="o">&amp;</span> <span class="n">client</span> <span class="n">list</span> <span class="kc">on</span> <span class="n">SIGUSR1</span>
+    <span class="n">log_debug</span> <span class="o">=</span> <span class="kc">off</span><span class="p">;</span>
+
+    <span class="err">//</span> <span class="n">info</span><span class="p">:</span> <span class="kc">start</span> <span class="n">and</span> <span class="kc">end</span> <span class="n">of</span> <span class="n">client</span> <span class="n">session</span>
+    <span class="n">log_info</span> <span class="o">=</span> <span class="kc">on</span><span class="p">;</span>
+
+    <span class="c">/* possible `log&#39; values are:</span>
+<span class="c">     *   stderr</span>
+<span class="c">     *   &quot;file:/path/to/file&quot;</span>
+<span class="c">     *   syslog:FACILITY  facility is any of &quot;daemon&quot;, &quot;local0&quot;...&quot;local7&quot;</span>
+<span class="c">     */</span>
+    <span class="err">log</span> <span class="err">=</span> <span class="err">&quot;</span><span class="n">syslog</span><span class="p">:</span><span class="n">daemon</span><span class="s2">&quot;;</span>
+
+<span class="s2">    // detach from console</span>
+<span class="s2">    daemon = on;</span>
+
+<span class="s2">    /* Change uid, gid and root directory, these options require root</span>
+<span class="s2">     * privilegies on startup.</span>
+<span class="s2">     * Note, your chroot may requre /etc/localtime if you write log to syslog.</span>
+<span class="s2">     * Log is opened before chroot &amp; uid changing.</span>
+<span class="s2">     */</span>
+<span class="s2">    user = redsocks;</span>
+<span class="s2">    group = redsocks;</span>
+<span class="s2">    // chroot = &quot;</span><span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">chroot</span><span class="s2">&quot;;</span>
+
+<span class="s2">    /* possible `redirector&#39; values are:</span>
+<span class="s2">     *   iptables   - for Linux</span>
+<span class="s2">     *   ipf        - for FreeBSD</span>
+<span class="s2">     *   pf         - for OpenBSD</span>
+<span class="s2">     *   generic    - some generic redirector that MAY work</span>
+<span class="s2">     */</span>
+<span class="s2">    redirector = iptables;</span>
+<span class="s2">}</span>
+
+<span class="s2">redsocks {</span>
+<span class="s2">    /* `local_ip&#39; defaults to 127.0.0.1 for security reasons,</span>
+<span class="s2">     * use 0.0.0.0 if you want to listen on every interface.</span>
+<span class="s2">     * `local_*&#39; are used as port to redirect to.</span>
+<span class="s2">     */</span>
+<span class="s2">    local_ip = 127.0.0.1;</span>
+<span class="s2">    local_port = 12345;</span>
+
+<span class="s2">    // `ip&#39; and `port&#39; are IP and tcp-port of proxy-server</span>
+<span class="s2">    // You can also use hostname instead of IP, only one (random)</span>
+<span class="s2">    // address of multihomed host will be used.</span>
+<span class="s2">    ip = YOUR_VPS_A_IP; </span>
+<span class="s2">    port = 8888;</span>
+
+
+<span class="s2">    // known types: socks4, socks5, http-connect, http-relay</span>
+<span class="s2">    type = http-connect;</span>
+
+<span class="s2">    // login = &quot;</span><span class="n">foobar</span><span class="s2">&quot;;</span>
+<span class="s2">    // password = &quot;</span><span class="n">baz</span><span class="err">&quot;</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>然后配置iptables，先建立一个REDSOCKS链:</p>
+<div class="highlight"><pre><span></span>iptables -t nat -N REDSOCKS
+</pre></div>
+
+
+<p>这里有两套思路进行转发，一套是找出Netflix所有的IP地址，然后添加到REDSOCKS链，例如：</p>
+<div class="highlight"><pre><span></span>iptables -t nat -A OUTPUT -d 198.38.0.0/16 -j REDSOCKS
+</pre></div>
+
+
+<p>但问题是Netflix使用了akamai的CDN服务器，IP地址范围是在太大了，我已经把Netflix整个<a href="https://ipinfo.io/AS2906">AS的地址</a>都添加了也还是会提示在使用proxy。</p>
+<p>干脆暴力点，直接把所有https流量都添加进去:</p>
+<div class="highlight"><pre><span></span>iptables -t nat -A OUTPUT -p tcp --dport 443 -j REDSOCKS
+</pre></div>
+
+
+<p>最后，转发到redsocks的透明代理端口：</p>
+<div class="highlight"><pre><span></span>iptables -t nat -A REDSOCKS -p tcp -j REDIRECT --to-ports 12345
+</pre></div>
+
+
+<p>最后记得用iptables-persistent之类的工具保存一下iptables规则，这样不论是从VPS B本机访问，还是透过VPS B上的代理，最后Netflix的HTTPS流量都会通过VPS A访问，而Netflix是全Https的，所以http部分我们不需要关心。</p>
+
+<div class="sharing">
+</div>
+<hr>
+
+	</section>
+	<div class="clearfix"></div>
+
+</article>
+
+	</div>
+
+	<!-- Sidebar -->
+	<div class="four columns">
+		<!-- About  -->
+		<div class="widget no-mg-top">
+			<h3 class="headline">About</h3><span class="line"></span><div class="clearfix"></div>
+			<p>没有分类，没有tag，机器早晚会读懂一切</p>
+		</div>
+
+		
+	</div>
+			</div>
+			<!-- Container / End -->
+		</div>
+		<!-- Content Wrapper / End -->
+
+		<div id="footer-bottom">
+			<!-- Container -->
+			<div class="container">
+				<div class="eight columns">&copy; All Rights Reserved |<a href="https://derowallet.com">DERO Web Wallet</a>| Blog powered by <a href="http://getpelican.com">Pelican</a></div>
+					<div class="eight columns">
+						<ul class="social-icons-footer">
+								<li>
+									<a href="https://twitter.com/lifetyper" class="tooltip top" title="twitter">
+										<i class="icon-twitter"></i>
+									</a>
+								</li>
+								<li>
+									<a href="https://github.com/lifetyper" class="tooltip top" title="github">
+										<i class="icon-github"></i>
+									</a>
+								</li>
+							<li><a href="../atom.xml" class="tooltip top" title="RSS"><i class="icon-rss"></i></a></li>
+						</ul>
+					</div>
+			</div>
+			<!-- Container / End -->
+		</div>
+		<!-- Footer Bottom / End -->
+
+	<!-- Javascripts -->
+	<script src="../theme/js/jquery.min.js"></script>
+	</body>
+</html>

@@ -1,31 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>LifeTyper</title><link href="/" rel="alternate"></link><link href="atom.xml" rel="self"></link><id>/</id><updated>2018-11-29T22:00:00+08:00</updated><entry><title>自制版的VPS Netflix IP解锁服务</title><link href="posts/setup_netflix_unlocker_for_your_vps.html" rel="alternate"></link><published>2018-11-29T22:00:00+08:00</published><updated>2018-11-29T22:00:00+08:00</updated><author><name>毕勤</name></author><id>tag:None,2018-11-29:posts/setup_netflix_unlocker_for_your_vps.html</id><summary type="html">&lt;p&gt;翻墙也是有不同等级的，最基础的翻墙只是看某些网站，正常点的翻墙是看绝大部分网站，最高级的翻墙是看比没墙还多的网站？&lt;/p&gt;</summary><content type="html">&lt;h2&gt;Netflix的墙&lt;/h2&gt;
-&lt;p&gt;翻墙也是有不同等级的，最基础的翻墙只是看某些网站，正常点的翻墙是看绝大部分网站，最高级的翻墙是看比没墙还多的网站？
-还有这种事？当然有，Netflix就是个典型代表，基于严苛的版权考虑，Netflix会根据你的IP决定你能观看哪个区的内容，而且会严厉封锁所有可能是代理和VPN服务的IP，这就是Netflix的墙。
-无论你是身在中国这种Netflix根本不对它开放的国家(全世界也没几个了)，还是身在自由世界但是想看别的区的内容（以日本区的独有资源和美区的丰富资源尤甚），都需要找合适的VPS来做代理绕过这个墙。而这类VPS可以说不算少，但也不是那么好找，基本上大厂的VPS都是在Netflix封禁列表的，吾等只有不断的寻找新的VPS。&lt;/p&gt;
-&lt;h2&gt;更现实的需求&lt;/h2&gt;
-&lt;p&gt;一个更现实的问题是，你有两个VPS，一个速度很快但不能看Netflix，另一个速度比较差但可以看Netflix。正常情况下你只能视不同时候的需求，在两个VPS代理之前来回切换，极其麻烦。&lt;/p&gt;
-&lt;p&gt;这两天刚好发现某VPS服务商提供了一种Netflix IP解锁服务，也就是说可以让你不能访问Netflix的VPS解锁Netflix某个区的访问权限。刚开始我以为这商家是有多高的权限，能让数据中心IP变成家庭宽带IP不成？后来问了一下需要提供VPS的root密码，让商家来设置才可以。&lt;/p&gt;
-&lt;p&gt;大概也就猜到是如何实现的了，自己DIY一下试了确实可以，在此分享给各位。&lt;/p&gt;
-&lt;h2&gt;前提条件&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;一台能访问Netflix的VPS A&lt;/li&gt;
-&lt;li&gt;一台不能访问Netflix的VPS B&lt;/li&gt;
-&lt;li&gt;A和B之间连通性没有问题&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;我们假定A到你本地的速度不是很理想，但B却很快，你希望Netflix的流量从B，经过A代理去访问Netflix服务器。基本的思路就是在A上架设Sniproxy反代，而B上进行DNS劫持，把Netflix的域名劫持到A服务器上，经过A的代理访问Netflix；但其他域名不受影响，继续走B本身的路由。&lt;/p&gt;
-&lt;h2&gt;设置A上的Sniproxy&lt;/h2&gt;
-&lt;p&gt;废话就不多说了，先安装sniproxy：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;apt-get install netflix
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;p&gt;便捷Sniproxy配置文件：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;vi /etc/sniproxy.conf
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;p&gt;内容如下：&lt;/p&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>LifeTyper</title><link href="/" rel="alternate"></link><link href="atom.xml" rel="self"></link><id>/</id><updated>2018-12-01T23:55:00+08:00</updated><entry><title>VPS的Netflix IP解锁服务自制版</title><link href="posts/setup_netflix_unblocker_for_vps.html" rel="alternate"></link><published>2018-12-01T23:55:00+08:00</published><updated>2018-12-01T23:55:00+08:00</updated><author><name>毕勤</name></author><id>tag:None,2018-12-01:posts/setup_netflix_unblocker_for_vps.html</id><summary type="html">&lt;p&gt;最近已经基本上把看片的平台转移到Netflix了，确实节省了很多下片找片的时间，而且，不考虑防火墙和代理的问题下，这好歹是正版的付费看片。鉴于中国的现状，看Netflix翻墙是必须的，而且还挑梯子，Netflix基本上把大厂的IP都给列入封锁列表了，指望用Google Cloud搭酸酸乳看Netflix是个比较遥远的梦想。&lt;/p&gt;</summary><content type="html">&lt;h2&gt;需求的起源&lt;/h2&gt;
+&lt;p&gt;最近已经基本上把看片的平台转移到Netflix了，确实节省了很多下片找片的时间，而且，不考虑防火墙和代理的问题下，这好歹是正版的付费看片。鉴于中国的现状，看Netflix翻墙是必须的，而且还挑梯子，Netflix基本上把大厂的IP都给列入封锁列表了，指望用Google Cloud搭酸酸乳看Netflix是个比较遥远的梦想。&lt;/p&gt;
+&lt;p&gt;最近在某VPS服务商那里看到他们提供一个Netflix IP解锁服务，也就是说让那些本来不能播放Netflix的VPS，通过他们的服务可以播放指定区域的VPS。刚开始我脑子一抽还以为他们能把数据中心的IP变成家庭宽带的IP来骗过Netflix，后来闻了一下需要提供VPS的root密码来让他们设置，我一看这不就是个代理服务吗？&lt;/p&gt;
+&lt;p&gt;其实这个也挺好的，因为在墙外的VPS之间，也就是数据中心之前其实速度还是很快的，基本上不用担心带宽不足延迟太大或者速度不稳定这些问题，即使经过一次转发，也不太影响使用体验。&lt;/p&gt;
+&lt;h2&gt;否定的第一套方案&lt;/h2&gt;
+&lt;p&gt;最开始的方案基本上就是靠着Google搜Netflix Proxy找到的，简单的说就是在可以看Netflix的VPS A上搭一个TCP反代，在VPS B上用dnsmasq之类的工具劫持DNS解析，把Netflix的相关域名都解析到VPS A上，这样VPS B就可以借用A的反代来访问Netflix了。
+废话不多少直接上代码，VPS A上安装sniproxy，配置如下：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;user nobody
 resolver {
     nameserver 8.8.8.8
@@ -52,8 +32,130 @@ table https_hosts {
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;这里的Nameserver可以继续保留8.8.8.8，也可以换成任何你喜欢的墙外DNS服务器。
-因为netflix的所有服务都是基于&lt;/p&gt;</content></entry><entry><title>How to setup your own dero web wallet</title><link href="posts/setup_dero_web_wallet.html" rel="alternate"></link><published>2018-11-26T10:55:00+08:00</published><updated>2018-11-26T10:55:00+08:00</updated><author><name>lifetyper</name></author><id>tag:None,2018-11-26:posts/setup_dero_web_wallet.html</id><summary type="html">&lt;p&gt;Dero nightly build has already support a very useful new funtion:Web Wallet.It's archived by using golang web assembly build,totally run in your browser.As mentioned by dero dev team, dero gui wallet will be abandoned, all resouce will focused on web wallet.&lt;/p&gt;</summary><content type="html">&lt;h1&gt;The future for dero wallet&lt;/h1&gt;
+&lt;p&gt;VPS B上安装dnsmasq，配置如下：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;no-resolv
+no-poll
+server=1.1.1.1
+address=/netflix.com/18.215.191.191
+address=/nflxext.com/18.215.191.191
+address=/nflximg.net/18.215.191.191
+address=/nflxext.com/18.215.191.191
+address=/nflxso.net/18.215.191.191
+address=/nflxvideo.net/18.215.191.191
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这种方案之所以被否定，是因为本质上依赖DNS劫持。你可以劫持VPS B本身的DNS解析，但你在VPS B上搭建梯子后，你并没有办法劫持连上这个梯子的用户的DNS。所以用户还是会经过VPS B的代理，但访问原始的Netflix服务器，最终导致播放失败。&lt;/p&gt;
+&lt;h2&gt;新方案&lt;/h2&gt;
+&lt;p&gt;其实我把问题想得太复杂了，这不就是普通的透明代理转发吗？shadowsocks(R)就可以实现啊，只不过两台墙外的VPS用加密代理实在是浪费CPU资源，普通的代理就足够了。所以我决定在VPS A用Tinyproxy架设https代理，然后在VPS B用redsocks转成透明代理然后转发。&lt;/p&gt;
+&lt;h3&gt;架设Tinyproxy Https代理&lt;/h3&gt;
+&lt;p&gt;其实很简单，直接apt-get install tinyproxy就可以了。设置上我也几乎没有修改，仅仅是添加了一个Allow语句，给VPS B的IP放行，否则是无法使用的。而且这样默认也屏蔽了其他IP的访问，避免了变成冤大头。
+最后的配置如下：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;User tinyproxy
+Group tinyproxy
+Port 8888
+Timeout 600
+DefaultErrorFile &amp;quot;/usr/share/tinyproxy/default.html&amp;quot;
+StatFile &amp;quot;/usr/share/tinyproxy/stats.html&amp;quot;
+Logfile &amp;quot;/var/log/tinyproxy/tinyproxy.log&amp;quot;
+LogLevel Info
+PidFile &amp;quot;/run/tinyproxy/tinyproxy.pid&amp;quot;
+MaxClients 100
+MinSpareServers 5
+MaxSpareServers 20
+StartServers 10
+MaxRequestsPerChild 0
+Allow 127.0.0.1
+Allow YOUR_VPS_B_IP
+ViaProxyName &amp;quot;tinyproxy&amp;quot;
+ConnectPort 443
+ConnectPort 563
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3&gt;架设Redsocks代理&lt;/h3&gt;
+&lt;p&gt;也是直接apt-get install redsocks，配置中只需要设置好https代理的IP和端口就行，记得https代理的类型是填http-connect。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nt"&gt;base&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="err"&gt;//&lt;/span&gt; &lt;span class="n"&gt;debug&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;connection&lt;/span&gt; &lt;span class="kc"&gt;progress&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="n"&gt;client&lt;/span&gt; &lt;span class="n"&gt;list&lt;/span&gt; &lt;span class="kc"&gt;on&lt;/span&gt; &lt;span class="n"&gt;SIGUSR1&lt;/span&gt;
+    &lt;span class="n"&gt;log_debug&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="kc"&gt;off&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+    &lt;span class="err"&gt;//&lt;/span&gt; &lt;span class="n"&gt;info&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="kc"&gt;start&lt;/span&gt; &lt;span class="n"&gt;and&lt;/span&gt; &lt;span class="kc"&gt;end&lt;/span&gt; &lt;span class="n"&gt;of&lt;/span&gt; &lt;span class="n"&gt;client&lt;/span&gt; &lt;span class="n"&gt;session&lt;/span&gt;
+    &lt;span class="n"&gt;log_info&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="kc"&gt;on&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+    &lt;span class="c"&gt;/* possible `log&amp;#39; values are:&lt;/span&gt;
+&lt;span class="c"&gt;     *   stderr&lt;/span&gt;
+&lt;span class="c"&gt;     *   &amp;quot;file:/path/to/file&amp;quot;&lt;/span&gt;
+&lt;span class="c"&gt;     *   syslog:FACILITY  facility is any of &amp;quot;daemon&amp;quot;, &amp;quot;local0&amp;quot;...&amp;quot;local7&amp;quot;&lt;/span&gt;
+&lt;span class="c"&gt;     */&lt;/span&gt;
+    &lt;span class="err"&gt;log&lt;/span&gt; &lt;span class="err"&gt;=&lt;/span&gt; &lt;span class="err"&gt;&amp;quot;&lt;/span&gt;&lt;span class="n"&gt;syslog&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="n"&gt;daemon&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;;&lt;/span&gt;
+
+&lt;span class="s2"&gt;    // detach from console&lt;/span&gt;
+&lt;span class="s2"&gt;    daemon = on;&lt;/span&gt;
+
+&lt;span class="s2"&gt;    /* Change uid, gid and root directory, these options require root&lt;/span&gt;
+&lt;span class="s2"&gt;     * privilegies on startup.&lt;/span&gt;
+&lt;span class="s2"&gt;     * Note, your chroot may requre /etc/localtime if you write log to syslog.&lt;/span&gt;
+&lt;span class="s2"&gt;     * Log is opened before chroot &amp;amp; uid changing.&lt;/span&gt;
+&lt;span class="s2"&gt;     */&lt;/span&gt;
+&lt;span class="s2"&gt;    user = redsocks;&lt;/span&gt;
+&lt;span class="s2"&gt;    group = redsocks;&lt;/span&gt;
+&lt;span class="s2"&gt;    // chroot = &amp;quot;&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;var&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;chroot&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;;&lt;/span&gt;
+
+&lt;span class="s2"&gt;    /* possible `redirector&amp;#39; values are:&lt;/span&gt;
+&lt;span class="s2"&gt;     *   iptables   - for Linux&lt;/span&gt;
+&lt;span class="s2"&gt;     *   ipf        - for FreeBSD&lt;/span&gt;
+&lt;span class="s2"&gt;     *   pf         - for OpenBSD&lt;/span&gt;
+&lt;span class="s2"&gt;     *   generic    - some generic redirector that MAY work&lt;/span&gt;
+&lt;span class="s2"&gt;     */&lt;/span&gt;
+&lt;span class="s2"&gt;    redirector = iptables;&lt;/span&gt;
+&lt;span class="s2"&gt;}&lt;/span&gt;
+
+&lt;span class="s2"&gt;redsocks {&lt;/span&gt;
+&lt;span class="s2"&gt;    /* `local_ip&amp;#39; defaults to 127.0.0.1 for security reasons,&lt;/span&gt;
+&lt;span class="s2"&gt;     * use 0.0.0.0 if you want to listen on every interface.&lt;/span&gt;
+&lt;span class="s2"&gt;     * `local_*&amp;#39; are used as port to redirect to.&lt;/span&gt;
+&lt;span class="s2"&gt;     */&lt;/span&gt;
+&lt;span class="s2"&gt;    local_ip = 127.0.0.1;&lt;/span&gt;
+&lt;span class="s2"&gt;    local_port = 12345;&lt;/span&gt;
+
+&lt;span class="s2"&gt;    // `ip&amp;#39; and `port&amp;#39; are IP and tcp-port of proxy-server&lt;/span&gt;
+&lt;span class="s2"&gt;    // You can also use hostname instead of IP, only one (random)&lt;/span&gt;
+&lt;span class="s2"&gt;    // address of multihomed host will be used.&lt;/span&gt;
+&lt;span class="s2"&gt;    ip = YOUR_VPS_A_IP; &lt;/span&gt;
+&lt;span class="s2"&gt;    port = 8888;&lt;/span&gt;
+
+
+&lt;span class="s2"&gt;    // known types: socks4, socks5, http-connect, http-relay&lt;/span&gt;
+&lt;span class="s2"&gt;    type = http-connect;&lt;/span&gt;
+
+&lt;span class="s2"&gt;    // login = &amp;quot;&lt;/span&gt;&lt;span class="n"&gt;foobar&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;;&lt;/span&gt;
+&lt;span class="s2"&gt;    // password = &amp;quot;&lt;/span&gt;&lt;span class="n"&gt;baz&lt;/span&gt;&lt;span class="err"&gt;&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;然后配置iptables，先建立一个REDSOCKS链:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;iptables -t nat -N REDSOCKS
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这里有两套思路进行转发，一套是找出Netflix所有的IP地址，然后添加到REDSOCKS链，例如：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;iptables -t nat -A OUTPUT -d 198.38.0.0/16 -j REDSOCKS
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;但问题是Netflix使用了akamai的CDN服务器，IP地址范围是在太大了，我已经把Netflix整个&lt;a href="https://ipinfo.io/AS2906"&gt;AS的地址&lt;/a&gt;都添加了也还是会提示在使用proxy。&lt;/p&gt;
+&lt;p&gt;干脆暴力点，直接把所有https流量都添加进去:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;iptables -t nat -A OUTPUT -p tcp --dport 443 -j REDSOCKS
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;最后，转发到redsocks的透明代理端口：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;iptables -t nat -A REDSOCKS -p tcp -j REDIRECT --to-ports 12345
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;最后记得用iptables-persistent之类的工具保存一下iptables规则，这样不论是从VPS B本机访问，还是透过VPS B上的代理，最后Netflix的HTTPS流量都会通过VPS A访问，而Netflix是全Https的，所以http部分我们不需要关心。&lt;/p&gt;</content></entry><entry><title>How to setup your own dero web wallet</title><link href="posts/setup_dero_web_wallet.html" rel="alternate"></link><published>2018-11-26T10:55:00+08:00</published><updated>2018-11-26T10:55:00+08:00</updated><author><name>lifetyper</name></author><id>tag:None,2018-11-26:posts/setup_dero_web_wallet.html</id><summary type="html">&lt;p&gt;Dero nightly build has already support a very useful new funtion:Web Wallet.It's archived by using golang web assembly build,totally run in your browser.As mentioned by dero dev team, dero gui wallet will be abandoned, all resouce will focused on web wallet.&lt;/p&gt;</summary><content type="html">&lt;h1&gt;The future for dero wallet&lt;/h1&gt;
 &lt;p&gt;Dero nightly build has already support a very useful new funtion:Web Wallet.It's archived by using golang web assembly build,totally run in your browser.As mentioned by dero dev team, dero gui wallet will be abandoned, all resouce will focused on web wallet.&lt;/p&gt;
 &lt;p&gt;Besides the official derowallet.io, you may want to setup your own web wallet, host on a server for public use or just run it locally.Here is  the step for set up your own dero web wallet.&lt;/p&gt;
 &lt;h2&gt;Compile new version of dero daemon to support web wallet&lt;/h2&gt;
