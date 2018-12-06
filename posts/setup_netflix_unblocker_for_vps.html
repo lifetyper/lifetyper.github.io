@@ -276,6 +276,26 @@ ConnectPort 563
 
 
 <p>最后记得用iptables-persistent之类的工具保存一下iptables规则，这样不论是从VPS B本机访问，还是透过VPS B上的代理，最后Netflix的HTTPS流量都会通过VPS A访问，而Netflix是全Https的，所以http部分我们不需要关心。</p>
+<h2>更小的IP范围</h2>
+<p>全部转发可能还是太暴力了，简单一点的做法是转发Netflix所有的IP和AWS所有的IP(因为当前Netflix有很多服务是架设在AWS上的)。</p>
+<p>Netflix的IP可以在<a href="https://ipinfo.io/AS2906">这里</a>查到，而AWS的IP可以在<a href="https://ipinfo.io/AS2906">这里</a>看到，然后把这些IP范围分别添加到两个IPSET中，我把它们分别命名为aws和netflix。</p>
+<div class="highlight"><pre><span></span>ipset create aws hash:net
+ipset create netflix hash:net
+</pre></div>
+
+
+<p>怎么转成命令我就懒得写了，<a href="https://www.lifetyper.com/files/ipset.sh">这里</a>有现成的脚本。</p>
+<p>然后，把这两个IPSET里IP的443端口目标流量全部转发到REDSOCKS的透明代理上。</p>
+<div class="highlight"><pre><span></span>iptables -t nat -A PREROUTING -p tcp --dport 443 -m set --match-set aws dst -j REDIRECT --to-ports 12345
+iptables -t nat -A PREROUTING -p tcp --dport 443 -m set --match-set netflix dst -j REDIRECT --to-ports 12345
+iptables -t nat -A OUTPUT -p tcp --dport 443 -m set --match-set aws dst -j REDIRECT --to-ports 12345
+iptables -t nat -A OUTPUT -p tcp --dport 443 -m set --match-set netflix dst -j REDIRECT --to-ports 12345
+</pre></div>
+
+
+<p>可能的问题：
+<em> 你的代理服务器本身就是AWS服务器，这个就比较尴尬了，自己添加一个排除规则吧，其实AWS的服务器就算能看Netflix也是暂时的，早晚被封。
+</em> 重启后ipset丢失，这是个问题，我目前也不知道有什么更优雅的方式来解决，简单点可以在启动项里重写ipset。</p>
 
 <div class="sharing">
 </div>

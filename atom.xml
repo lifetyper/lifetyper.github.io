@@ -155,7 +155,27 @@ ConnectPort 563
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;最后记得用iptables-persistent之类的工具保存一下iptables规则，这样不论是从VPS B本机访问，还是透过VPS B上的代理，最后Netflix的HTTPS流量都会通过VPS A访问，而Netflix是全Https的，所以http部分我们不需要关心。&lt;/p&gt;</content></entry><entry><title>How to setup your own dero web wallet</title><link href="posts/setup_dero_web_wallet.html" rel="alternate"></link><published>2018-11-26T10:55:00+08:00</published><updated>2018-11-26T10:55:00+08:00</updated><author><name>lifetyper</name></author><id>tag:None,2018-11-26:posts/setup_dero_web_wallet.html</id><summary type="html">&lt;p&gt;Dero nightly build has already support a very useful new funtion:Web Wallet.It's archived by using golang web assembly build,totally run in your browser.As mentioned by dero dev team, dero gui wallet will be abandoned, all resouce will focused on web wallet.&lt;/p&gt;</summary><content type="html">&lt;h1&gt;The future for dero wallet&lt;/h1&gt;
+&lt;p&gt;最后记得用iptables-persistent之类的工具保存一下iptables规则，这样不论是从VPS B本机访问，还是透过VPS B上的代理，最后Netflix的HTTPS流量都会通过VPS A访问，而Netflix是全Https的，所以http部分我们不需要关心。&lt;/p&gt;
+&lt;h2&gt;更小的IP范围&lt;/h2&gt;
+&lt;p&gt;全部转发可能还是太暴力了，简单一点的做法是转发Netflix所有的IP和AWS所有的IP(因为当前Netflix有很多服务是架设在AWS上的)。&lt;/p&gt;
+&lt;p&gt;Netflix的IP可以在&lt;a href="https://ipinfo.io/AS2906"&gt;这里&lt;/a&gt;查到，而AWS的IP可以在&lt;a href="https://ipinfo.io/AS2906"&gt;这里&lt;/a&gt;看到，然后把这些IP范围分别添加到两个IPSET中，我把它们分别命名为aws和netflix。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;ipset create aws hash:net
+ipset create netflix hash:net
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;怎么转成命令我就懒得写了，&lt;a href="https://www.lifetyper.com/files/ipset.sh"&gt;这里&lt;/a&gt;有现成的脚本。&lt;/p&gt;
+&lt;p&gt;然后，把这两个IPSET里IP的443端口目标流量全部转发到REDSOCKS的透明代理上。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;iptables -t nat -A PREROUTING -p tcp --dport 443 -m set --match-set aws dst -j REDIRECT --to-ports 12345
+iptables -t nat -A PREROUTING -p tcp --dport 443 -m set --match-set netflix dst -j REDIRECT --to-ports 12345
+iptables -t nat -A OUTPUT -p tcp --dport 443 -m set --match-set aws dst -j REDIRECT --to-ports 12345
+iptables -t nat -A OUTPUT -p tcp --dport 443 -m set --match-set netflix dst -j REDIRECT --to-ports 12345
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;可能的问题：
+&lt;em&gt; 你的代理服务器本身就是AWS服务器，这个就比较尴尬了，自己添加一个排除规则吧，其实AWS的服务器就算能看Netflix也是暂时的，早晚被封。
+&lt;/em&gt; 重启后ipset丢失，这是个问题，我目前也不知道有什么更优雅的方式来解决，简单点可以在启动项里重写ipset。&lt;/p&gt;</content></entry><entry><title>How to setup your own dero web wallet</title><link href="posts/setup_dero_web_wallet.html" rel="alternate"></link><published>2018-11-26T10:55:00+08:00</published><updated>2018-11-26T10:55:00+08:00</updated><author><name>lifetyper</name></author><id>tag:None,2018-11-26:posts/setup_dero_web_wallet.html</id><summary type="html">&lt;p&gt;Dero nightly build has already support a very useful new funtion:Web Wallet.It's archived by using golang web assembly build,totally run in your browser.As mentioned by dero dev team, dero gui wallet will be abandoned, all resouce will focused on web wallet.&lt;/p&gt;</summary><content type="html">&lt;h1&gt;The future for dero wallet&lt;/h1&gt;
 &lt;p&gt;Dero nightly build has already support a very useful new funtion:Web Wallet.It's archived by using golang web assembly build,totally run in your browser.As mentioned by dero dev team, dero gui wallet will be abandoned, all resouce will focused on web wallet.&lt;/p&gt;
 &lt;p&gt;Besides the official derowallet.io, you may want to setup your own web wallet, host on a server for public use or just run it locally.Here is  the step for set up your own dero web wallet.&lt;/p&gt;
 &lt;h2&gt;Compile new version of dero daemon to support web wallet&lt;/h2&gt;
