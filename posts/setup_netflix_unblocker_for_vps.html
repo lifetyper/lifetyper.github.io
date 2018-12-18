@@ -296,6 +296,16 @@ iptables -t nat -A OUTPUT -p tcp --dport 443 -m set --match-set netflix dst -j R
 <p>可能的问题：
 <em> 你的代理服务器本身就是AWS服务器，这个就比较尴尬了，自己添加一个排除规则吧，其实AWS的服务器就算能看Netflix也是暂时的，早晚被封。
 </em> 重启后ipset丢失，这是个问题，我目前也不知道有什么更优雅的方式来解决，简单点可以在启动项里重写ipset。</p>
+<h2>保存这些规则</h2>
+<div class="highlight"><pre><span></span>ipset save &gt; /etc/ipset.conf
+iptables-save  &gt; /etc/iptables.conf
+</pre></div>
+
+
+<p>然后在/etc/rc.local里写入：</p>
+<div class="highlight"><pre><span></span>ipset restore &lt; /etc/ipset.conf
+iptables-restore &lt; /etc/iptables.conf
+</pre></div>
 
 <div class="sharing">
 </div>

@@ -175,7 +175,17 @@ iptables -t nat -A OUTPUT -p tcp --dport 443 -m set --match-set netflix dst -j R
 
 &lt;p&gt;可能的问题：
 &lt;em&gt; 你的代理服务器本身就是AWS服务器，这个就比较尴尬了，自己添加一个排除规则吧，其实AWS的服务器就算能看Netflix也是暂时的，早晚被封。
-&lt;/em&gt; 重启后ipset丢失，这是个问题，我目前也不知道有什么更优雅的方式来解决，简单点可以在启动项里重写ipset。&lt;/p&gt;</content></entry><entry><title>How to setup your own dero web wallet</title><link href="posts/setup_dero_web_wallet.html" rel="alternate"></link><published>2018-11-26T10:55:00+08:00</published><updated>2018-11-26T10:55:00+08:00</updated><author><name>lifetyper</name></author><id>tag:None,2018-11-26:posts/setup_dero_web_wallet.html</id><summary type="html">&lt;p&gt;Dero nightly build has already support a very useful new funtion:Web Wallet.It's archived by using golang web assembly build,totally run in your browser.As mentioned by dero dev team, dero gui wallet will be abandoned, all resouce will focused on web wallet.&lt;/p&gt;</summary><content type="html">&lt;h1&gt;The future for dero wallet&lt;/h1&gt;
+&lt;/em&gt; 重启后ipset丢失，这是个问题，我目前也不知道有什么更优雅的方式来解决，简单点可以在启动项里重写ipset。&lt;/p&gt;
+&lt;h2&gt;保存这些规则&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;ipset save &amp;gt; /etc/ipset.conf
+iptables-save  &amp;gt; /etc/iptables.conf
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;然后在/etc/rc.local里写入：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;ipset restore &amp;lt; /etc/ipset.conf
+iptables-restore &amp;lt; /etc/iptables.conf
+&lt;/pre&gt;&lt;/div&gt;</content></entry><entry><title>How to setup your own dero web wallet</title><link href="posts/setup_dero_web_wallet.html" rel="alternate"></link><published>2018-11-26T10:55:00+08:00</published><updated>2018-11-26T10:55:00+08:00</updated><author><name>lifetyper</name></author><id>tag:None,2018-11-26:posts/setup_dero_web_wallet.html</id><summary type="html">&lt;p&gt;Dero nightly build has already support a very useful new funtion:Web Wallet.It's archived by using golang web assembly build,totally run in your browser.As mentioned by dero dev team, dero gui wallet will be abandoned, all resouce will focused on web wallet.&lt;/p&gt;</summary><content type="html">&lt;h1&gt;The future for dero wallet&lt;/h1&gt;
 &lt;p&gt;Dero nightly build has already support a very useful new funtion:Web Wallet.It's archived by using golang web assembly build,totally run in your browser.As mentioned by dero dev team, dero gui wallet will be abandoned, all resouce will focused on web wallet.&lt;/p&gt;
 &lt;p&gt;Besides the official derowallet.io, you may want to setup your own web wallet, host on a server for public use or just run it locally.Here is  the step for set up your own dero web wallet.&lt;/p&gt;
 &lt;h2&gt;Compile new version of dero daemon to support web wallet&lt;/h2&gt;
