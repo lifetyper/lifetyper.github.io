@@ -1,5 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>LifeTyper</title><link href="/" rel="alternate"></link><link href="atom.xml" rel="self"></link><id>/</id><updated>2018-12-01T23:55:00+08:00</updated><entry><title>VPS的Netflix IP解锁服务自制版</title><link href="posts/setup_netflix_unblocker_for_vps.html" rel="alternate"></link><published>2018-12-01T23:55:00+08:00</published><updated>2018-12-01T23:55:00+08:00</updated><author><name>毕勤</name></author><id>tag:None,2018-12-01:posts/setup_netflix_unblocker_for_vps.html</id><summary type="html">&lt;p&gt;最近已经基本上把看片的平台转移到Netflix了，确实节省了很多下片找片的时间，而且，不考虑防火墙和代理的问题下，这好歹是正版的付费看片。鉴于中国的现状，看Netflix翻墙是必须的，而且还挑梯子，Netflix基本上把大厂的IP都给列入封锁列表了，指望用Google Cloud搭酸酸乳看Netflix是个比较遥远的梦想。&lt;/p&gt;</summary><content type="html">&lt;h2&gt;需求的起源&lt;/h2&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>LifeTyper</title><link href="/" rel="alternate"></link><link href="atom.xml" rel="self"></link><id>/</id><updated>2018-12-19T15:55:00+08:00</updated><entry><title>使用rclone自动备份Google Photos到本地硬盘</title><link href="posts/use_rclone_to_backup_google_photos.html" rel="alternate"></link><published>2018-12-19T15:55:00+08:00</published><updated>2018-12-19T15:55:00+08:00</updated><author><name>毕勤</name></author><id>tag:None,2018-12-19:posts/use_rclone_to_backup_google_photos.html</id><summary type="html">&lt;p&gt;首先墙裂推荐一下Google Photos，基本上各个平台都能用，不需要原始画质的话不用考虑容量问题，可以随心所欲的备份所有照片，更好的是它的自动影集生成功能和从视频共裁剪gif图片的功能，经常能带来很多意想不到的惊喜。&lt;/p&gt;</summary><content type="html">&lt;p&gt;首先墙裂推荐一下Google Photos，基本上各个平台都能用，不需要原始画质的话不用考虑容量问题，可以随心所欲的备份所有照片，更好的是它的自动影集生成功能和从视频共裁剪gif图片的功能，经常能带来很多意想不到的惊喜。当然它也有一个问题：需要翻墙。&lt;/p&gt;
+&lt;p&gt;我倒不是担心哪天墙高到翻不出去的地步，但毕竟所有照片都在上面，觉得还是有必要在本地存一个备份以便随时查看，这样Google Photos就成了一个集散中心，本地成了最终的备份仓库。我有一台装了ubuntu server的deskmini，刚开始的想法是看看有没有Google Photos的linux客户端，后来发现更简单的方法是使用&lt;a href="https://rclone.org/"&gt;rclone&lt;/a&gt;这个全平台制霸的同步工具。&lt;/p&gt;
+&lt;h2&gt;安装&lt;/h2&gt;
+&lt;p&gt;安装过程非常简单，一条命令就搞定：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;curl https://rclone.org/install.sh | sudo bash
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;配置GoogleDrive账号&lt;/h2&gt;
+&lt;p&gt;基本的配置过程可以参考&lt;a href="https://rclone.org/drive/"&gt;这里&lt;/a&gt;，这里只说一下要点：
+&lt;em&gt; client id什么的其实都不用管，直接回车就可以了，最终是通过web auth来实现认证的，如果已经登录了Google 账号，全程不需要输入密码。
+&lt;/em&gt; 如果你是用过ssh链接ubuntu server配置，不要选择auto config模式，因为机器上并没有浏览器让你进行web auth,让rclone生成一个web地址，你自己打开这个地址后获得一个授权码，然后粘贴回去。
+&lt;em&gt; name那项随便填，但要记住，这就是以后你google drive根目录的别称了。
+&lt;/em&gt; 介于我只需要同步到本地，权限选择read only就可以了，以免误操作删除了文件夹。
+* 默认情况下Google Photos目录并不出现在Google Drive中，需要访问google drive的web设置，勾选“Create a Google Photos folder”这项，如果有必要，建议把出现后的Google Photo目录名称改成无空格的英文路径，否则中文路径带个空格挺烦人的。&lt;/p&gt;
+&lt;h2&gt;同步到本地&lt;/h2&gt;
+&lt;p&gt;一条命令就行了：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;rclone copy gdrive:GooglePhotos /SafeHub/GooglePhotos
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;gdrive就是刚才建立的Googledrive的账号名称，也就是刚才说的以后都是根目录别称的那个，后面的/SafeHub是我自己本机上的一个RAID1磁盘，根据你的情况选择本地路径即可。&lt;/p&gt;
+&lt;h2&gt;自动执行&lt;/h2&gt;
+&lt;p&gt;先找出配置文件的路径：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;rclone config file
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;然后运行crontab -e来添加一个cronjob，例如我希望他每天2：30分备份一次(已经下载的会自动跳过),就添加这样的一个cron job：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;30 2 * * * /usr/bin/rclone --config /root/.config/rclone/rclone.conf copy gdrive:GooglePhotos /SafeHub/GooglePhotos
+&lt;/pre&gt;&lt;/div&gt;</content></entry><entry><title>VPS的Netflix IP解锁服务自制版</title><link href="posts/setup_netflix_unblocker_for_vps.html" rel="alternate"></link><published>2018-12-01T23:55:00+08:00</published><updated>2018-12-01T23:55:00+08:00</updated><author><name>毕勤</name></author><id>tag:None,2018-12-01:posts/setup_netflix_unblocker_for_vps.html</id><summary type="html">&lt;p&gt;最近已经基本上把看片的平台转移到Netflix了，确实节省了很多下片找片的时间，而且，不考虑防火墙和代理的问题下，这好歹是正版的付费看片。鉴于中国的现状，看Netflix翻墙是必须的，而且还挑梯子，Netflix基本上把大厂的IP都给列入封锁列表了，指望用Google Cloud搭酸酸乳看Netflix是个比较遥远的梦想。&lt;/p&gt;</summary><content type="html">&lt;h2&gt;需求的起源&lt;/h2&gt;
 &lt;p&gt;最近已经基本上把看片的平台转移到Netflix了，确实节省了很多下片找片的时间，而且，不考虑防火墙和代理的问题下，这好歹是正版的付费看片。鉴于中国的现状，看Netflix翻墙是必须的，而且还挑梯子，Netflix基本上把大厂的IP都给列入封锁列表了，指望用Google Cloud搭酸酸乳看Netflix是个比较遥远的梦想。&lt;/p&gt;
 &lt;p&gt;最近在某VPS服务商那里看到他们提供一个Netflix IP解锁服务，也就是说让那些本来不能播放Netflix的VPS，通过他们的服务可以播放指定区域的VPS。刚开始我脑子一抽还以为他们能把数据中心的IP变成家庭宽带的IP来骗过Netflix，后来闻了一下需要提供VPS的root密码来让他们设置，我一看这不就是个代理服务吗？&lt;/p&gt;
 &lt;p&gt;其实这个也挺好的，因为在墙外的VPS之间，也就是数据中心之前其实速度还是很快的，基本上不用担心带宽不足延迟太大或者速度不稳定这些问题，即使经过一次转发，也不太影响使用体验。&lt;/p&gt;
