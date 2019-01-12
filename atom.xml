@@ -194,7 +194,8 @@ ipset create netflix hash:net
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;怎么转成命令我就懒得写了，&lt;a href="https://www.lifetyper.com/files/ipset.sh"&gt;这里&lt;/a&gt;有现成的脚本。&lt;/p&gt;
+&lt;p&gt;怎么转成命令我就懒得写了，&lt;a href="https://www.lifetyper.com/files/ipset.sh"&gt;这里&lt;/a&gt;有现成的脚本。
+Update:生成bash命令的Python脚本在&lt;a href="https://gist.github.com/lifetyper/347cf7c4dbadee91e80670acb064b670"&gt;这里&lt;/a&gt;，自己去看吧。&lt;/p&gt;
 &lt;p&gt;然后，把这两个IPSET里IP的443端口目标流量全部转发到REDSOCKS的透明代理上。&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;iptables -t nat -A PREROUTING -p tcp --dport 443 -m set --match-set aws dst -j REDIRECT --to-ports 12345
 iptables -t nat -A PREROUTING -p tcp --dport 443 -m set --match-set netflix dst -j REDIRECT --to-ports 12345
