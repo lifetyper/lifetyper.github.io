@@ -1,5 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>LifeTyper</title><link href="/" rel="alternate"></link><link href="atom.xml" rel="self"></link><id>/</id><updated>2018-12-19T15:55:00+08:00</updated><entry><title>使用rclone自动备份Google Photos到本地硬盘</title><link href="posts/use_rclone_to_backup_google_photos.html" rel="alternate"></link><published>2018-12-19T15:55:00+08:00</published><updated>2018-12-19T15:55:00+08:00</updated><author><name>毕勤</name></author><id>tag:None,2018-12-19:posts/use_rclone_to_backup_google_photos.html</id><summary type="html">&lt;p&gt;首先墙裂推荐一下Google Photos，基本上各个平台都能用，不需要原始画质的话不用考虑容量问题，可以随心所欲的备份所有照片，更好的是它的自动影集生成功能和从视频共裁剪gif图片的功能，经常能带来很多意想不到的惊喜。&lt;/p&gt;</summary><content type="html">&lt;p&gt;首先墙裂推荐一下Google Photos，基本上各个平台都能用，不需要原始画质的话不用考虑容量问题，可以随心所欲的备份所有照片，更好的是它的自动影集生成功能和从视频共裁剪gif图片的功能，经常能带来很多意想不到的惊喜。当然它也有一个问题：需要翻墙。&lt;/p&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>LifeTyper</title><link href="/" rel="alternate"></link><link href="atom.xml" rel="self"></link><id>/</id><updated>2019-02-25T14:39:43+08:00</updated><entry><title>ShadowsocksR MudbJSON版的多端口单用户配置</title><link href="posts/multiuser_on_single_port_for_SSR_mudbjson.html" rel="alternate"></link><published>2019-02-25T14:39:43+08:00</published><updated>2019-02-25T14:39:43+08:00</updated><author><name>毕勤</name></author><id>tag:None,2019-02-25:posts/multiuser_on_single_port_for_SSR_mudbjson.html</id><summary type="html">&lt;p&gt;网上最早的也最权威的关于SSR单端口多用户的配置是破娃酱写的，虽然文章已经被删了，但用&lt;a href="http://web.archive.org/web/20170727124018/https://breakwa11.blogspot.com/2017/01/shadowsocksr-mu.html"&gt;archive&lt;/a&gt;还是可以看到的，只是文章有些地方写的还不够细致，容易产生误解。最近自己刚好也在尝试这个配置，重新记录并说明一下，方便以后查看。&lt;/p&gt;</summary><content type="html">&lt;p&gt;网上最早的也最权威的关于SSR单端口多用户的配置是破娃酱写的，虽然文章已经被删了，但用&lt;a href="http://web.archive.org/web/20170727124018/https://breakwa11.blogspot.com/2017/01/shadowsocksr-mu.html"&gt;archive&lt;/a&gt;还是可以看到的，只是文章有些地方写的还不够细致，容易产生误解。最近自己刚好也在尝试这个配置，重新记录并说明一下，方便以后查看。&lt;/p&gt;
+&lt;p&gt;首先明确一下，这里只讨论MudbJson版的单端口多用户配置，机场用的SSPanel不在此讨论范围。其实MudbJson是一个非常适合少数几个人一起搭建小机场的配置方式，在保证多用户特性的情况下没有多余的附加组件，可以给不同用户数设置限速和限流量等参数，即使有多个服务器节点存在，也只需要在各个服务期间同步一个json文件就可以了。&lt;/p&gt;
+&lt;p&gt;单端口多用户的目的是什么？是集中服务器的端口使用，避免大量开放端口，一个服务器同时开放几百个TCP端口同时都还有不小的数据量，这不用分析都可以猜到是干啥的。而把端口隐藏到443，995这样的常用服务端口上并配合一定的混淆，相对会增加一点探测难度。&lt;/p&gt;
+&lt;p&gt;先直接看配置文件：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;[
+{
+&amp;quot;d&amp;quot;: 0,
+&amp;quot;enable&amp;quot;: 1,
+&amp;quot;method&amp;quot;: &amp;quot;none&amp;quot;,
+&amp;quot;obfs&amp;quot;: &amp;quot;tls1.2_ticket_auth&amp;quot;,
+&amp;quot;passwd&amp;quot;: &amp;quot;JKlzs)9j&amp;quot;,
+&amp;quot;port&amp;quot;: 995,
+&amp;quot;protocol&amp;quot;: &amp;quot;auth_chain_b&amp;quot;,
+&amp;quot;protocol_param&amp;quot;: &amp;quot;#&amp;quot;,
+&amp;quot;transfer_enable&amp;quot;: 9007199254740992,
+&amp;quot;u&amp;quot;: 0,
+&amp;quot;user&amp;quot;: &amp;quot;995&amp;quot;
+},
+{
+&amp;quot;d&amp;quot;: 16668442,
+&amp;quot;enable&amp;quot;: 1,
+&amp;quot;method&amp;quot;: &amp;quot;none&amp;quot;,
+&amp;quot;obfs&amp;quot;: &amp;quot;tls1.2_ticket_auth&amp;quot;,
+&amp;quot;passwd&amp;quot;: &amp;quot;R=KA2VmQ&amp;quot;,
+&amp;quot;port&amp;quot;: 100002,
+&amp;quot;protocol&amp;quot;: &amp;quot;auth_chain_b&amp;quot;,
+&amp;quot;transfer_enable&amp;quot;: 9007199254740992,
+&amp;quot;u&amp;quot;: 673936,
+&amp;quot;user&amp;quot;: &amp;quot;100002&amp;quot;
+}
+]
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;先建立一个默认的用户，为了方便，我们默认吧用户ID和用户端口写成一样的，这里就是995用户，这个用户最明显的特征，就是protocol param是“#”,这样的参数用于标识这是个默认用户，但这个用户是不可用的，因为protocol param只写个“#”是无效的。&lt;/p&gt;
+&lt;p&gt;然后再新建一个用户，用户ID大于65535，同样的端口也大于65535，因为大于65535的端口都是不存在的，所以表示这是个单端口多用户账户，这个用户的加密混淆这些东西可以和默认用户一样也可以随便写，因为这些都是被忽略的。除了用户端口，密码之外，一切都使用默认用户的配置。&lt;/p&gt;
+&lt;p&gt;所以，这里的100002用户，需要使用默认用户的端口、密码、协议、混淆方式来连接SSR服务器，后面添加的其他用户也是一样，那么连密码都一样的话怎么区分不同的用户呢？那就需要使用protocol param了，protocol param就是这个用户的ID和密码的组合，即 100002:R=KA2VmQ。使用auth_chain_*协议的话，即使使用相同的密码，但只要protocol param不同，不同用户间的数据也是不可互相解密的。&lt;/p&gt;</content></entry><entry><title>使用rclone自动备份Google Photos到本地硬盘</title><link href="posts/use_rclone_to_backup_google_photos.html" rel="alternate"></link><published>2018-12-19T15:55:00+08:00</published><updated>2018-12-19T15:55:00+08:00</updated><author><name>毕勤</name></author><id>tag:None,2018-12-19:posts/use_rclone_to_backup_google_photos.html</id><summary type="html">&lt;p&gt;首先墙裂推荐一下Google Photos，基本上各个平台都能用，不需要原始画质的话不用考虑容量问题，可以随心所欲的备份所有照片，更好的是它的自动影集生成功能和从视频共裁剪gif图片的功能，经常能带来很多意想不到的惊喜。&lt;/p&gt;</summary><content type="html">&lt;p&gt;首先墙裂推荐一下Google Photos，基本上各个平台都能用，不需要原始画质的话不用考虑容量问题，可以随心所欲的备份所有照片，更好的是它的自动影集生成功能和从视频共裁剪gif图片的功能，经常能带来很多意想不到的惊喜。当然它也有一个问题：需要翻墙。&lt;/p&gt;
 &lt;p&gt;我倒不是担心哪天墙高到翻不出去的地步，但毕竟所有照片都在上面，觉得还是有必要在本地存一个备份以便随时查看，这样Google Photos就成了一个集散中心，本地成了最终的备份仓库。我有一台装了ubuntu server的deskmini，刚开始的想法是看看有没有Google Photos的linux客户端，后来发现更简单的方法是使用&lt;a href="https://rclone.org/"&gt;rclone&lt;/a&gt;这个全平台制霸的同步工具。&lt;/p&gt;
 &lt;h2&gt;安装&lt;/h2&gt;
 &lt;p&gt;安装过程非常简单，一条命令就搞定：&lt;/p&gt;

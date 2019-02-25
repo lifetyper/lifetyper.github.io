@@ -1,0 +1,215 @@
+﻿<!DOCTYPE html>
+<!--[if IE 8 ]><html class="ie ie8" lang="zh"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!-->
+<html lang="zh">
+<!--<![endif]-->
+	<head>
+            <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+        <meta name="author" content="毕勤">
+
+
+        <link rel="icon" href="../favicon.png" type="image/x-icon" />
+
+        <title>LifeTyper - ShadowsocksR MudbJSON版的多端口单用户配置</title>
+
+            <link href="/atom.xml" type="application/atom+xml" rel="alternate" title="LifeTyper Full Atom Feed" />
+
+        <!-- CSS -->
+        <link rel="stylesheet" href="../theme/css/style.css">
+
+        <!-- Custom CSS -->
+        	<link rel="stylesheet" href="../theme/css/colors/blue.css" id="colors">
+
+        <!-- Code highlight color scheme -->
+            <link href="../theme/css/code_blocks/darkly.css" rel="stylesheet">
+
+
+        <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+
+
+
+
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="ShadowsocksR MudbJSON版的多端口单用户配置">
+    <meta property="og:url" content="posts/multiuser_on_single_port_for_SSR_mudbjson.html">
+    <meta property="og:description" content="网上最早的也最权威的关于SSR单端口多用户的配置是破娃酱写的，虽然文章已经被删了，但用archive还是可以看到的，只是文章有些地方写的还不够细致，容易产生误解。最近自己刚好也在尝试这个配置，重新记录并说明一下，方便以后查看。">
+    <meta property="article:published_time" content="Monday, February 25, 2019">
+    <meta name="twitter:title" content="ShadowsocksR MudbJSON版的多端口单用户配置">
+    <meta name="twitter:description" content="网上最早的也最权威的关于SSR单端口多用户的配置是破娃酱写的，虽然文章已经被删了，但用archive还是可以看到的，只是文章有些地方写的还不够细致，容易产生误解。最近自己刚好也在尝试这个配置，重新记录并说明一下，方便以后查看。">
+    <meta name="description" content="网上最早的也最权威的关于SSR单端口多用户的配置是破娃酱写的，虽然文章已经被删了，但用archive还是可以看到的，只是文章有些地方写的还不够细致，容易产生误解。最近自己刚好也在尝试这个配置，重新记录并说明一下，方便以后查看。">
+    <meta name="twitter:image" content="">
+    <meta property="og:image" content="">
+
+	                <meta property="og:locale" content="">
+		<meta property="og:site_name" content="LifeTyper">
+
+	<meta property="og:type" content="article">
+	<meta property="article:author" content="">
+	<meta property="og:url" content="../posts/multiuser_on_single_port_for_SSR_mudbjson.html">
+	<meta property="og:title" content="ShadowsocksR MudbJSON版的多端口单用户配置">
+	<meta property="og:description" content="">
+	   <meta property="og:image" content="../images/guilherme-toti.jpg">
+	<meta property="article:published_time" content="2019-02-25 14:39:43+08:00">
+	</head>
+	<body>
+		<header id="header">
+			<!-- Container -->
+			<div class="container">
+				<!-- Logo / Mobile Menu -->
+				<div class="five columns">
+					<div id="textlogo">
+						<h1><a href="../">LifeTyper</a></h1>
+					</div>
+				</div>
+						<!-- Navigation
+				================================================== -->
+				<div class="eleven columns">
+
+					<nav id="navigation" class="menu">
+						<ul id="responsive">
+
+							<li><a href="../">Home</a></li>
+
+
+						</ul>
+					</nav>
+				</div>
+			</div>
+			<!-- Container / End -->
+		</header>
+		<!-- Header / End -->
+
+		<!-- Breadcrumbs Container-->
+		<div id="content-wrapper">
+			<section id="titlebar">
+				<!-- Container -->
+				<div class="container">
+				<div class="thirteen columns">
+					<nav id="breadcrumbs">
+						<ul>
+							<li>You are here:</li>
+							<li><a href="../">Home</a></li>
+<li><a href="../category/misc.html">misc</a></li>
+<li>ShadowsocksR MudbJSON版的多端口单用户配置</li>
+						</ul>
+					</nav>
+				</div>
+				</div>
+				<!-- Container / End -->
+			</section>
+
+			<div class="container">
+	<div class="twelve alt columns">
+<article class="post" style="margin: 0; border: 0;">
+
+	<section class="post-content">
+
+		<header class="meta">
+			<h2><a href="../posts/multiuser_on_single_port_for_SSR_mudbjson.html">ShadowsocksR MudbJSON版的多端口单用户配置</a></h2>
+			<ul>
+				<li>By <a href="../author/bi-qin.html">毕勤</a></li>
+				<li>Mon 25 February 2019</li>
+			</ul>
+		</header>
+
+		<p>网上最早的也最权威的关于SSR单端口多用户的配置是破娃酱写的，虽然文章已经被删了，但用<a href="http://web.archive.org/web/20170727124018/https://breakwa11.blogspot.com/2017/01/shadowsocksr-mu.html">archive</a>还是可以看到的，只是文章有些地方写的还不够细致，容易产生误解。最近自己刚好也在尝试这个配置，重新记录并说明一下，方便以后查看。</p>
+<p>首先明确一下，这里只讨论MudbJson版的单端口多用户配置，机场用的SSPanel不在此讨论范围。其实MudbJson是一个非常适合少数几个人一起搭建小机场的配置方式，在保证多用户特性的情况下没有多余的附加组件，可以给不同用户数设置限速和限流量等参数，即使有多个服务器节点存在，也只需要在各个服务期间同步一个json文件就可以了。</p>
+<p>单端口多用户的目的是什么？是集中服务器的端口使用，避免大量开放端口，一个服务器同时开放几百个TCP端口同时都还有不小的数据量，这不用分析都可以猜到是干啥的。而把端口隐藏到443，995这样的常用服务端口上并配合一定的混淆，相对会增加一点探测难度。</p>
+<p>先直接看配置文件：</p>
+<div class="highlight"><pre><span></span>[
+{
+&quot;d&quot;: 0,
+&quot;enable&quot;: 1,
+&quot;method&quot;: &quot;none&quot;,
+&quot;obfs&quot;: &quot;tls1.2_ticket_auth&quot;,
+&quot;passwd&quot;: &quot;JKlzs)9j&quot;,
+&quot;port&quot;: 995,
+&quot;protocol&quot;: &quot;auth_chain_b&quot;,
+&quot;protocol_param&quot;: &quot;#&quot;,
+&quot;transfer_enable&quot;: 9007199254740992,
+&quot;u&quot;: 0,
+&quot;user&quot;: &quot;995&quot;
+},
+{
+&quot;d&quot;: 16668442,
+&quot;enable&quot;: 1,
+&quot;method&quot;: &quot;none&quot;,
+&quot;obfs&quot;: &quot;tls1.2_ticket_auth&quot;,
+&quot;passwd&quot;: &quot;R=KA2VmQ&quot;,
+&quot;port&quot;: 100002,
+&quot;protocol&quot;: &quot;auth_chain_b&quot;,
+&quot;transfer_enable&quot;: 9007199254740992,
+&quot;u&quot;: 673936,
+&quot;user&quot;: &quot;100002&quot;
+}
+]
+</pre></div>
+
+
+<p>先建立一个默认的用户，为了方便，我们默认吧用户ID和用户端口写成一样的，这里就是995用户，这个用户最明显的特征，就是protocol param是“#”,这样的参数用于标识这是个默认用户，但这个用户是不可用的，因为protocol param只写个“#”是无效的。</p>
+<p>然后再新建一个用户，用户ID大于65535，同样的端口也大于65535，因为大于65535的端口都是不存在的，所以表示这是个单端口多用户账户，这个用户的加密混淆这些东西可以和默认用户一样也可以随便写，因为这些都是被忽略的。除了用户端口，密码之外，一切都使用默认用户的配置。</p>
+<p>所以，这里的100002用户，需要使用默认用户的端口、密码、协议、混淆方式来连接SSR服务器，后面添加的其他用户也是一样，那么连密码都一样的话怎么区分不同的用户呢？那就需要使用protocol param了，protocol param就是这个用户的ID和密码的组合，即 100002:R=KA2VmQ。使用auth_chain_*协议的话，即使使用相同的密码，但只要protocol param不同，不同用户间的数据也是不可互相解密的。</p>
+
+<div class="sharing">
+</div>
+<hr>
+
+	</section>
+	<div class="clearfix"></div>
+
+</article>
+
+	</div>
+
+	<!-- Sidebar -->
+	<div class="four columns">
+		<!-- About  -->
+		<div class="widget no-mg-top">
+			<h3 class="headline">About</h3><span class="line"></span><div class="clearfix"></div>
+			<p>没有分类，没有tag，机器早晚会读懂一切</p>
+		</div>
+
+		
+	</div>
+			</div>
+			<!-- Container / End -->
+		</div>
+		<!-- Content Wrapper / End -->
+
+		<div id="footer-bottom">
+			<!-- Container -->
+			<div class="container">
+				<div class="eight columns">&copy; All Rights Reserved |<a href="https://derowallet.com">DERO Web Wallet</a>| Blog powered by <a href="http://getpelican.com">Pelican</a></div>
+					<div class="eight columns">
+						<ul class="social-icons-footer">
+								<li>
+									<a href="https://twitter.com/lifetyper" class="tooltip top" title="twitter">
+										<i class="icon-twitter"></i>
+									</a>
+								</li>
+								<li>
+									<a href="https://github.com/lifetyper" class="tooltip top" title="github">
+										<i class="icon-github"></i>
+									</a>
+								</li>
+							<li><a href="../atom.xml" class="tooltip top" title="RSS"><i class="icon-rss"></i></a></li>
+						</ul>
+					</div>
+			</div>
+			<!-- Container / End -->
+		</div>
+		<!-- Footer Bottom / End -->
+
+	<!-- Javascripts -->
+	<script src="../theme/js/jquery.min.js"></script>
+	<script src="../theme/js/instantclick.min.js" data-no-instant></script>
+	<script data-no-instant>InstantClick.init();</script>
+	</body>
+</html>
