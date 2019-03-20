@@ -111,7 +111,7 @@ address=/nflxvideo.net/18.215.191.191
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;这种方案之所以被否定，是因为本质上依赖DNS劫持。你可以劫持VPS B本身的DNS解析，但你在VPS B上搭建梯子后，你并没有办法劫持连上这个梯子的用户的DNS。所以用户还是会经过VPS B的代理，但访问原始的Netflix服务器，最终导致播放失败。&lt;/p&gt;
+&lt;p&gt;这种方案之所以被否定，是因为本质上依赖DNS劫持。你可以劫持VPS B本身的DNS解析，但你在VPS B上搭建梯子后，你并没有办法保证劫持连上这个梯子的用户的DNS。大部分用户使用ssr-redir提供的透明代理，基于域名转发，这样是可以的，但还是有部分用户不适用远端的DNS解析而使用本地的解析，这样就无法成功劫持了。所以对这部分用户来说，流量还是会经过VPS B的代理，但会不被劫持的访问原始的Netflix服务器，最终导致播放失败。&lt;/p&gt;
 &lt;h2&gt;新方案&lt;/h2&gt;
 &lt;p&gt;其实我把问题想得太复杂了，这不就是普通的透明代理转发吗？shadowsocks(R)就可以实现啊，只不过两台墙外的VPS用加密代理实在是浪费CPU资源，普通的代理就足够了。所以我决定在VPS A用Tinyproxy架设https代理，然后在VPS B用redsocks转成透明代理然后转发。&lt;/p&gt;
 &lt;h3&gt;架设Tinyproxy Https代理&lt;/h3&gt;
