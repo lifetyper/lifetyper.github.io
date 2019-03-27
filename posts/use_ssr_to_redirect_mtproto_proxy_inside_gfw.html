@@ -1,0 +1,285 @@
+﻿<!DOCTYPE html>
+<!--[if IE 8 ]><html class="ie ie8" lang="zh"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!-->
+<html lang="zh">
+<!--<![endif]-->
+	<head>
+            <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+        <meta name="author" content="毕勤">
+
+
+        <link rel="icon" href="../favicon.png" type="image/x-icon" />
+
+        <title>LifeTyper - 利用SSR在国内服务器转发Telegram的MTProxy代理</title>
+
+            <link href="/atom.xml" type="application/atom+xml" rel="alternate" title="LifeTyper Full Atom Feed" />
+
+        <!-- CSS -->
+        <link rel="stylesheet" href="../theme/css/style.css">
+
+        <!-- Custom CSS -->
+        	<link rel="stylesheet" href="../theme/css/colors/blue.css" id="colors">
+
+        <!-- Code highlight color scheme -->
+            <link href="../theme/css/code_blocks/darkly.css" rel="stylesheet">
+
+
+        <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+
+
+
+
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="利用SSR在国内服务器转发Telegram的MTProxy代理">
+    <meta property="og:url" content="posts/use_ssr_to_redirect_mtproto_proxy_inside_gfw.html">
+    <meta property="og:description" content="最近这段时间，Telegram的MTProxy可以说几乎是被判了死刑，原因无外乎是MTProxy的数据包大小特征太明显，极其容易被分析出来。虽然官方加入了Random Padding这个功能试图解决这个问题，但效果其实非常可怜，我换完端口后开启了Random Padding，哪怕只有我一个人在用这个代理，依然在12小时内被封掉。">
+    <meta property="article:published_time" content="Wednesday, March 27, 2019">
+    <meta name="twitter:title" content="利用SSR在国内服务器转发Telegram的MTProxy代理">
+    <meta name="twitter:description" content="最近这段时间，Telegram的MTProxy可以说几乎是被判了死刑，原因无外乎是MTProxy的数据包大小特征太明显，极其容易被分析出来。虽然官方加入了Random Padding这个功能试图解决这个问题，但效果其实非常可怜，我换完端口后开启了Random Padding，哪怕只有我一个人在用这个代理，依然在12小时内被封掉。">
+    <meta name="description" content="最近这段时间，Telegram的MTProxy可以说几乎是被判了死刑，原因无外乎是MTProxy的数据包大小特征太明显，极其容易被分析出来。虽然官方加入了Random Padding这个功能试图解决这个问题，但效果其实非常可怜，我换完端口后开启了Random Padding，哪怕只有我一个人在用这个代理，依然在12小时内被封掉。">
+    <meta name="twitter:image" content="">
+    <meta property="og:image" content="">
+
+	                <meta property="og:locale" content="">
+		<meta property="og:site_name" content="LifeTyper">
+
+	<meta property="og:type" content="article">
+	<meta property="article:author" content="">
+	<meta property="og:url" content="../posts/use_ssr_to_redirect_mtproto_proxy_inside_gfw.html">
+	<meta property="og:title" content="利用SSR在国内服务器转发Telegram的MTProxy代理">
+	<meta property="og:description" content="">
+	   <meta property="og:image" content="../images/guilherme-toti.jpg">
+	<meta property="article:published_time" content="2019-03-27 22:50:54+08:00">
+	</head>
+	<body>
+		<header id="header">
+			<!-- Container -->
+			<div class="container">
+				<!-- Logo / Mobile Menu -->
+				<div class="five columns">
+					<div id="textlogo">
+						<h1><a href="../">LifeTyper</a></h1>
+					</div>
+				</div>
+						<!-- Navigation
+				================================================== -->
+				<div class="eleven columns">
+
+					<nav id="navigation" class="menu">
+						<ul id="responsive">
+
+							<li><a href="../">Home</a></li>
+
+
+						</ul>
+					</nav>
+				</div>
+			</div>
+			<!-- Container / End -->
+		</header>
+		<!-- Header / End -->
+
+		<!-- Breadcrumbs Container-->
+		<div id="content-wrapper">
+			<section id="titlebar">
+				<!-- Container -->
+				<div class="container">
+				<div class="thirteen columns">
+					<nav id="breadcrumbs">
+						<ul>
+							<li>You are here:</li>
+							<li><a href="../">Home</a></li>
+<li><a href="../category/misc.html">misc</a></li>
+<li>利用SSR在国内服务器转发Telegram的MTProxy代理</li>
+						</ul>
+					</nav>
+				</div>
+				</div>
+				<!-- Container / End -->
+			</section>
+
+			<div class="container">
+	<div class="twelve alt columns">
+<article class="post" style="margin: 0; border: 0;">
+
+	<section class="post-content">
+
+		<header class="meta">
+			<h2><a href="../posts/use_ssr_to_redirect_mtproto_proxy_inside_gfw.html">利用SSR在国内服务器转发Telegram的MTProxy代理</a></h2>
+			<ul>
+				<li>By <a href="../author/bi-qin.html">毕勤</a></li>
+				<li>Wed 27 March 2019</li>
+			</ul>
+		</header>
+
+		<h2>糟糕的背景说明</h2>
+<p>最近这段时间，Telegram的<a href="https://github.com/TelegramMessenger/MTProxy">MTProxy</a>可以说几乎是被判了死刑，原因无外乎是<a href="https://github.com/TelegramMessenger/MTProxy#random-padding">MTProxy的数据包大小特征太明显</a>，极其容易被分析出来。虽然官方加入了Random Padding这个功能试图解决这个问题，但效果其实非常可怜，我换完端口后开启了Random Padding，哪怕只有我一个人在用这个代理，依然在12小时内被封掉。</p>
+<p>现在普遍的建议是在国内搭需要鉴权的socks5服务器，这个技术上没有问题，但如果你要分享出去的话，一个socks5代理可以做的，可不仅仅是MTProxy这么简单，需要承担的风险会大得多。</p>
+<p>这种情况，要么上专线搭MTProxy，要么就用更不容易被封的手段转发这个代理服务，不管是v2还是ssr，这个你根据自己的爱好选择，我习惯性的还是用ssr。</p>
+<h2>在国外VPS建立一个跳板代理</h2>
+<p>对我来说，这就是一台装了SSR的国外VPS而已。</p>
+<h2>在国内VPS建立一个透明代理</h2>
+<p>我们以ssr为例，这里需要用到的是ss(r)-redir，而不是ss(r)-local，后者是用于建立socks5代理的，而前者才是我们所需要的透明代理。具体的建立过程就不多说了，无非就是ss-redir -c config.json了，这里我设定的本地代理端口是127.0.0.1:1080。注意，不要开放到0.0.0.0上，否则你的透明代理可能会被滥用的。</p>
+<h2>建立转发规则</h2>
+<p>根据hostloc论坛网友的建议，只需要找出Telegram的3个ASN所对应的IP，把国内VPS到这些IP的流量全部转发到ss-redir产生的透明代理上就行了。</p>
+<p>写了个脚本把这些IP拔下来然后转成bash脚本：</p>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">import</span> <span class="nn">json</span>
+
+<span class="n">ip_range_urls</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;https://api.bgpview.io/asn/59930/prefixes&#39;</span><span class="p">,</span> <span class="s1">&#39;https://api.bgpview.io/asn/62014/prefixes&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;https://api.bgpview.io/asn/62041/prefixes&#39;</span><span class="p">]</span>
+
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;tg_ipset_redirect.sh&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">dst</span><span class="p">:</span>
+    <span class="n">dst</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;#! /bin/bash</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">dst</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;ipset create telegram hash:net -!</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">url</span> <span class="ow">in</span> <span class="n">ip_range_urls</span><span class="p">:</span>
+        <span class="n">ip_data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">ip_range</span> <span class="ow">in</span> <span class="n">ip_data</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="s1">&#39;ipv4_prefixes&#39;</span><span class="p">]:</span>
+            <span class="n">dst</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;ipset add telegram {} -!</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ip_range</span><span class="p">[</span><span class="s1">&#39;prefix&#39;</span><span class="p">]))</span>
+
+    <span class="n">dst</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+        <span class="s1">&#39;iptables -t nat -A PREROUTING -p tcp -m set --match-set telegram dst -j REDIRECT --to-ports 1080</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">dst</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+        <span class="s1">&#39;iptables -t nat -A OUTPUT -p tcp -m set --match-set telegram dst -j REDIRECT --to-ports 1080</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+</pre></div>
+
+
+<p>产生的bash脚本如下：</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="ch">#! /bin/bash</span>
+ipset create telegram hash:net -!
+ipset add telegram <span class="m">91</span>.108.12.0/22 -!
+ipset add telegram <span class="m">149</span>.154.172.0/22 -!
+ipset add telegram <span class="m">91</span>.108.16.0/22 -!
+ipset add telegram <span class="m">91</span>.108.56.0/23 -!
+ipset add telegram <span class="m">149</span>.154.168.0/22 -!
+ipset add telegram <span class="m">91</span>.108.4.0/22 -!
+ipset add telegram <span class="m">91</span>.108.8.0/22 -!
+ipset add telegram <span class="m">91</span>.108.56.0/22 -!
+ipset add telegram <span class="m">149</span>.154.160.0/20 -!
+ipset add telegram <span class="m">149</span>.154.164.0/22 -!
+iptables -t nat -A PREROUTING -p tcp -m <span class="nb">set</span> --match-set telegram dst -j REDIRECT --to-ports <span class="m">1080</span>
+iptables -t nat -A OUTPUT -p tcp -m <span class="nb">set</span> --match-set telegram dst -j REDIRECT --to-ports <span class="m">1080</span>
+</pre></div>
+</td></tr></table>
+
+<p>这么一看，当初还写什么脚本，IP段也没几个啊，害得我一度以为脚本写错了，是不是漏了什么IP，结果上网站一查还真就这几个IP段。
+Bash脚本应该都看得懂吧，就是把telegram的IP加入一个ipset中(当然，你得先安装ipset，一般默认都没有)，然后把符合tcp协议的、同时目的IP属于这个ipset内的流量，全部转发到ss-redir产生的1080透明代理端口上。</p>
+<h2>在国内VPS安装MTProxy</h2>
+<p>不知道为啥，写这篇文章的时候，用官方的MTProxy在本地搭的测试环境一直连不上，之前在国外VPS上搭都是OK的。这次干脆直接换成了纯python3版本的<a href="https://github.com/alexbers/mtprotoproxy">mtprotoproxy</a>，还省去了build过程。</p>
+<p>git clone下来后，改下端口设置就行了。config.py里的Users，其实就是个16位的随机secret，可以用以下命令产生：</p>
+<div class="highlight"><pre><span></span>head -c 16 /dev/urandom | xxd -ps
+</pre></div>
+
+
+<p>你还可以配置多个secret，这样就可以把secret当Users来管理了，虽然我目前还没发现这玩意有什么管理功能。</p>
+<p>对于python脚本的启动管理，我向来喜欢转个supervisor搞定，只需要写个配置文件就行了:</p>
+<div class="highlight"><pre><span></span>command=/usr/bin/python3 /root/.services/mtprotoproxy/mtprotoproxy.py
+startsecs=1
+startretries=100
+autorstart=true
+autorestart=true
+</pre></div>
+
+
+<p>当然，我建议你可以先手工执行以下这个服务器命令，这样会自动echo出产生的MTProxy的地址，省的你自己再去一点点拼起来。</p>
+<h2>固化ipset和iptables规则</h2>
+<p>ipset和iptables默认重启后就会掉了，我们可以先把他们保存到文件：</p>
+<div class="highlight"><pre><span></span>ipset save &gt; /etc/ipset.conf
+iptables-save  &gt; /etc/iptables.conf
+</pre></div>
+
+
+<p>然后在/etc/rc.local里(对应的是ubuntu/debian系统，centos自己想办法)，写入从文件还原ipset和iptables的命令就可以了：</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="ch">#!/bin/sh</span>
+
+ipset restore &lt; /etc/ipset.conf
+iptables-restore &lt; /etc/iptables.conf
+
+<span class="nb">exit</span> <span class="m">0</span>
+</pre></div>
+</td></tr></table>
+
+<p>ubuntu18默认没有/etc/rc.local文件了，自己创建一个就行，记得chomod +x /etc/rc.local给它添加可执行属性。</p>
+
+<div class="sharing">
+</div>
+<hr>
+
+	</section>
+	<div class="clearfix"></div>
+
+</article>
+
+	</div>
+
+	<!-- Sidebar -->
+	<div class="four columns">
+		<!-- About  -->
+		<div class="widget no-mg-top">
+			<h3 class="headline">About</h3><span class="line"></span><div class="clearfix"></div>
+			<p>没有分类，没有tag，机器早晚会读懂一切</p>
+		</div>
+
+		
+	</div>
+			</div>
+			<!-- Container / End -->
+		</div>
+		<!-- Content Wrapper / End -->
+
+		<div id="footer-bottom">
+			<!-- Container -->
+			<div class="container">
+				<div class="eight columns">&copy; All Rights Reserved |<a href="https://derowallet.com">DERO Web Wallet</a>| Blog powered by <a href="http://getpelican.com">Pelican</a></div>
+					<div class="eight columns">
+						<ul class="social-icons-footer">
+								<li>
+									<a href="https://twitter.com/lifetyper" class="tooltip top" title="twitter">
+										<i class="icon-twitter"></i>
+									</a>
+								</li>
+								<li>
+									<a href="https://github.com/lifetyper" class="tooltip top" title="github">
+										<i class="icon-github"></i>
+									</a>
+								</li>
+							<li><a href="../atom.xml" class="tooltip top" title="RSS"><i class="icon-rss"></i></a></li>
+						</ul>
+					</div>
+			</div>
+			<!-- Container / End -->
+		</div>
+		<!-- Footer Bottom / End -->
+
+	<!-- Javascripts -->
+	<script src="../theme/js/jquery.min.js"></script>
+	<script src="../theme/js/instantclick.min.js" data-no-instant></script>
+	<script data-no-instant>InstantClick.init();</script>
+	</body>
+</html>

@@ -1,5 +1,111 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>LifeTyper</title><link href="/" rel="alternate"></link><link href="atom.xml" rel="self"></link><id>/</id><updated>2019-02-25T14:39:43+08:00</updated><entry><title>ShadowsocksR MudbJSON版的多端口单用户配置</title><link href="posts/multiuser_on_single_port_for_SSR_mudbjson.html" rel="alternate"></link><published>2019-02-25T14:39:43+08:00</published><updated>2019-02-25T14:39:43+08:00</updated><author><name>毕勤</name></author><id>tag:None,2019-02-25:posts/multiuser_on_single_port_for_SSR_mudbjson.html</id><summary type="html">&lt;p&gt;网上最早的也最权威的关于SSR单端口多用户的配置是破娃酱写的，虽然文章已经被删了，但用&lt;a href="http://web.archive.org/web/20170727124018/https://breakwa11.blogspot.com/2017/01/shadowsocksr-mu.html"&gt;archive&lt;/a&gt;还是可以看到的，只是文章有些地方写的还不够细致，容易产生误解。最近自己刚好也在尝试这个配置，重新记录并说明一下，方便以后查看。&lt;/p&gt;</summary><content type="html">&lt;p&gt;网上最早的也最权威的关于SSR单端口多用户的配置是破娃酱写的，虽然文章已经被删了，但用&lt;a href="http://web.archive.org/web/20170727124018/https://breakwa11.blogspot.com/2017/01/shadowsocksr-mu.html"&gt;archive&lt;/a&gt;还是可以看到的，只是文章有些地方写的还不够细致，容易产生误解。最近自己刚好也在尝试这个配置，重新记录并说明一下，方便以后查看。&lt;/p&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>LifeTyper</title><link href="/" rel="alternate"></link><link href="atom.xml" rel="self"></link><id>/</id><updated>2019-03-27T22:50:54+08:00</updated><entry><title>利用SSR在国内服务器转发Telegram的MTProxy代理</title><link href="posts/use_ssr_to_redirect_mtproto_proxy_inside_gfw.html" rel="alternate"></link><published>2019-03-27T22:50:54+08:00</published><updated>2019-03-27T22:50:54+08:00</updated><author><name>毕勤</name></author><id>tag:None,2019-03-27:posts/use_ssr_to_redirect_mtproto_proxy_inside_gfw.html</id><summary type="html">&lt;p&gt;最近这段时间，Telegram的&lt;a href="https://github.com/TelegramMessenger/MTProxy"&gt;MTProxy&lt;/a&gt;可以说几乎是被判了死刑，原因无外乎是&lt;a href="https://github.com/TelegramMessenger/MTProxy#random-padding"&gt;MTProxy的数据包大小特征太明显&lt;/a&gt;，极其容易被分析出来。虽然官方加入了Random Padding这个功能试图解决这个问题，但效果其实非常可怜，我换完端口后开启了Random Padding，哪怕只有我一个人在用这个代理，依然在12小时内被封掉。&lt;/p&gt;</summary><content type="html">&lt;h2&gt;糟糕的背景说明&lt;/h2&gt;
+&lt;p&gt;最近这段时间，Telegram的&lt;a href="https://github.com/TelegramMessenger/MTProxy"&gt;MTProxy&lt;/a&gt;可以说几乎是被判了死刑，原因无外乎是&lt;a href="https://github.com/TelegramMessenger/MTProxy#random-padding"&gt;MTProxy的数据包大小特征太明显&lt;/a&gt;，极其容易被分析出来。虽然官方加入了Random Padding这个功能试图解决这个问题，但效果其实非常可怜，我换完端口后开启了Random Padding，哪怕只有我一个人在用这个代理，依然在12小时内被封掉。&lt;/p&gt;
+&lt;p&gt;现在普遍的建议是在国内搭需要鉴权的socks5服务器，这个技术上没有问题，但如果你要分享出去的话，一个socks5代理可以做的，可不仅仅是MTProxy这么简单，需要承担的风险会大得多。&lt;/p&gt;
+&lt;p&gt;这种情况，要么上专线搭MTProxy，要么就用更不容易被封的手段转发这个代理服务，不管是v2还是ssr，这个你根据自己的爱好选择，我习惯性的还是用ssr。&lt;/p&gt;
+&lt;h2&gt;在国外VPS建立一个跳板代理&lt;/h2&gt;
+&lt;p&gt;对我来说，这就是一台装了SSR的国外VPS而已。&lt;/p&gt;
+&lt;h2&gt;在国内VPS建立一个透明代理&lt;/h2&gt;
+&lt;p&gt;我们以ssr为例，这里需要用到的是ss(r)-redir，而不是ss(r)-local，后者是用于建立socks5代理的，而前者才是我们所需要的透明代理。具体的建立过程就不多说了，无非就是ss-redir -c config.json了，这里我设定的本地代理端口是127.0.0.1:1080。注意，不要开放到0.0.0.0上，否则你的透明代理可能会被滥用的。&lt;/p&gt;
+&lt;h2&gt;建立转发规则&lt;/h2&gt;
+&lt;p&gt;根据hostloc论坛网友的建议，只需要找出Telegram的3个ASN所对应的IP，把国内VPS到这些IP的流量全部转发到ss-redir产生的透明代理上就行了。&lt;/p&gt;
+&lt;p&gt;写了个脚本把这些IP拔下来然后转成bash脚本：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;requests&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;json&lt;/span&gt;
+
+&lt;span class="n"&gt;ip_range_urls&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;https://api.bgpview.io/asn/59930/prefixes&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;https://api.bgpview.io/asn/62014/prefixes&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                 &lt;span class="s1"&gt;&amp;#39;https://api.bgpview.io/asn/62041/prefixes&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+
+&lt;span class="k"&gt;with&lt;/span&gt; &lt;span class="nb"&gt;open&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;tg_ipset_redirect.sh&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;w&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;as&lt;/span&gt; &lt;span class="n"&gt;dst&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="n"&gt;dst&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;write&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;#! /bin/bash&lt;/span&gt;&lt;span class="se"&gt;\n&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;dst&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;write&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;ipset create telegram hash:net -!&lt;/span&gt;&lt;span class="se"&gt;\n&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;url&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;ip_range_urls&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="n"&gt;ip_data&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;json&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;loads&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;requests&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;url&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;content&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;ip_range&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;ip_data&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;data&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;][&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;ipv4_prefixes&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]:&lt;/span&gt;
+            &lt;span class="n"&gt;dst&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;write&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;ipset add telegram {} -!&lt;/span&gt;&lt;span class="se"&gt;\n&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;format&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;ip_range&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;prefix&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]))&lt;/span&gt;
+
+    &lt;span class="n"&gt;dst&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;write&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;
+        &lt;span class="s1"&gt;&amp;#39;iptables -t nat -A PREROUTING -p tcp -m set --match-set telegram dst -j REDIRECT --to-ports 1080&lt;/span&gt;&lt;span class="se"&gt;\n&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;dst&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;write&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;
+        &lt;span class="s1"&gt;&amp;#39;iptables -t nat -A OUTPUT -p tcp -m set --match-set telegram dst -j REDIRECT --to-ports 1080&lt;/span&gt;&lt;span class="se"&gt;\n&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;产生的bash脚本如下：&lt;/p&gt;
+&lt;table class="highlighttable"&gt;&lt;tr&gt;&lt;td class="linenos"&gt;&lt;div class="linenodiv"&gt;&lt;pre&gt; 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class="code"&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="ch"&gt;#! /bin/bash&lt;/span&gt;
+ipset create telegram hash:net -!
+ipset add telegram &lt;span class="m"&gt;91&lt;/span&gt;.108.12.0/22 -!
+ipset add telegram &lt;span class="m"&gt;149&lt;/span&gt;.154.172.0/22 -!
+ipset add telegram &lt;span class="m"&gt;91&lt;/span&gt;.108.16.0/22 -!
+ipset add telegram &lt;span class="m"&gt;91&lt;/span&gt;.108.56.0/23 -!
+ipset add telegram &lt;span class="m"&gt;149&lt;/span&gt;.154.168.0/22 -!
+ipset add telegram &lt;span class="m"&gt;91&lt;/span&gt;.108.4.0/22 -!
+ipset add telegram &lt;span class="m"&gt;91&lt;/span&gt;.108.8.0/22 -!
+ipset add telegram &lt;span class="m"&gt;91&lt;/span&gt;.108.56.0/22 -!
+ipset add telegram &lt;span class="m"&gt;149&lt;/span&gt;.154.160.0/20 -!
+ipset add telegram &lt;span class="m"&gt;149&lt;/span&gt;.154.164.0/22 -!
+iptables -t nat -A PREROUTING -p tcp -m &lt;span class="nb"&gt;set&lt;/span&gt; --match-set telegram dst -j REDIRECT --to-ports &lt;span class="m"&gt;1080&lt;/span&gt;
+iptables -t nat -A OUTPUT -p tcp -m &lt;span class="nb"&gt;set&lt;/span&gt; --match-set telegram dst -j REDIRECT --to-ports &lt;span class="m"&gt;1080&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+
+&lt;p&gt;这么一看，当初还写什么脚本，IP段也没几个啊，害得我一度以为脚本写错了，是不是漏了什么IP，结果上网站一查还真就这几个IP段。
+Bash脚本应该都看得懂吧，就是把telegram的IP加入一个ipset中(当然，你得先安装ipset，一般默认都没有)，然后把符合tcp协议的、同时目的IP属于这个ipset内的流量，全部转发到ss-redir产生的1080透明代理端口上。&lt;/p&gt;
+&lt;h2&gt;在国内VPS安装MTProxy&lt;/h2&gt;
+&lt;p&gt;不知道为啥，写这篇文章的时候，用官方的MTProxy在本地搭的测试环境一直连不上，之前在国外VPS上搭都是OK的。这次干脆直接换成了纯python3版本的&lt;a href="https://github.com/alexbers/mtprotoproxy"&gt;mtprotoproxy&lt;/a&gt;，还省去了build过程。&lt;/p&gt;
+&lt;p&gt;git clone下来后，改下端口设置就行了。config.py里的Users，其实就是个16位的随机secret，可以用以下命令产生：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;head -c 16 /dev/urandom | xxd -ps
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;你还可以配置多个secret，这样就可以把secret当Users来管理了，虽然我目前还没发现这玩意有什么管理功能。&lt;/p&gt;
+&lt;p&gt;对于python脚本的启动管理，我向来喜欢转个supervisor搞定，只需要写个配置文件就行了:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;command=/usr/bin/python3 /root/.services/mtprotoproxy/mtprotoproxy.py
+startsecs=1
+startretries=100
+autorstart=true
+autorestart=true
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;当然，我建议你可以先手工执行以下这个服务器命令，这样会自动echo出产生的MTProxy的地址，省的你自己再去一点点拼起来。&lt;/p&gt;
+&lt;h2&gt;固化ipset和iptables规则&lt;/h2&gt;
+&lt;p&gt;ipset和iptables默认重启后就会掉了，我们可以先把他们保存到文件：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;ipset save &amp;gt; /etc/ipset.conf
+iptables-save  &amp;gt; /etc/iptables.conf
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;然后在/etc/rc.local里(对应的是ubuntu/debian系统，centos自己想办法)，写入从文件还原ipset和iptables的命令就可以了：&lt;/p&gt;
+&lt;table class="highlighttable"&gt;&lt;tr&gt;&lt;td class="linenos"&gt;&lt;div class="linenodiv"&gt;&lt;pre&gt;1
+2
+3
+4
+5
+6&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class="code"&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="ch"&gt;#!/bin/sh&lt;/span&gt;
+
+ipset restore &amp;lt; /etc/ipset.conf
+iptables-restore &amp;lt; /etc/iptables.conf
+
+&lt;span class="nb"&gt;exit&lt;/span&gt; &lt;span class="m"&gt;0&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+
+&lt;p&gt;ubuntu18默认没有/etc/rc.local文件了，自己创建一个就行，记得chomod +x /etc/rc.local给它添加可执行属性。&lt;/p&gt;</content></entry><entry><title>ShadowsocksR MudbJSON版的多端口单用户配置</title><link href="posts/multiuser_on_single_port_for_SSR_mudbjson.html" rel="alternate"></link><published>2019-02-25T14:39:43+08:00</published><updated>2019-02-25T14:39:43+08:00</updated><author><name>毕勤</name></author><id>tag:None,2019-02-25:posts/multiuser_on_single_port_for_SSR_mudbjson.html</id><summary type="html">&lt;p&gt;网上最早的也最权威的关于SSR单端口多用户的配置是破娃酱写的，虽然文章已经被删了，但用&lt;a href="http://web.archive.org/web/20170727124018/https://breakwa11.blogspot.com/2017/01/shadowsocksr-mu.html"&gt;archive&lt;/a&gt;还是可以看到的，只是文章有些地方写的还不够细致，容易产生误解。最近自己刚好也在尝试这个配置，重新记录并说明一下，方便以后查看。&lt;/p&gt;</summary><content type="html">&lt;p&gt;网上最早的也最权威的关于SSR单端口多用户的配置是破娃酱写的，虽然文章已经被删了，但用&lt;a href="http://web.archive.org/web/20170727124018/https://breakwa11.blogspot.com/2017/01/shadowsocksr-mu.html"&gt;archive&lt;/a&gt;还是可以看到的，只是文章有些地方写的还不够细致，容易产生误解。最近自己刚好也在尝试这个配置，重新记录并说明一下，方便以后查看。&lt;/p&gt;
 &lt;p&gt;首先明确一下，这里只讨论MudbJson版的单端口多用户配置，机场用的SSPanel不在此讨论范围。其实MudbJson是一个非常适合少数几个人一起搭建小机场的配置方式，在保证多用户特性的情况下没有多余的附加组件，可以给不同用户数设置限速和限流量等参数，即使有多个服务器节点存在，也只需要在各个服务期间同步一个json文件就可以了。&lt;/p&gt;
 &lt;p&gt;单端口多用户的目的是什么？是集中服务器的端口使用，避免大量开放端口，一个服务器同时开放几百个TCP端口同时都还有不小的数据量，这不用分析都可以猜到是干啥的。而把端口隐藏到443，995这样的常用服务端口上并配合一定的混淆，相对会增加一点探测难度。&lt;/p&gt;
 &lt;p&gt;先直接看配置文件：&lt;/p&gt;
