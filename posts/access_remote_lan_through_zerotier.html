@@ -1,0 +1,265 @@
+﻿<!DOCTYPE html>
+<!--[if IE 8 ]><html class="ie ie8" lang="zh"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!-->
+<html lang="zh">
+<!--<![endif]-->
+	<head>
+            <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+        <meta name="author" content="毕勤">
+
+
+        <link rel="icon" href="../favicon.png" type="image/x-icon" />
+
+        <title>LifeTyper - 基于ZeroTier和Openwrt路由器的内网互访方案</title>
+
+            <link href="/atom.xml" type="application/atom+xml" rel="alternate" title="LifeTyper Full Atom Feed" />
+
+        <!-- CSS -->
+        <link rel="stylesheet" href="../theme/css/style.css">
+
+        <!-- Custom CSS -->
+        	<link rel="stylesheet" href="../theme/css/colors/blue.css" id="colors">
+
+        <!-- Code highlight color scheme -->
+            <link href="../theme/css/code_blocks/darkly.css" rel="stylesheet">
+
+
+        <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+
+
+
+
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="基于ZeroTier和Openwrt路由器的内网互访方案">
+    <meta property="og:url" content="posts/access_remote_lan_through_zerotier.html">
+    <meta property="og:description" content="相信这个标题就已经很吸引人了，因为很多人都有类似的需求，在家里访问公司服务器或工作机的内容，在公司访问家里服务器的数据，本文讨论的就是这个目的的实现。">
+    <meta property="article:published_time" content="Wednesday, April 24, 2019">
+    <meta name="twitter:title" content="基于ZeroTier和Openwrt路由器的内网互访方案">
+    <meta name="twitter:description" content="相信这个标题就已经很吸引人了，因为很多人都有类似的需求，在家里访问公司服务器或工作机的内容，在公司访问家里服务器的数据，本文讨论的就是这个目的的实现。">
+    <meta name="description" content="相信这个标题就已经很吸引人了，因为很多人都有类似的需求，在家里访问公司服务器或工作机的内容，在公司访问家里服务器的数据，本文讨论的就是这个目的的实现。">
+    <meta name="twitter:image" content="">
+    <meta property="og:image" content="">
+
+	                <meta property="og:locale" content="">
+		<meta property="og:site_name" content="LifeTyper">
+
+	<meta property="og:type" content="article">
+	<meta property="article:author" content="">
+	<meta property="og:url" content="../posts/access_remote_lan_through_zerotier.html">
+	<meta property="og:title" content="基于ZeroTier和Openwrt路由器的内网互访方案">
+	<meta property="og:description" content="">
+	   <meta property="og:image" content="../images/guilherme-toti.jpg">
+	<meta property="article:published_time" content="2019-04-24 17:11:30+08:00">
+	</head>
+	<body>
+		<header id="header">
+			<!-- Container -->
+			<div class="container">
+				<!-- Logo / Mobile Menu -->
+				<div class="five columns">
+					<div id="textlogo">
+						<h1><a href="../">LifeTyper</a></h1>
+					</div>
+				</div>
+						<!-- Navigation
+				================================================== -->
+				<div class="eleven columns">
+
+					<nav id="navigation" class="menu">
+						<ul id="responsive">
+
+							<li><a href="../">Home</a></li>
+
+
+						</ul>
+					</nav>
+				</div>
+			</div>
+			<!-- Container / End -->
+		</header>
+		<!-- Header / End -->
+
+		<!-- Breadcrumbs Container-->
+		<div id="content-wrapper">
+			<section id="titlebar">
+				<!-- Container -->
+				<div class="container">
+				<div class="thirteen columns">
+					<nav id="breadcrumbs">
+						<ul>
+							<li>You are here:</li>
+							<li><a href="../">Home</a></li>
+<li><a href="../category/misc.html">misc</a></li>
+<li>基于ZeroTier和Openwrt路由器的内网互访方案</li>
+						</ul>
+					</nav>
+				</div>
+				</div>
+				<!-- Container / End -->
+			</section>
+
+			<div class="container">
+	<div class="twelve alt columns">
+<article class="post" style="margin: 0; border: 0;">
+
+	<section class="post-content">
+
+		<header class="meta">
+			<h2><a href="../posts/access_remote_lan_through_zerotier.html">基于ZeroTier和Openwrt路由器的内网互访方案</a></h2>
+			<ul>
+				<li>By <a href="../author/bi-qin.html">毕勤</a></li>
+				<li>Wed 24 April 2019</li>
+			</ul>
+		</header>
+
+		<h2>方案选择</h2>
+<p>现在用的方案里，无非是两种，一种是像<a href="https://github.com/fatedier/frp/">FRP</a>这样的基于公网服务器进行端口转发的，这个有一个门槛是必须有一个公网VPS，速度要快的话自然是国内VPS最好，但国内的VPS带宽价格却是最贵的。而且当你需要转发多个同类型服务时，还需要记忆一大堆的端口，对于一些不支持自定义端口的app来说更是痛苦。</p>
+<p>另一种就是类似n2n或者<a href="https://zerotier.com/">zerotier</a>这样的打洞方式，本质是利用中转服务器牵线，最终建立二者间的直连，而且zerotier在直连失败的情况下依然可以提供中转服务，稳定性和速度都很优秀。实际测下来从公司到家里的网络间延迟大约只有10ms，排掉各级网络设备本身的延迟，应该就是直连了。</p>
+<h2>网络拓扑和最终效果</h2>
+<p>目前我在公司和家里的网络情况如下
+<img alt="Zerotier network topo" src="../images/zt_network_topo.jpg">
+当然，公司是我自己接了一级路由后的结果，毕竟公司的路由器不受我控制。我在公司的内网网段是192.168.88.0/24,在家的内网网段是192.168.99.0/24，最终的效果就是我在公司可以直接用IP访问192.168.99.0/24网段的设备，在家可以用IP直接访问192.168.88.0/24网段的设备，看起来就像两个网段被物理桥接在一起一样，完全就是个虚拟局域网。</p>
+<p>注意，两地的局域网网段不能一样，否则后面没法搞，连路由表都没法写。</p>
+<h2>使用的设备和服务</h2>
+<p>两台刷了lede并有zerotier插件的路由器，注册一个zerotier账号，硬件要求就这么多了。
+其他门槛：智商</p>
+<h2>配置zerotier账号</h2>
+<p>账号本身没什么，就是注册登陆后建立一个zerotier网络，这里建议设置成private network，这样别人就不能随便加入了。</p>
+<h3>授权自己的接入点</h3>
+<p>因为设置成了private network，所以默认是无法加入这个网络的，但你可以在zerotier的<a href="https://my.zerotier.com/network/">网络管理界面</a>看到哪些点，然后在auth上勾选一下，就授权了这个点接入了。</p>
+<h3>设置分配IP的网段</h3>
+<p>其实不设置根本没问题，你只要设置好路由表保证分配的网段范围都划分到同一个lan就行。我这个纯粹是强迫症而已，你们可以不设置，但如果担心有什么灵异事情发生导致不好解释的话（有什么不好解释的，就是你路由表错了呗），设置成同一个C段吧，反正最后你两地的IP要能互相ping通就行。
+反正我这里设置成了10.242.100.1~10.242.100.254，保证这个IP段不和你两端任意一段路由器的LAN IP段冲突就行。</p>
+<h3>设置zerotier的路由表</h3>
+<p>这个是最重要的地方，参考我上面的网络拓扑，我的路由表如下：</p>
+<div class="highlight"><pre><span></span>10.242.0.0/16 (LAN)
+192.168.88.0/24 via 10.242.100.216
+192.168.99.0/24 via 10.242.100.121
+</pre></div>
+
+
+<p>第一个表示10.242.0.0/16这是同一个局域网，你们分配IP在这个范围的直连就行了，不用过别的网关了。
+第二条也很好理解，公司的路由器后网段是192.168.88.0/24，而公司路由器上的zerotier分配到的IP是10.242.100.216(这个可以在zerotier网站查，也可以通过ifconfig命令在路由器查)，那么zerotier局域网内的其他IP要访问这个192.168.88.0/24网段的话，自然要通过10.242.100.216作为网关。
+第三条就完全是第二条的家庭版，不解释了。
+注意，这个只是告诉了zerotier局域网内的路由表，但这个路由表并不会广播到你的路由器上，你必须在路由器上设置好才行。</p>
+<h2>路由器的设置</h2>
+<h3>启动并连接zerotier</h3>
+<p>这个简单到爆，看图
+<img alt="config_zerotier_on_lede" src="../images/config_zerotier_on_lede.png">
+勾选启用，填入你的zerotier nerwork ID，勾选允许自动NAT，保存应用，搞定。</p>
+<h3>查看Zerotier的状态</h3>
+<p>首先是查看zerotier虚拟网卡的名称，直接在路由器上输入ifconfig命令，看到一个zt开头的就是zerotier的虚拟网卡了，我这里的是：ztzlgmpcam。
+千万不要傻逼兮兮直接抄，算我提前求你们了，不对，不用求，反正我这里不支持评论，你们要自己挖坑就自己跳。
+另外，ifconfig命令也可以看到这个虚拟网卡是否分配到了IP，这个可以告知你zerotier是否成功连上了虚拟局域网。
+如果你的这台路由器从Zerotier分配到了IP A,而远端的路由器分配到了IP B，那么这个时候你从两端互相ping这个分配的IP应该是可以ping通的。</p>
+<h3>设置路由表</h3>
+<p>这可能是唯一有点技术含量的部分了，我们上面说了，zerotier网站上设置的路由表并不会广播到路由器上，经典台词：路怎么走，你们自己选。</p>
+<h4>动态版本</h4>
+<p>可以先用ip命令添加一下，测试一下是否成功，例如我们在公司的路由器上，要访问家里的192.168.99.0/24网段，家里的路由器分配的zerotier IP是10.242.100.121，那么命令是：</p>
+<div class="highlight"><pre><span></span>ip route add 192.168.99.0/24 via 10.242.100.121
+</pre></div>
+
+
+<p>使用route命令可以查看到这样一条route记录</p>
+<div class="highlight"><pre><span></span>Kernel IP routing table
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+192.168.99.0    10.242.100.121  255.255.255.0   UG    0      0        0 ztzlgmpcam
+</pre></div>
+
+
+<p>类似的，在家里的路由器添加一条到公司192.168.88.0/24网段的路由表:</p>
+<div class="highlight"><pre><span></span>ip route add 192.168.88.0/24 via 10.242.100.216
+</pre></div>
+
+
+<p>添加后用route命令应该看到这样的一条路由表：</p>
+<div class="highlight"><pre><span></span>Kernel IP routing table
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+192.168.88.0    10.242.100.216  255.255.255.0   UG    0      0        0 ztzlgmpcam
+</pre></div>
+
+
+<p>这个时候，从双方局域网的任何一台设备，都应该可以直接访问双方局域网的任意一个IP了。</p>
+<h4>固化版本</h4>
+<p>上面的ip route命令虽然来得快，但一重启就没了，最稳妥的是直接写入config文件里。编辑/etc/config/network文件，公司版本的写法,在文件最末尾添加：</p>
+<div class="highlight"><pre><span></span>config route
+    option interface &#39;ztzlgmpcam&#39;
+    option target &#39;192.168.99.0/24&#39;
+    option gateway &#39;10.242.100.121&#39;
+</pre></div>
+
+
+<p>家庭版本的写法，添加：</p>
+<div class="highlight"><pre><span></span>config route
+    option interface &#39;ztzlgmpcam&#39;
+    option target &#39;192.168.88.0/24&#39;
+    option gateway &#39;10.242.100.216&#39;
+</pre></div>
+
+
+<p>同样的，根据你的实际情况，替换interface为你的zerotier虚拟网卡的名称，以及后面的目标网段，和目标网段上的路由器分配到的zerotier IP。
+然后/etc/init.d/network restart就可以生效了，这样的路由表重启后是不会丢失的。</p>
+
+<div class="sharing">
+</div>
+<hr>
+
+	</section>
+	<div class="clearfix"></div>
+
+</article>
+
+	</div>
+
+	<!-- Sidebar -->
+	<div class="four columns">
+		<!-- About  -->
+		<div class="widget no-mg-top">
+			<h3 class="headline">About</h3><span class="line"></span><div class="clearfix"></div>
+			<p>没有分类，没有tag，机器早晚会读懂一切</p>
+		</div>
+
+		
+	</div>
+			</div>
+			<!-- Container / End -->
+		</div>
+		<!-- Content Wrapper / End -->
+
+		<div id="footer-bottom">
+			<!-- Container -->
+			<div class="container">
+				<div class="eight columns">&copy; All Rights Reserved |<a href="https://derowallet.com">DERO Web Wallet</a>| Blog powered by <a href="http://getpelican.com">Pelican</a></div>
+					<div class="eight columns">
+						<ul class="social-icons-footer">
+								<li>
+									<a href="https://twitter.com/lifetyper" class="tooltip top" title="twitter">
+										<i class="icon-twitter"></i>
+									</a>
+								</li>
+								<li>
+									<a href="https://github.com/lifetyper" class="tooltip top" title="github">
+										<i class="icon-github"></i>
+									</a>
+								</li>
+							<li><a href="../atom.xml" class="tooltip top" title="RSS"><i class="icon-rss"></i></a></li>
+						</ul>
+					</div>
+			</div>
+			<!-- Container / End -->
+		</div>
+		<!-- Footer Bottom / End -->
+
+	<!-- Javascripts -->
+	<script src="../theme/js/jquery.min.js"></script>
+	<script src="../theme/js/instantclick.min.js" data-no-instant></script>
+	<script data-no-instant>InstantClick.init();</script>
+	</body>
+</html>
