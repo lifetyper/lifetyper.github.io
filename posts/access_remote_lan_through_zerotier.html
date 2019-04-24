@@ -206,6 +206,8 @@ Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
 
 <p>同样的，根据你的实际情况，替换interface为你的zerotier虚拟网卡的名称，以及后面的目标网段，和目标网段上的路由器分配到的zerotier IP。
 然后/etc/init.d/network restart就可以生效了，这样的路由表重启后是不会丢失的。</p>
+<h2>后记</h2>
+<p>其实想想看，这个方案并不一定需要ZeroTier，任何你可以自己配置路由表的VPN都是可以的，只是其他的VPN方案最终都是要过服务器绕一圈，并不一定能充分发挥最大的带宽，且稳定性受限于服务器。</p>
 
 <div class="sharing">
 </div>
