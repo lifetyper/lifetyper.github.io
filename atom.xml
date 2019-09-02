@@ -1,5 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>LifeTyper</title><link href="/" rel="alternate"></link><link href="atom.xml" rel="self"></link><id>/</id><updated>2019-04-24T17:11:30+08:00</updated><entry><title>基于ZeroTier和Openwrt路由器的内网互访方案</title><link href="posts/access_remote_lan_through_zerotier.html" rel="alternate"></link><published>2019-04-24T17:11:30+08:00</published><updated>2019-04-24T17:11:30+08:00</updated><author><name>毕勤</name></author><id>tag:None,2019-04-24:posts/access_remote_lan_through_zerotier.html</id><summary type="html">&lt;p&gt;相信这个标题就已经很吸引人了，因为很多人都有类似的需求，在家里访问公司服务器或工作机的内容，在公司访问家里服务器的数据，本文讨论的就是这个目的的实现。&lt;/p&gt;</summary><content type="html">&lt;h2&gt;方案选择&lt;/h2&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>LifeTyper</title><link href="/" rel="alternate"></link><link href="atom.xml" rel="self"></link><id>/</id><updated>2019-09-02T13:54:53+08:00</updated><entry><title>为Pelican Blog添加Json Feed</title><link href="posts/add_json_feed_to_pelican_blog.html" rel="alternate"></link><published>2019-09-02T13:54:53+08:00</published><updated>2019-09-02T13:54:53+08:00</updated><author><name>毕勤</name></author><id>tag:None,2019-09-02:posts/add_json_feed_to_pelican_blog.html</id><summary type="html">&lt;p&gt;不废话，只是记录一下。json feed比atom和rss feed真的好用太多了，爬虫看到这个估计都要感动的哭起来，用wget都能写爬虫了。&lt;/p&gt;</summary><content type="html">&lt;h2&gt;为Pelican添加Plugins目录&lt;/h2&gt;
+&lt;p&gt;找到你的pelicanconf.py文件，在同路径添加一个plugins目录（名字可以改），然后从&lt;a href="https://github.com/andrewheiss/pelican_json_feed"&gt;这里&lt;/a&gt;clone这个插件过来到plugins目录。&lt;/p&gt;
+&lt;h2&gt;编辑pelicanconf.py配置&lt;/h2&gt;
+&lt;p&gt;为了让pelican工程认到这个插件，需要编辑pelicanconf.py文件，添加以下内容：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;#Plugins
+PLUGIN_PATHS = [&amp;#39;plugins&amp;#39;]
+PLUGINS = [&amp;#39;pelican_json_feed&amp;#39;]
+FEED_ALL_JSON = &amp;#39;feeds.json&amp;#39;  
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;FEED_ALL_JSON的文件名可以自己定义。&lt;/p&gt;
+&lt;h2&gt;修一个小bug&lt;/h2&gt;
+&lt;p&gt;打开插件的json_feed.py文件，这个项目真的有点老了，json.dump函数现在只接受两个参数，不知道这个工程写的时候是不是参数都不一样，把最后一个encode参数删掉才行，否则会爆错。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    def write(self, fp, encoding=&amp;#39;utf-8&amp;#39;):
+        json.dump(self.feed, fp)
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;编辑blog模板&lt;/h2&gt;
+&lt;p&gt;服务爬虫，更容易的找到你的json_feed，在base.html模板的header中添加：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="cp"&gt;{%&lt;/span&gt; &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="nv"&gt;FEED_ALL_JSON&lt;/span&gt; &lt;span class="cp"&gt;%}&lt;/span&gt;&lt;span class="x"&gt;&lt;/span&gt;
+&lt;span class="x"&gt;&amp;lt;link rel=&amp;quot;alternate&amp;quot; type=&amp;quot;application/json&amp;quot; title=&amp;quot;JSON Feed&amp;quot; href=&amp;quot;&lt;/span&gt;&lt;span class="cp"&gt;{{&lt;/span&gt; &lt;span class="nv"&gt;FEED_DOMAIN&lt;/span&gt; &lt;span class="cp"&gt;}}&lt;/span&gt;&lt;span class="x"&gt;/&lt;/span&gt;&lt;span class="cp"&gt;{{&lt;/span&gt; &lt;span class="nv"&gt;FEED_ALL_JSON&lt;/span&gt; &lt;span class="cp"&gt;}}&lt;/span&gt;&lt;span class="x"&gt;&amp;quot;&amp;gt;&lt;/span&gt;
+&lt;span class="cp"&gt;{%&lt;/span&gt; &lt;span class="k"&gt;endif&lt;/span&gt; &lt;span class="cp"&gt;%}&lt;/span&gt;&lt;span class="x"&gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;然后重新发布，好了。&lt;/p&gt;</content></entry><entry><title>基于ZeroTier和Openwrt路由器的内网互访方案</title><link href="posts/access_remote_lan_through_zerotier.html" rel="alternate"></link><published>2019-04-24T17:11:30+08:00</published><updated>2019-04-24T17:11:30+08:00</updated><author><name>毕勤</name></author><id>tag:None,2019-04-24:posts/access_remote_lan_through_zerotier.html</id><summary type="html">&lt;p&gt;相信这个标题就已经很吸引人了，因为很多人都有类似的需求，在家里访问公司服务器或工作机的内容，在公司访问家里服务器的数据，本文讨论的就是这个目的的实现。&lt;/p&gt;</summary><content type="html">&lt;h2&gt;方案选择&lt;/h2&gt;
 &lt;p&gt;现在用的方案里，无非是两种，一种是像&lt;a href="https://github.com/fatedier/frp/"&gt;FRP&lt;/a&gt;这样的基于公网服务器进行端口转发的，这个有一个门槛是必须有一个公网VPS，速度要快的话自然是国内VPS最好，但国内的VPS带宽价格却是最贵的。而且当你需要转发多个同类型服务时，还需要记忆一大堆的端口，对于一些不支持自定义端口的app来说更是痛苦。&lt;/p&gt;
 &lt;p&gt;另一种就是类似n2n或者&lt;a href="https://zerotier.com/"&gt;zerotier&lt;/a&gt;这样的打洞方式，本质是利用中转服务器牵线，最终建立二者间的直连，而且zerotier在直连失败的情况下依然可以提供中转服务，稳定性和速度都很优秀。实际测下来从公司到家里的网络间延迟大约只有10ms，排掉各级网络设备本身的延迟，应该就是直连了。&lt;/p&gt;
 &lt;h2&gt;网络拓扑和最终效果&lt;/h2&gt;
