@@ -1,0 +1,276 @@
+﻿<!DOCTYPE html>
+<!--[if IE 8 ]><html class="ie ie8" lang="en"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!-->
+<html lang="en">
+<!--<![endif]-->
+	<head>
+            <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+        <meta name="author" content="毕勤">
+
+
+        <link rel="icon" href="../favicon.png" type="image/x-icon" />
+
+        <title>LifeTyper - 使用Ghostunnel建立TLS加密隧道</title>
+        <link rel="alternate" type="application/json" title="JSON Feed" href="/feeds.json">
+            <link href="/atom.xml" type="application/atom+xml" rel="alternate" title="LifeTyper Full Atom Feed" />
+
+        <!-- CSS -->
+        <link rel="stylesheet" href="../theme/css/style.css">
+
+        <!-- Custom CSS -->
+        	<link rel="stylesheet" href="../theme/css/colors/blue.css" id="colors">
+
+        <!-- Code highlight color scheme -->
+            <link href="../theme/css/code_blocks/darkly.css" rel="stylesheet">
+
+
+        <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+
+
+
+
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="使用Ghostunnel建立TLS加密隧道">
+    <meta property="og:url" content="posts/use_ghostunnel_to_create_secure_tls_tunnel.html">
+    <meta property="og:description" content="我一直感到很奇怪的一点是，TLS在当今各种翻墙工具中被大量使用，但却很少看到单纯的tls隧道的搭建的文章，甚至连这类工具的介绍都很少。">
+    <meta property="article:published_time" content="Saturday, November 23, 2019">
+    <meta name="twitter:title" content="使用Ghostunnel建立TLS加密隧道">
+    <meta name="twitter:description" content="我一直感到很奇怪的一点是，TLS在当今各种翻墙工具中被大量使用，但却很少看到单纯的tls隧道的搭建的文章，甚至连这类工具的介绍都很少。">
+    <meta name="description" content="我一直感到很奇怪的一点是，TLS在当今各种翻墙工具中被大量使用，但却很少看到单纯的tls隧道的搭建的文章，甚至连这类工具的介绍都很少。">
+    <meta name="twitter:image" content="">
+    <meta property="og:image" content="">
+
+	                <meta property="og:locale" content="">
+		<meta property="og:site_name" content="LifeTyper">
+
+	<meta property="og:type" content="article">
+	<meta property="article:author" content="">
+	<meta property="og:url" content="../posts/use_ghostunnel_to_create_secure_tls_tunnel.html">
+	<meta property="og:title" content="使用Ghostunnel建立TLS加密隧道">
+	<meta property="og:description" content="">
+	   <meta property="og:image" content="../images/guilherme-toti.jpg">
+	<meta property="article:published_time" content="2019-11-23 11:45:00+08:00">
+	</head>
+	<body>
+		<header id="header">
+			<!-- Container -->
+			<div class="container">
+				<!-- Logo / Mobile Menu -->
+				<div class="five columns">
+					<div id="textlogo">
+						<h1><a href="../">LifeTyper</a></h1>
+					</div>
+				</div>
+						<!-- Navigation
+				================================================== -->
+				<div class="eleven columns">
+
+					<nav id="navigation" class="menu">
+						<ul id="responsive">
+
+							<li><a href="../">Home</a></li>
+
+
+						</ul>
+					</nav>
+				</div>
+			</div>
+			<!-- Container / End -->
+		</header>
+		<!-- Header / End -->
+
+		<!-- Breadcrumbs Container-->
+		<div id="content-wrapper">
+			<section id="titlebar">
+				<!-- Container -->
+				<div class="container">
+				<div class="thirteen columns">
+					<nav id="breadcrumbs">
+						<ul>
+							<li>You are here:</li>
+							<li><a href="../">Home</a></li>
+<li><a href="../category/misc.html">misc</a></li>
+<li>使用Ghostunnel建立TLS加密隧道</li>
+						</ul>
+					</nav>
+				</div>
+				</div>
+				<!-- Container / End -->
+			</section>
+
+			<div class="container">
+	<div class="twelve alt columns">
+<article class="post" style="margin: 0; border: 0;">
+
+	<section class="post-content">
+
+		<header class="meta">
+			<h2><a href="../posts/use_ghostunnel_to_create_secure_tls_tunnel.html">使用Ghostunnel建立TLS加密隧道</a></h2>
+			<ul>
+				<li>By <a href="../author/bi-qin.html">毕勤</a></li>
+				<li>Sat 23 November 2019</li>
+			</ul>
+		</header>
+
+		<h2>惨痛的现实</h2>
+<p>刚好最近这段时间高墙又有些新动作，我暂时观察到的解决办法就是tls混淆，当然，真正的TLS也可以。猜测是TLS1.3之后各种证书拦截和检测的成本已经高的不可思议，他们暂时对TLS只能放弃治疗，甚至连假的混淆也直接放过。当然也可能他们只是封锁不明协议，只要看着还像个正常的协议，就都给放行，这个似乎更合理一些。</p>
+<p>考虑到SSR已经基本停止开发，SS似乎是因为历史问题对tls混淆嗤之以鼻，v2ray的检测专利大家也都看到了，觉得有必要好好研究一下纯粹的TLS加密隧道的搭建。搭配完成的TLS隧道，其实最后用什么工具都很好办，哪怕是ss原版配合none加密也不是问题，因为TLS本身就是强加密的。</p>
+<p>找了一圈最后找到了<a href="https://github.com/square/ghostunnel">ghostunnel</a>,其实他是个stunnel的替代品，基于go语言开发。为什么不写stunnel的？因为很多很多年前就有人写过了。</p>
+<h2>证书管理部分</h2>
+<p>其实tls隧道最复杂的并不是隧道本身的搭建，而是一大堆证书的生成和管理。你可以直接选择购买ssl证书拿来用，但我个人认为这没有必要。使用私有CA授权的证书和过期证书的网站和服务器在网络上比比皆是，单从伪装角度讲，商业证书未必有什么优势，墙不会因为你花钱买了EV级证书就对你网开一面。</p>
+<p>证书管理工具我选择了<a href="https://github.com/square/certstrap">certstrap</a>,下面是几个关键步骤。</p>
+<h3>生成根证书</h3>
+<div class="highlight"><pre><span></span>certstrap init --common-name &quot;CA&quot; 
+</pre></div>
+
+
+<p>这里的common-name是必须的，具体名字你可以自己定，这个命令会生成CA.crt、CA.csr、CA.key这三个文件，</p>
+<h3>合并根证书为pem文件</h3>
+<div class="highlight"><pre><span></span>cat CA.crt CA.key &gt;CA.pem
+</pre></div>
+
+
+<p>很简单，就是把key和cert直接拼起来生成一个包含了二者的pem文件，因为ghostunnel需要使用这样的格式的CA。</p>
+<h3>为节点（客户端、服务器）生成key</h3>
+<div class="highlight"><pre><span></span>request-cert --domain cn.ssr.org
+</pre></div>
+
+
+<p>这里根据实际域名填写，分别是客户端和服务器端的域名，这会生成cn.ssr.org.key 和cn.ssr.org.csr 两个文件。</p>
+<h3>用根证书为节点签发证书</h3>
+<div class="highlight"><pre><span></span>sign cn.ssr.org --CA CA 
+</pre></div>
+
+
+<p>这里的CA就是我们刚才生成的根证书的名字，这会生成cn.ssr.org.crt</p>
+<h3>生成合并的pkcs12格式keystore文件</h3>
+<p>其实到这里本来就够了，为了方便使用，我们可以生成一个合并的包含了公私钥的keystore文件：</p>
+<div class="highlight"><pre><span></span>openssl pkcs12 -export -out cn.p12 -inkey cn.ssr.org.key -in cn.ssr.org.crt -certfile CA.crt
+</pre></div>
+
+
+<p>这样会得到一个cn.p12的keystore文件，注意，国内节点（客户端）和国外节点（服务器）都要生成这些证书。</p>
+<h3>最终的文件</h3>
+<p>假定我们的国内节点是cn.ssr.org，国外节点是x.ssr.org，我们最终得到了用于国内节点的cn.ssr.org.key、cn.ssr.org.csr(用不上)、cn.ssr.org.crt、cn.p12文件，以及用于国外节点的x.ssr.org.key、x.ssr.org.csr（用不上）、x.ssr.org.crt、x.p12文件。</p>
+<h2>测试框架</h2>
+<p>我们在国外的服务器(x.ssr.org)上运行一个简单的http服务器，但只监听localhost的8001端口并不开放给公网。</p>
+<div class="highlight"><pre><span></span>python3 -m http.server 8001 --bind 127.0.0.1
+</pre></div>
+
+
+<p>在国外服务器上运行ghostunnel的服务器端，从服务器端的0.0.0.0:8002端口转发到服务器的localhost:8001端口。
+在国内服务器运行ghostunnel的客户端，从客户端的0.0.0.0:8003转发到服务器的0.0.0.0:8002端口。
+本来如果没有隧道直接访问，路径应该是这样的：
+client--HTTP--&gt;x.ssr.org:8001
+现在有了TLS隧道后，最终路径是这样的:
+client--HTTP--&gt;cn.ssr.org:8003--&gt;TLS--&gt;x.ssr.org:8002--HTTP--&gt;x.ssr.org:8001
+也就是说，对客户端（浏览器）和最终的服务端（http server）来说，完全不需要做任何改变，依然可以使用它原来不安全的http协议明文传送，但从cn.ssr.org到x.ssr.org的这个跨国链路，就是完全TLS加密的了，为什么这样做我想不用解释了。</p>
+<h2>Ghostunne服务器配置</h2>
+<p>假设我们生成的证书全部放在一个out目录下，服务器运行参数如下：</p>
+<div class="highlight"><pre><span></span>ghostunnel server \
+    --listen 0.0.0.0:8002 \
+    --target localhost:8001 \
+    --key out/x.ssr.org.key \
+    --cert out/x.ssr.org.crt \
+    --cacert out/CA.pem \
+    --allow-all
+</pre></div>
+
+
+<p>上面这是分别制定key和cert文件的，我们也可以使用合并的keystore文件，命令就变成这样了：</p>
+<div class="highlight"><pre><span></span>ghostunnel server \
+    --listen 0.0.0.0:8002 \
+    --target localhost:8001 \
+    --keystore out/x.p12 \
+    --cacert out/CA.pem \
+    --allow-all
+</pre></div>
+
+
+<h2>Ghostunnel客户端配置</h2>
+<p>同样的，分别使用key和cert文件：</p>
+<div class="highlight"><pre><span></span>ghostunnel client \
+    --listen 0.0.0.0:8003 \
+    --target x.ssr.org:8002 \
+    --key out/cn.ssr.org.key \
+    --cert out/cn.ssr.org.crt \
+    --cacert out/CA.pem \
+    --unsafe-listen
+</pre></div>
+
+
+<p>使用合并的keystore文件：</p>
+<div class="highlight"><pre><span></span>ghostunnel client \
+    --listen 0.0.0.0:8003 \
+    --target x.ssr.org:8002 \
+    --keystore out/cn.p12 \
+    --cacert out/CA.pem \
+    --unsafe-listen
+</pre></div>
+
+
+<p>打完收工。平时如果直接从国内访问国外机器的http端口并且传大量文件，很快就会被rst了，现在我们可以通过国内的cn.ssr.org:8003端口+TLS隧道来访问，实测下来下载几个G的文件也没什么发生，速度还挺稳定。</p>
+
+<div class="sharing">
+</div>
+<hr>
+
+	</section>
+	<div class="clearfix"></div>
+
+</article>
+
+	</div>
+
+	<!-- Sidebar -->
+	<div class="four columns">
+		<!-- About  -->
+		<div class="widget no-mg-top">
+			<h3 class="headline">About</h3><span class="line"></span><div class="clearfix"></div>
+			<p>没有分类，没有tag，机器早晚会读懂一切</p>
+		</div>
+
+		
+	</div>
+			</div>
+			<!-- Container / End -->
+		</div>
+		<!-- Content Wrapper / End -->
+
+		<div id="footer-bottom">
+			<!-- Container -->
+			<div class="container">
+				<div class="eight columns">&copy; All Rights Reserved |<a href="https://derowallet.com">DERO Web Wallet</a>| Blog powered by <a href="http://getpelican.com">Pelican</a></div>
+					<div class="eight columns">
+						<ul class="social-icons-footer">
+								<li>
+									<a href="https://twitter.com/lifetyper" class="tooltip top" title="twitter">
+										<i class="icon-twitter"></i>
+									</a>
+								</li>
+								<li>
+									<a href="https://github.com/lifetyper" class="tooltip top" title="github">
+										<i class="icon-github"></i>
+									</a>
+								</li>
+							<li><a href="../atom.xml" class="tooltip top" title="RSS"><i class="icon-rss"></i></a></li>
+						</ul>
+					</div>
+			</div>
+			<!-- Container / End -->
+		</div>
+		<!-- Footer Bottom / End -->
+
+	<!-- Javascripts -->
+	<script src="../theme/js/jquery.min.js"></script>
+	<script src="../theme/js/instantclick.min.js" data-no-instant></script>
+	<script data-no-instant>InstantClick.init();</script>
+	</body>
+</html>

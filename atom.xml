@@ -1,5 +1,102 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>LifeTyper</title><link href="/" rel="alternate"></link><link href="atom.xml" rel="self"></link><id>/</id><updated>2019-09-02T13:54:53+08:00</updated><entry><title>为Pelican Blog添加Json Feed</title><link href="posts/add_json_feed_to_pelican_blog.html" rel="alternate"></link><published>2019-09-02T13:54:53+08:00</published><updated>2019-09-02T13:54:53+08:00</updated><author><name>毕勤</name></author><id>tag:None,2019-09-02:posts/add_json_feed_to_pelican_blog.html</id><summary type="html">&lt;p&gt;不废话，只是记录一下。json feed比atom和rss feed真的好用太多了，爬虫看到这个估计都要感动的哭起来，用wget都能写爬虫了。&lt;/p&gt;</summary><content type="html">&lt;h2&gt;为Pelican添加Plugins目录&lt;/h2&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>LifeTyper</title><link href="/" rel="alternate"></link><link href="atom.xml" rel="self"></link><id>/</id><updated>2019-11-23T11:45:00+08:00</updated><entry><title>使用Ghostunnel建立TLS加密隧道</title><link href="posts/use_ghostunnel_to_create_secure_tls_tunnel.html" rel="alternate"></link><published>2019-11-23T11:45:00+08:00</published><updated>2019-11-23T11:45:00+08:00</updated><author><name>毕勤</name></author><id>tag:None,2019-11-23:posts/use_ghostunnel_to_create_secure_tls_tunnel.html</id><summary type="html">&lt;p&gt;我一直感到很奇怪的一点是，TLS在当今各种翻墙工具中被大量使用，但却很少看到单纯的tls隧道的搭建的文章，甚至连这类工具的介绍都很少。&lt;/p&gt;</summary><content type="html">&lt;h2&gt;惨痛的现实&lt;/h2&gt;
+&lt;p&gt;刚好最近这段时间高墙又有些新动作，我暂时观察到的解决办法就是tls混淆，当然，真正的TLS也可以。猜测是TLS1.3之后各种证书拦截和检测的成本已经高的不可思议，他们暂时对TLS只能放弃治疗，甚至连假的混淆也直接放过。当然也可能他们只是封锁不明协议，只要看着还像个正常的协议，就都给放行，这个似乎更合理一些。&lt;/p&gt;
+&lt;p&gt;考虑到SSR已经基本停止开发，SS似乎是因为历史问题对tls混淆嗤之以鼻，v2ray的检测专利大家也都看到了，觉得有必要好好研究一下纯粹的TLS加密隧道的搭建。搭配完成的TLS隧道，其实最后用什么工具都很好办，哪怕是ss原版配合none加密也不是问题，因为TLS本身就是强加密的。&lt;/p&gt;
+&lt;p&gt;找了一圈最后找到了&lt;a href="https://github.com/square/ghostunnel"&gt;ghostunnel&lt;/a&gt;,其实他是个stunnel的替代品，基于go语言开发。为什么不写stunnel的？因为很多很多年前就有人写过了。&lt;/p&gt;
+&lt;h2&gt;证书管理部分&lt;/h2&gt;
+&lt;p&gt;其实tls隧道最复杂的并不是隧道本身的搭建，而是一大堆证书的生成和管理。你可以直接选择购买ssl证书拿来用，但我个人认为这没有必要。使用私有CA授权的证书和过期证书的网站和服务器在网络上比比皆是，单从伪装角度讲，商业证书未必有什么优势，墙不会因为你花钱买了EV级证书就对你网开一面。&lt;/p&gt;
+&lt;p&gt;证书管理工具我选择了&lt;a href="https://github.com/square/certstrap"&gt;certstrap&lt;/a&gt;,下面是几个关键步骤。&lt;/p&gt;
+&lt;h3&gt;生成根证书&lt;/h3&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;certstrap init --common-name &amp;quot;CA&amp;quot; 
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这里的common-name是必须的，具体名字你可以自己定，这个命令会生成CA.crt、CA.csr、CA.key这三个文件，&lt;/p&gt;
+&lt;h3&gt;合并根证书为pem文件&lt;/h3&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;cat CA.crt CA.key &amp;gt;CA.pem
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;很简单，就是把key和cert直接拼起来生成一个包含了二者的pem文件，因为ghostunnel需要使用这样的格式的CA。&lt;/p&gt;
+&lt;h3&gt;为节点（客户端、服务器）生成key&lt;/h3&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;request-cert --domain cn.ssr.org
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这里根据实际域名填写，分别是客户端和服务器端的域名，这会生成cn.ssr.org.key 和cn.ssr.org.csr 两个文件。&lt;/p&gt;
+&lt;h3&gt;用根证书为节点签发证书&lt;/h3&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;sign cn.ssr.org --CA CA 
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这里的CA就是我们刚才生成的根证书的名字，这会生成cn.ssr.org.crt&lt;/p&gt;
+&lt;h3&gt;生成合并的pkcs12格式keystore文件&lt;/h3&gt;
+&lt;p&gt;其实到这里本来就够了，为了方便使用，我们可以生成一个合并的包含了公私钥的keystore文件：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;openssl pkcs12 -export -out cn.p12 -inkey cn.ssr.org.key -in cn.ssr.org.crt -certfile CA.crt
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这样会得到一个cn.p12的keystore文件，注意，国内节点（客户端）和国外节点（服务器）都要生成这些证书。&lt;/p&gt;
+&lt;h3&gt;最终的文件&lt;/h3&gt;
+&lt;p&gt;假定我们的国内节点是cn.ssr.org，国外节点是x.ssr.org，我们最终得到了用于国内节点的cn.ssr.org.key、cn.ssr.org.csr(用不上)、cn.ssr.org.crt、cn.p12文件，以及用于国外节点的x.ssr.org.key、x.ssr.org.csr（用不上）、x.ssr.org.crt、x.p12文件。&lt;/p&gt;
+&lt;h2&gt;测试框架&lt;/h2&gt;
+&lt;p&gt;我们在国外的服务器(x.ssr.org)上运行一个简单的http服务器，但只监听localhost的8001端口并不开放给公网。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;python3 -m http.server 8001 --bind 127.0.0.1
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;在国外服务器上运行ghostunnel的服务器端，从服务器端的0.0.0.0:8002端口转发到服务器的localhost:8001端口。
+在国内服务器运行ghostunnel的客户端，从客户端的0.0.0.0:8003转发到服务器的0.0.0.0:8002端口。
+本来如果没有隧道直接访问，路径应该是这样的：
+client--HTTP--&amp;gt;x.ssr.org:8001
+现在有了TLS隧道后，最终路径是这样的:
+client--HTTP--&amp;gt;cn.ssr.org:8003--&amp;gt;TLS--&amp;gt;x.ssr.org:8002--HTTP--&amp;gt;x.ssr.org:8001
+也就是说，对客户端（浏览器）和最终的服务端（http server）来说，完全不需要做任何改变，依然可以使用它原来不安全的http协议明文传送，但从cn.ssr.org到x.ssr.org的这个跨国链路，就是完全TLS加密的了，为什么这样做我想不用解释了。&lt;/p&gt;
+&lt;h2&gt;Ghostunne服务器配置&lt;/h2&gt;
+&lt;p&gt;假设我们生成的证书全部放在一个out目录下，服务器运行参数如下：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;ghostunnel server \
+    --listen 0.0.0.0:8002 \
+    --target localhost:8001 \
+    --key out/x.ssr.org.key \
+    --cert out/x.ssr.org.crt \
+    --cacert out/CA.pem \
+    --allow-all
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;上面这是分别制定key和cert文件的，我们也可以使用合并的keystore文件，命令就变成这样了：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;ghostunnel server \
+    --listen 0.0.0.0:8002 \
+    --target localhost:8001 \
+    --keystore out/x.p12 \
+    --cacert out/CA.pem \
+    --allow-all
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;Ghostunnel客户端配置&lt;/h2&gt;
+&lt;p&gt;同样的，分别使用key和cert文件：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;ghostunnel client \
+    --listen 0.0.0.0:8003 \
+    --target x.ssr.org:8002 \
+    --key out/cn.ssr.org.key \
+    --cert out/cn.ssr.org.crt \
+    --cacert out/CA.pem \
+    --unsafe-listen
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;使用合并的keystore文件：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;ghostunnel client \
+    --listen 0.0.0.0:8003 \
+    --target x.ssr.org:8002 \
+    --keystore out/cn.p12 \
+    --cacert out/CA.pem \
+    --unsafe-listen
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;打完收工。平时如果直接从国内访问国外机器的http端口并且传大量文件，很快就会被rst了，现在我们可以通过国内的cn.ssr.org:8003端口+TLS隧道来访问，实测下来下载几个G的文件也没什么发生，速度还挺稳定。&lt;/p&gt;</content></entry><entry><title>为Pelican Blog添加Json Feed</title><link href="posts/add_json_feed_to_pelican_blog.html" rel="alternate"></link><published>2019-09-02T13:54:53+08:00</published><updated>2019-09-02T13:54:53+08:00</updated><author><name>毕勤</name></author><id>tag:None,2019-09-02:posts/add_json_feed_to_pelican_blog.html</id><summary type="html">&lt;p&gt;不废话，只是记录一下。json feed比atom和rss feed真的好用太多了，爬虫看到这个估计都要感动的哭起来，用wget都能写爬虫了。&lt;/p&gt;</summary><content type="html">&lt;h2&gt;为Pelican添加Plugins目录&lt;/h2&gt;
 &lt;p&gt;找到你的pelicanconf.py文件，在同路径添加一个plugins目录（名字可以改），然后从&lt;a href="https://github.com/andrewheiss/pelican_json_feed"&gt;这里&lt;/a&gt;clone这个插件过来到plugins目录。&lt;/p&gt;
 &lt;h2&gt;编辑pelicanconf.py配置&lt;/h2&gt;
 &lt;p&gt;为了让pelican工程认到这个插件，需要编辑pelicanconf.py文件，添加以下内容：&lt;/p&gt;
