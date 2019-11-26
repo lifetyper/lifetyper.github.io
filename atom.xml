@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>LifeTyper</title><link href="/" rel="alternate"></link><link href="atom.xml" rel="self"></link><id>/</id><updated>2019-11-23T11:45:00+08:00</updated><entry><title>使用Ghostunnel建立TLS加密隧道</title><link href="posts/use_ghostunnel_to_create_secure_tls_tunnel.html" rel="alternate"></link><published>2019-11-23T11:45:00+08:00</published><updated>2019-11-23T11:45:00+08:00</updated><author><name>毕勤</name></author><id>tag:None,2019-11-23:posts/use_ghostunnel_to_create_secure_tls_tunnel.html</id><summary type="html">&lt;p&gt;我一直感到很奇怪的一点是，TLS在当今各种翻墙工具中被大量使用，但却很少看到单纯的tls隧道的搭建的文章，甚至连这类工具的介绍都很少。&lt;/p&gt;</summary><content type="html">&lt;h2&gt;惨痛的现实&lt;/h2&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>LifeTyper</title><link href="/" rel="alternate"></link><link href="atom.xml" rel="self"></link><id>/</id><updated>2019-11-23T11:45:00+08:00</updated><entry><title>使用Ghostunnel建立TLS加密隧道</title><link href="posts/use_ghostunnel_to_create_secure_tls_tunnel.html" rel="alternate"></link><published>2019-11-23T11:45:00+08:00</published><updated>2019-11-23T11:45:00+08:00</updated><author><name>毕勤</name></author><id>tag:None,2019-11-23:posts/use_ghostunnel_to_create_secure_tls_tunnel.html</id><summary type="html">&lt;p&gt;我一直感到很奇怪的一点是，TLS在当今各种翻墙工具中被大量使用，但却很少看到单纯的tls隧道的搭建的文章，甚至连这类工具的介绍都很少。&lt;/p&gt;</summary><content type="html">&lt;p&gt;我一直感到很奇怪的一点是，TLS在当今各种翻墙工具中被大量使用，但却很少看到单纯的tls隧道的搭建的文章，甚至连这类工具的介绍都很少。&lt;/p&gt;
+&lt;h2&gt;惨痛的现实&lt;/h2&gt;
 &lt;p&gt;刚好最近这段时间高墙又有些新动作，我暂时观察到的解决办法就是tls混淆，当然，真正的TLS也可以。猜测是TLS1.3之后各种证书拦截和检测的成本已经高的不可思议，他们暂时对TLS只能放弃治疗，甚至连假的混淆也直接放过。当然也可能他们只是封锁不明协议，只要看着还像个正常的协议，就都给放行，这个似乎更合理一些。&lt;/p&gt;
 &lt;p&gt;考虑到SSR已经基本停止开发，SS似乎是因为历史问题对tls混淆嗤之以鼻，v2ray的检测专利大家也都看到了，觉得有必要好好研究一下纯粹的TLS加密隧道的搭建。搭配完成的TLS隧道，其实最后用什么工具都很好办，哪怕是ss原版配合none加密也不是问题，因为TLS本身就是强加密的。&lt;/p&gt;
 &lt;p&gt;找了一圈最后找到了&lt;a href="https://github.com/square/ghostunnel"&gt;ghostunnel&lt;/a&gt;,其实他是个stunnel的替代品，基于go语言开发。为什么不写stunnel的？因为很多很多年前就有人写过了。&lt;/p&gt;
@@ -71,6 +72,13 @@ client--HTTP--&amp;gt;cn.ssr.org:8003--&amp;gt;TLS--&amp;gt;x.ssr.org:8002--HTTP
     --keystore out/x.p12 \
     --cacert out/CA.pem \
     --allow-all
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这里的--allow-all表示允许所有客户端连接，也可以通过指定域名证书的方式，限制特定IP（域名）来源的连接，配合自己的私有CA证书，非授权的机器几乎不可能连上服务器。
+指定域名的用法是：
+把--allow-all替换成：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;--allow-cn cn.ssr.org
 &lt;/pre&gt;&lt;/div&gt;
 
 
