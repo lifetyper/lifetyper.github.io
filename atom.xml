@@ -20,13 +20,13 @@
 
 &lt;p&gt;很简单，就是把key和cert直接拼起来生成一个包含了二者的pem文件，因为ghostunnel需要使用这样的格式的CA。&lt;/p&gt;
 &lt;h3&gt;为节点（客户端、服务器）生成key&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;request-cert --domain cn.ssr.org
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;certstrap request-cert --domain cn.ssr.org
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;这里根据实际域名填写，分别是客户端和服务器端的域名，这会生成cn.ssr.org.key 和cn.ssr.org.csr 两个文件。&lt;/p&gt;
 &lt;h3&gt;用根证书为节点签发证书&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;sign cn.ssr.org --CA CA 
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;certstrap sign cn.ssr.org --CA CA 
 &lt;/pre&gt;&lt;/div&gt;
 
 
