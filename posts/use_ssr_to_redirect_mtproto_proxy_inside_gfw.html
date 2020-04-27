@@ -130,7 +130,7 @@
 <h2>建立转发规则</h2>
 <p>根据hostloc论坛网友的建议，只需要找出Telegram的3个ASN所对应的IP，把国内VPS到这些IP的流量全部转发到ss-redir产生的透明代理上就行了。</p>
 <p>写了个脚本把这些IP拔下来然后转成bash脚本：</p>
-<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">requests</span>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">requests</span>
 <span class="kn">import</span> <span class="nn">json</span>
 
 <span class="n">ip_range_urls</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;https://api.bgpview.io/asn/59930/prefixes&#39;</span><span class="p">,</span> <span class="s1">&#39;https://api.bgpview.io/asn/62014/prefixes&#39;</span><span class="p">,</span>
@@ -149,7 +149,7 @@
         <span class="s1">&#39;iptables -t nat -A PREROUTING -p tcp -m set --match-set telegram dst -j REDIRECT --to-ports 1080</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
     <span class="n">dst</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
         <span class="s1">&#39;iptables -t nat -A OUTPUT -p tcp -m set --match-set telegram dst -j REDIRECT --to-ports 1080</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-</pre></div>
+</code></pre></div>
 
 
 <p>产生的bash脚本如下：</p>
@@ -166,7 +166,7 @@
 11
 12
 13
-14</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="ch">#! /bin/bash</span>
+14</pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="ch">#! /bin/bash</span>
 ipset create telegram hash:net -!
 ipset add telegram <span class="m">91</span>.108.12.0/22 -!
 ipset add telegram <span class="m">149</span>.154.172.0/22 -!
@@ -180,7 +180,7 @@ ipset add telegram <span class="m">149</span>.154.160.0/20 -!
 ipset add telegram <span class="m">149</span>.154.164.0/22 -!
 iptables -t nat -A PREROUTING -p tcp -m <span class="nb">set</span> --match-set telegram dst -j REDIRECT --to-ports <span class="m">1080</span>
 iptables -t nat -A OUTPUT -p tcp -m <span class="nb">set</span> --match-set telegram dst -j REDIRECT --to-ports <span class="m">1080</span>
-</pre></div>
+</code></pre></div>
 </td></tr></table>
 
 <p>这么一看，当初还写什么脚本，IP段也没几个啊，害得我一度以为脚本写错了，是不是漏了什么IP，结果上网站一查还真就这几个IP段。
@@ -188,26 +188,26 @@ Bash脚本应该都看得懂吧，就是把telegram的IP加入一个ipset中(当
 <h2>在国内VPS安装MTProxy</h2>
 <p>不知道为啥，写这篇文章的时候，用官方的MTProxy在本地搭的测试环境一直连不上，之前在国外VPS上搭都是OK的。这次干脆直接换成了纯python3版本的<a href="https://github.com/alexbers/mtprotoproxy">mtprotoproxy</a>，还省去了build过程。</p>
 <p>git clone下来后，改下端口设置就行了。config.py里的Users，其实就是个16位的随机secret，可以用以下命令产生：</p>
-<div class="highlight"><pre><span></span>head -c 16 /dev/urandom | xxd -ps
-</pre></div>
+<div class="highlight"><pre><span></span><code><span class="err">head -c 16 /dev/urandom | xxd -ps</span>
+</code></pre></div>
 
 
 <p>你还可以配置多个secret，这样就可以把secret当Users来管理了，虽然我目前还没发现这玩意有什么管理功能。</p>
 <p>对于python脚本的启动管理，我向来喜欢转个supervisor搞定，只需要写个配置文件就行了:</p>
-<div class="highlight"><pre><span></span>command=/usr/bin/python3 /root/.services/mtprotoproxy/mtprotoproxy.py
-startsecs=1
-startretries=100
-autorstart=true
-autorestart=true
-</pre></div>
+<div class="highlight"><pre><span></span><code><span class="err">command=/usr/bin/python3 /root/.services/mtprotoproxy/mtprotoproxy.py</span>
+<span class="err">startsecs=1</span>
+<span class="err">startretries=100</span>
+<span class="err">autorstart=true</span>
+<span class="err">autorestart=true</span>
+</code></pre></div>
 
 
 <p>当然，我建议你可以先手工执行以下这个服务器命令，这样会自动echo出产生的MTProxy的地址，省的你自己再去一点点拼起来。</p>
 <h2>固化ipset和iptables规则</h2>
 <p>ipset和iptables默认重启后就会掉了，我们可以先把他们保存到文件：</p>
-<div class="highlight"><pre><span></span>ipset save &gt; /etc/ipset.conf
-iptables-save  &gt; /etc/iptables.conf
-</pre></div>
+<div class="highlight"><pre><span></span><code><span class="err">ipset save &gt; /etc/ipset.conf</span>
+<span class="err">iptables-save  &gt; /etc/iptables.conf</span>
+</code></pre></div>
 
 
 <p>然后在/etc/rc.local里(对应的是ubuntu/debian系统，centos自己想办法)，写入从文件还原ipset和iptables的命令就可以了：</p>
@@ -216,13 +216,13 @@ iptables-save  &gt; /etc/iptables.conf
 3
 4
 5
-6</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="ch">#!/bin/sh</span>
+6</pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="ch">#!/bin/sh</span>
 
 ipset restore &lt; /etc/ipset.conf
 iptables-restore &lt; /etc/iptables.conf
 
 <span class="nb">exit</span> <span class="m">0</span>
-</pre></div>
+</code></pre></div>
 </td></tr></table>
 
 <p>ubuntu18默认没有/etc/rc.local文件了，自己创建一个就行，记得chomod +x /etc/rc.local给它添加可执行属性。</p>

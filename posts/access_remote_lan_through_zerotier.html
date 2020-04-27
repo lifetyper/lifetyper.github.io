@@ -139,10 +139,10 @@
 <p>反正我这里设置成了10.242.100.1~10.242.100.254，保证这个IP段不和你两端任意一段路由器的LAN IP段冲突就行。</p>
 <h3>设置zerotier的路由表</h3>
 <p>这个是最重要的地方，参考我上面的网络拓扑，我的路由表如下：</p>
-<div class="highlight"><pre><span></span>10.242.0.0/16 (LAN)
-192.168.88.0/24 via 10.242.100.216
-192.168.99.0/24 via 10.242.100.121
-</pre></div>
+<div class="highlight"><pre><span></span><code><span class="err">10.242.0.0/16 (LAN)</span>
+<span class="err">192.168.88.0/24 via 10.242.100.216</span>
+<span class="err">192.168.99.0/24 via 10.242.100.121</span>
+</code></pre></div>
 
 
 <p>第一个表示10.242.0.0/16这是同一个局域网，你们分配IP在这个范围的直连就行了，不用过别的网关了。</p>
@@ -165,45 +165,45 @@
 <p>而且静态路由表本来就不是最合理的做法，因为接口如果断开的话，路由表是无效的，但也不会有什么问题，因为不能访问还是不能访问，并不会有什么额外的问题。现在新版的插件中，应该是在ifup和ifdown的脚本中动态添加和删除路由表了，这个才是正确的做法。</p>
 <h4>动态版本</h4>
 <p>可以先用ip命令添加一下，测试一下是否成功，例如我们在公司的路由器上，要访问家里的192.168.99.0/24网段，家里的路由器分配的zerotier IP是10.242.100.121，那么命令是：</p>
-<div class="highlight"><pre><span></span>ip route add 192.168.99.0/24 via 10.242.100.121
-</pre></div>
+<div class="highlight"><pre><span></span><code><span class="err">ip route add 192.168.99.0/24 via 10.242.100.121</span>
+</code></pre></div>
 
 
 <p>使用route命令可以查看到这样一条route记录</p>
-<div class="highlight"><pre><span></span>Kernel IP routing table
-Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
-192.168.99.0    10.242.100.121  255.255.255.0   UG    0      0        0 ztzlgmpcam
-</pre></div>
+<div class="highlight"><pre><span></span><code><span class="err">Kernel IP routing table</span>
+<span class="err">Destination     Gateway         Genmask         Flags Metric Ref    Use Iface</span>
+<span class="err">192.168.99.0    10.242.100.121  255.255.255.0   UG    0      0        0 ztzlgmpcam</span>
+</code></pre></div>
 
 
 <p>类似的，在家里的路由器添加一条到公司192.168.88.0/24网段的路由表:</p>
-<div class="highlight"><pre><span></span>ip route add 192.168.88.0/24 via 10.242.100.216
-</pre></div>
+<div class="highlight"><pre><span></span><code><span class="err">ip route add 192.168.88.0/24 via 10.242.100.216</span>
+</code></pre></div>
 
 
 <p>添加后用route命令应该看到这样的一条路由表：</p>
-<div class="highlight"><pre><span></span>Kernel IP routing table
-Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
-192.168.88.0    10.242.100.216  255.255.255.0   UG    0      0        0 ztzlgmpcam
-</pre></div>
+<div class="highlight"><pre><span></span><code><span class="err">Kernel IP routing table</span>
+<span class="err">Destination     Gateway         Genmask         Flags Metric Ref    Use Iface</span>
+<span class="err">192.168.88.0    10.242.100.216  255.255.255.0   UG    0      0        0 ztzlgmpcam</span>
+</code></pre></div>
 
 
 <p>这个时候，从双方局域网的任何一台设备，都应该可以直接访问双方局域网的任意一个IP了。</p>
 <h4>固化版本</h4>
 <p>上面的ip route命令虽然来得快，但一重启就没了，最稳妥的是直接写入config文件里。编辑/etc/config/network文件，公司版本的写法,在文件最末尾添加：</p>
-<div class="highlight"><pre><span></span>config route
-    option interface &#39;ztzlgmpcam&#39;
-    option target &#39;192.168.99.0/24&#39;
-    option gateway &#39;10.242.100.121&#39;
-</pre></div>
+<div class="highlight"><pre><span></span><code><span class="err">config route</span>
+<span class="err">    option interface &#39;ztzlgmpcam&#39;</span>
+<span class="err">    option target &#39;192.168.99.0/24&#39;</span>
+<span class="err">    option gateway &#39;10.242.100.121&#39;</span>
+</code></pre></div>
 
 
 <p>家庭版本的写法，添加：</p>
-<div class="highlight"><pre><span></span>config route
-    option interface &#39;ztzlgmpcam&#39;
-    option target &#39;192.168.88.0/24&#39;
-    option gateway &#39;10.242.100.216&#39;
-</pre></div>
+<div class="highlight"><pre><span></span><code><span class="err">config route</span>
+<span class="err">    option interface &#39;ztzlgmpcam&#39;</span>
+<span class="err">    option target &#39;192.168.88.0/24&#39;</span>
+<span class="err">    option gateway &#39;10.242.100.216&#39;</span>
+</code></pre></div>
 
 
 <p>同样的，根据你的实际情况，替换interface为你的zerotier虚拟网卡的名称，以及后面的目标网段，和目标网段上的路由器分配到的zerotier IP。</p>

@@ -123,33 +123,33 @@
 <p>我倒不是担心哪天墙高到翻不出去的地步，但毕竟所有照片都在上面，觉得还是有必要在本地存一个备份以便随时查看，这样Google Photos就成了一个集散中心，本地成了最终的备份仓库。我有一台装了ubuntu server的deskmini，刚开始的想法是看看有没有Google Photos的linux客户端，后来发现更简单的方法是使用<a href="https://rclone.org/">rclone</a>这个全平台制霸的同步工具。</p>
 <h2>安装</h2>
 <p>安装过程非常简单，一条命令就搞定：</p>
-<div class="highlight"><pre><span></span>curl https://rclone.org/install.sh | sudo bash
-</pre></div>
+<div class="highlight"><pre><span></span><code><span class="err">curl https://rclone.org/install.sh | sudo bash</span>
+</code></pre></div>
 
 
 <h2>配置GoogleDrive账号</h2>
 <p>基本的配置过程可以参考<a href="https://rclone.org/drive/">这里</a>，这里只说一下要点：
-<em> client id什么的其实都不用管，直接回车就可以了，最终是通过web auth来实现认证的，如果已经登录了Google 账号，全程不需要输入密码。
-</em> 如果你是用过ssh链接ubuntu server配置，不要选择auto config模式，因为机器上并没有浏览器让你进行web auth,让rclone生成一个web地址，你自己打开这个地址后获得一个授权码，然后粘贴回去。
-<em> name那项随便填，但要记住，这就是以后你google drive根目录的别称了。
-</em> 介于我只需要同步到本地，权限选择read only就可以了，以免误操作删除了文件夹。
+* client id什么的其实都不用管，直接回车就可以了，最终是通过web auth来实现认证的，如果已经登录了Google 账号，全程不需要输入密码。
+* 如果你是用过ssh链接ubuntu server配置，不要选择auto config模式，因为机器上并没有浏览器让你进行web auth,让rclone生成一个web地址，你自己打开这个地址后获得一个授权码，然后粘贴回去。
+* name那项随便填，但要记住，这就是以后你google drive根目录的别称了。
+* 介于我只需要同步到本地，权限选择read only就可以了，以免误操作删除了文件夹。
 * 默认情况下Google Photos目录并不出现在Google Drive中，需要访问google drive的web设置，勾选“Create a Google Photos folder”这项，如果有必要，建议把出现后的Google Photo目录名称改成无空格的英文路径，否则中文路径带个空格挺烦人的。</p>
 <h2>同步到本地</h2>
 <p>一条命令就行了：</p>
-<div class="highlight"><pre><span></span>rclone copy gdrive:GooglePhotos /SafeHub/GooglePhotos
-</pre></div>
+<div class="highlight"><pre><span></span><code><span class="err">rclone copy gdrive:GooglePhotos /SafeHub/GooglePhotos</span>
+</code></pre></div>
 
 
 <p>gdrive就是刚才建立的Googledrive的账号名称，也就是刚才说的以后都是根目录别称的那个，后面的/SafeHub是我自己本机上的一个RAID1磁盘，根据你的情况选择本地路径即可。</p>
 <h2>自动执行</h2>
 <p>先找出配置文件的路径：</p>
-<div class="highlight"><pre><span></span>rclone config file
-</pre></div>
+<div class="highlight"><pre><span></span><code><span class="err">rclone config file</span>
+</code></pre></div>
 
 
 <p>然后运行crontab -e来添加一个cronjob，例如我希望他每天2：30分备份一次(已经下载的会自动跳过),就添加这样的一个cron job：</p>
-<div class="highlight"><pre><span></span>30 2 * * * /usr/bin/rclone --config /root/.config/rclone/rclone.conf copy gdrive:GooglePhotos /SafeHub/GooglePhotos
-</pre></div>
+<div class="highlight"><pre><span></span><code><span class="err">30 2 * * * /usr/bin/rclone --config /root/.config/rclone/rclone.conf copy gdrive:GooglePhotos /SafeHub/GooglePhotos</span>
+</code></pre></div>
 
 <div class="sharing">
 </div>

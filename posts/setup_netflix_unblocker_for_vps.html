@@ -126,43 +126,43 @@
 <h2>否定的第一套方案</h2>
 <p>最开始的方案基本上就是靠着Google搜Netflix Proxy找到的，简单的说就是在可以看Netflix的VPS A上搭一个TCP反代，在VPS B上用dnsmasq之类的工具劫持DNS解析，把Netflix的相关域名都解析到VPS A上，这样VPS B就可以借用A的反代来访问Netflix了。
 废话不多少直接上代码，VPS A上安装sniproxy，配置如下：</p>
-<div class="highlight"><pre><span></span>user nobody
-resolver {
-    nameserver 8.8.8.8
-    mode ipv4_only
-}
+<div class="highlight"><pre><span></span><code><span class="k">user</span> <span class="n">nobody</span>
+<span class="n">resolver</span> <span class="err">{</span>
+    <span class="n">nameserver</span> <span class="mi">8</span><span class="p">.</span><span class="mi">8</span><span class="p">.</span><span class="mi">8</span><span class="p">.</span><span class="mi">8</span>
+    <span class="k">mode</span> <span class="n">ipv4_only</span>
+<span class="err">}</span>
 
-listen 0.0.0.0:443 {
-proto tls
-table https_hosts
-access_log {
-  filename /var/log/https_access.log
-  priority notice
- }
-}
+<span class="k">listen</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">:</span><span class="mi">443</span> <span class="err">{</span>
+<span class="n">proto</span> <span class="n">tls</span>
+<span class="k">table</span> <span class="n">https_hosts</span>
+<span class="n">access_log</span> <span class="err">{</span>
+  <span class="n">filename</span> <span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">log</span><span class="o">/</span><span class="n">https_access</span><span class="p">.</span><span class="n">log</span>
+  <span class="n">priority</span> <span class="n">notice</span>
+ <span class="err">}</span>
+<span class="err">}</span>
 
-table https_hosts {
-    (.*.|)netflix.com$ *
-    (.*.|)netflix.net$ *
-    (.*.|)nflxext.com$ *
-    (.*.|)nflxso.net$ *
-    (.*.|)nflximg.net$ *
-    (.*.|)nflxvideo.net$ *
-}
-</pre></div>
+<span class="k">table</span> <span class="n">https_hosts</span> <span class="err">{</span>
+    <span class="p">(.</span><span class="o">*</span><span class="p">.</span><span class="o">|</span><span class="p">)</span><span class="n">netflix</span><span class="p">.</span><span class="n">com$</span> <span class="o">*</span>
+    <span class="p">(.</span><span class="o">*</span><span class="p">.</span><span class="o">|</span><span class="p">)</span><span class="n">netflix</span><span class="p">.</span><span class="n">net$</span> <span class="o">*</span>
+    <span class="p">(.</span><span class="o">*</span><span class="p">.</span><span class="o">|</span><span class="p">)</span><span class="n">nflxext</span><span class="p">.</span><span class="n">com$</span> <span class="o">*</span>
+    <span class="p">(.</span><span class="o">*</span><span class="p">.</span><span class="o">|</span><span class="p">)</span><span class="n">nflxso</span><span class="p">.</span><span class="n">net$</span> <span class="o">*</span>
+    <span class="p">(.</span><span class="o">*</span><span class="p">.</span><span class="o">|</span><span class="p">)</span><span class="n">nflximg</span><span class="p">.</span><span class="n">net$</span> <span class="o">*</span>
+    <span class="p">(.</span><span class="o">*</span><span class="p">.</span><span class="o">|</span><span class="p">)</span><span class="n">nflxvideo</span><span class="p">.</span><span class="n">net$</span> <span class="o">*</span>
+<span class="err">}</span>
+</code></pre></div>
 
 
 <p>VPS B上安装dnsmasq，配置如下：</p>
-<div class="highlight"><pre><span></span>no-resolv
-no-poll
-server=1.1.1.1
-address=/netflix.com/18.215.191.191
-address=/nflxext.com/18.215.191.191
-address=/nflximg.net/18.215.191.191
-address=/nflxext.com/18.215.191.191
-address=/nflxso.net/18.215.191.191
-address=/nflxvideo.net/18.215.191.191
-</pre></div>
+<div class="highlight"><pre><span></span><code><span class="err">no-resolv</span>
+<span class="err">no-poll</span>
+<span class="err">server=1.1.1.1</span>
+<span class="err">address=/netflix.com/18.215.191.191</span>
+<span class="err">address=/nflxext.com/18.215.191.191</span>
+<span class="err">address=/nflximg.net/18.215.191.191</span>
+<span class="err">address=/nflxext.com/18.215.191.191</span>
+<span class="err">address=/nflxso.net/18.215.191.191</span>
+<span class="err">address=/nflxvideo.net/18.215.191.191</span>
+</code></pre></div>
 
 
 <p>这种方案之所以被否定，是因为本质上依赖DNS劫持。你可以劫持VPS B本身的DNS解析，但你在VPS B上搭建梯子后，你并没有办法保证劫持连上这个梯子的用户的DNS。大部分用户使用ssr-redir提供的透明代理，基于域名转发，这样是可以的，但还是有部分用户不适用远端的DNS解析而使用本地的解析，这样就无法成功劫持了。所以对这部分用户来说，流量还是会经过VPS B的代理，但会不被劫持的访问原始的Netflix服务器，最终导致播放失败。</p>
@@ -171,31 +171,31 @@ address=/nflxvideo.net/18.215.191.191
 <h3>架设Tinyproxy Https代理</h3>
 <p>其实很简单，直接apt-get install tinyproxy就可以了。设置上我也几乎没有修改，仅仅是添加了一个Allow语句，给VPS B的IP放行，否则是无法使用的。而且这样默认也屏蔽了其他IP的访问，避免了变成冤大头。
 最后的配置如下：</p>
-<div class="highlight"><pre><span></span>User tinyproxy
-Group tinyproxy
-Port 8888
-Timeout 600
-DefaultErrorFile &quot;/usr/share/tinyproxy/default.html&quot;
-StatFile &quot;/usr/share/tinyproxy/stats.html&quot;
-Logfile &quot;/var/log/tinyproxy/tinyproxy.log&quot;
-LogLevel Info
-PidFile &quot;/run/tinyproxy/tinyproxy.pid&quot;
-MaxClients 100
-MinSpareServers 5
-MaxSpareServers 20
-StartServers 10
-MaxRequestsPerChild 0
-Allow 127.0.0.1
-Allow YOUR_VPS_B_IP
-ViaProxyName &quot;tinyproxy&quot;
-ConnectPort 443
-ConnectPort 563
-</pre></div>
+<div class="highlight"><pre><span></span><code><span class="err">User tinyproxy</span>
+<span class="err">Group tinyproxy</span>
+<span class="err">Port 8888</span>
+<span class="err">Timeout 600</span>
+<span class="err">DefaultErrorFile &quot;/usr/share/tinyproxy/default.html&quot;</span>
+<span class="err">StatFile &quot;/usr/share/tinyproxy/stats.html&quot;</span>
+<span class="err">Logfile &quot;/var/log/tinyproxy/tinyproxy.log&quot;</span>
+<span class="err">LogLevel Info</span>
+<span class="err">PidFile &quot;/run/tinyproxy/tinyproxy.pid&quot;</span>
+<span class="err">MaxClients 100</span>
+<span class="err">MinSpareServers 5</span>
+<span class="err">MaxSpareServers 20</span>
+<span class="err">StartServers 10</span>
+<span class="err">MaxRequestsPerChild 0</span>
+<span class="err">Allow 127.0.0.1</span>
+<span class="err">Allow YOUR_VPS_B_IP</span>
+<span class="err">ViaProxyName &quot;tinyproxy&quot;</span>
+<span class="err">ConnectPort 443</span>
+<span class="err">ConnectPort 563</span>
+</code></pre></div>
 
 
 <h3>架设Redsocks代理</h3>
 <p>也是直接apt-get install redsocks，配置中只需要设置好https代理的IP和端口就行，记得https代理的类型是填http-connect。</p>
-<div class="highlight"><pre><span></span><span class="nt">base</span> <span class="p">{</span>
+<div class="highlight"><pre><span></span><code><span class="nt">base</span> <span class="p">{</span>
     <span class="err">//</span> <span class="n">debug</span><span class="p">:</span> <span class="n">connection</span> <span class="kc">progress</span> <span class="o">&amp;</span> <span class="n">client</span> <span class="n">list</span> <span class="kc">on</span> <span class="n">SIGUSR1</span>
     <span class="n">log_debug</span> <span class="o">=</span> <span class="kc">off</span><span class="p">;</span>
 
@@ -251,62 +251,62 @@ ConnectPort 563
 <span class="s2">    // login = &quot;</span><span class="n">foobar</span><span class="s2">&quot;;</span>
 <span class="s2">    // password = &quot;</span><span class="n">baz</span><span class="err">&quot;</span><span class="p">;</span>
 <span class="p">}</span>
-</pre></div>
+</code></pre></div>
 
 
 <p>然后配置iptables，先建立一个REDSOCKS链:</p>
-<div class="highlight"><pre><span></span>iptables -t nat -N REDSOCKS
-</pre></div>
+<div class="highlight"><pre><span></span><code><span class="err">iptables -t nat -N REDSOCKS</span>
+</code></pre></div>
 
 
 <p>这里有两套思路进行转发，一套是找出Netflix所有的IP地址，然后添加到REDSOCKS链，例如：</p>
-<div class="highlight"><pre><span></span>iptables -t nat -A OUTPUT -d 198.38.0.0/16 -j REDSOCKS
-</pre></div>
+<div class="highlight"><pre><span></span><code><span class="err">iptables -t nat -A OUTPUT -d 198.38.0.0/16 -j REDSOCKS</span>
+</code></pre></div>
 
 
 <p>但问题是Netflix使用了akamai的CDN服务器，IP地址范围是在太大了，我已经把Netflix整个<a href="https://ipinfo.io/AS2906">AS的地址</a>都添加了也还是会提示在使用proxy。</p>
 <p>干脆暴力点，直接把所有https流量都添加进去:</p>
-<div class="highlight"><pre><span></span>iptables -t nat -A OUTPUT -p tcp --dport 443 -j REDSOCKS
-</pre></div>
+<div class="highlight"><pre><span></span><code><span class="err">iptables -t nat -A OUTPUT -p tcp --dport 443 -j REDSOCKS</span>
+</code></pre></div>
 
 
 <p>最后，转发到redsocks的透明代理端口：</p>
-<div class="highlight"><pre><span></span>iptables -t nat -A REDSOCKS -p tcp -j REDIRECT --to-ports 12345
-</pre></div>
+<div class="highlight"><pre><span></span><code><span class="err">iptables -t nat -A REDSOCKS -p tcp -j REDIRECT --to-ports 12345</span>
+</code></pre></div>
 
 
 <p>最后记得用iptables-persistent之类的工具保存一下iptables规则，这样不论是从VPS B本机访问，还是透过VPS B上的代理，最后Netflix的HTTPS流量都会通过VPS A访问，而Netflix是全Https的，所以http部分我们不需要关心。</p>
 <h2>更小的IP范围</h2>
 <p>全部转发可能还是太暴力了，简单一点的做法是转发Netflix所有的IP和AWS所有的IP(因为当前Netflix有很多服务是架设在AWS上的)。</p>
 <p>Netflix的IP可以在<a href="https://ipinfo.io/AS2906">这里</a>查到，而AWS的IP可以在<a href="https://ipinfo.io/AS2906">这里</a>看到，然后把这些IP范围分别添加到两个IPSET中，我把它们分别命名为aws和netflix。</p>
-<div class="highlight"><pre><span></span>ipset create aws hash:net
-ipset create netflix hash:net
-</pre></div>
+<div class="highlight"><pre><span></span><code><span class="err">ipset create aws hash:net</span>
+<span class="err">ipset create netflix hash:net</span>
+</code></pre></div>
 
 
 <p>怎么转成命令我就懒得写了，<a href="https://www.lifetyper.com/files/ipset.sh">这里</a>有现成的脚本。
 Update:生成bash命令的Python脚本在<a href="https://gist.github.com/lifetyper/347cf7c4dbadee91e80670acb064b670">这里</a>，自己去看吧。</p>
 <p>然后，把这两个IPSET里IP的443端口目标流量全部转发到REDSOCKS的透明代理上。</p>
-<div class="highlight"><pre><span></span>iptables -t nat -A PREROUTING -p tcp --dport 443 -m set --match-set aws dst -j REDIRECT --to-ports 12345
-iptables -t nat -A PREROUTING -p tcp --dport 443 -m set --match-set netflix dst -j REDIRECT --to-ports 12345
-iptables -t nat -A OUTPUT -p tcp --dport 443 -m set --match-set aws dst -j REDIRECT --to-ports 12345
-iptables -t nat -A OUTPUT -p tcp --dport 443 -m set --match-set netflix dst -j REDIRECT --to-ports 12345
-</pre></div>
+<div class="highlight"><pre><span></span><code><span class="err">iptables -t nat -A PREROUTING -p tcp --dport 443 -m set --match-set aws dst -j REDIRECT --to-ports 12345</span>
+<span class="err">iptables -t nat -A PREROUTING -p tcp --dport 443 -m set --match-set netflix dst -j REDIRECT --to-ports 12345</span>
+<span class="err">iptables -t nat -A OUTPUT -p tcp --dport 443 -m set --match-set aws dst -j REDIRECT --to-ports 12345</span>
+<span class="err">iptables -t nat -A OUTPUT -p tcp --dport 443 -m set --match-set netflix dst -j REDIRECT --to-ports 12345</span>
+</code></pre></div>
 
 
 <p>可能的问题：
-<em> 你的代理服务器本身就是AWS服务器，这个就比较尴尬了，自己添加一个排除规则吧，其实AWS的服务器就算能看Netflix也是暂时的，早晚被封。
-</em> 重启后ipset丢失，这是个问题，我目前也不知道有什么更优雅的方式来解决，简单点可以在启动项里重写ipset。</p>
+* 你的代理服务器本身就是AWS服务器，这个就比较尴尬了，自己添加一个排除规则吧，其实AWS的服务器就算能看Netflix也是暂时的，早晚被封。
+* 重启后ipset丢失，这是个问题，我目前也不知道有什么更优雅的方式来解决，简单点可以在启动项里重写ipset。</p>
 <h2>保存这些规则</h2>
-<div class="highlight"><pre><span></span>ipset save &gt; /etc/ipset.conf
-iptables-save  &gt; /etc/iptables.conf
-</pre></div>
+<div class="highlight"><pre><span></span><code><span class="err">ipset save &gt; /etc/ipset.conf</span>
+<span class="err">iptables-save  &gt; /etc/iptables.conf</span>
+</code></pre></div>
 
 
 <p>然后在/etc/rc.local里写入：</p>
-<div class="highlight"><pre><span></span>ipset restore &lt; /etc/ipset.conf
-iptables-restore &lt; /etc/iptables.conf
-</pre></div>
+<div class="highlight"><pre><span></span><code><span class="err">ipset restore &lt; /etc/ipset.conf</span>
+<span class="err">iptables-restore &lt; /etc/iptables.conf</span>
+</code></pre></div>
 
 <div class="sharing">
 </div>

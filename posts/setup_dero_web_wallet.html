@@ -125,26 +125,26 @@
 <h2>Compile new version of dero daemon to support web wallet</h2>
 <p>To support web assembly funtion, you need to use minimum Golang version 1.11.1 for this  build, old version will not work.</p>
 <p>git clone the code from dero offcial git repo <a href="https://git.dero.io/DeroProject/derosuite_webwallet">https://git.dero.io/DeroProject/derosuite_webwallet</a>. You'd better move the code to your Gopath source folder, the source path for me is </p>
-<div class="highlight"><pre><span></span>~/go/src/github.com/deroproject/derosuite
-</pre></div>
+<div class="highlight"><pre><span></span><code><span class="err">~/go/src/github.com/deroproject/derosuite</span>
+</code></pre></div>
 
 
 <p>Then build it with command:</p>
-<div class="highlight"><pre><span></span>go install github.com/deroproject/derosuite/cmd/...
-</pre></div>
+<div class="highlight"><pre><span></span><code><span class="err">go install github.com/deroproject/derosuite/cmd/...</span>
+</code></pre></div>
 
 
 <p>You shall find binary file under $GOPATH/bin folder.</p>
 <p>If you want to deploy your web wallet to a linux web server but your building system is others, you can specify the GOOS and GOARCH for this build</p>
-<div class="highlight"><pre><span></span>GOOS=linux GOARH=amd64 go install github.com/deroproject/derosuite/cmd/...
-</pre></div>
+<div class="highlight"><pre><span></span><code><span class="err">GOOS=linux GOARH=amd64 go install github.com/deroproject/derosuite/cmd/...</span>
+</code></pre></div>
 
 
 <h2>Compile web assembly file for web wallet</h2>
 <p>All core wallet function is implemented in the web wallet web assembly file, you can build it with command:</p>
-<div class="highlight"><pre><span></span>cd ~/go/src/github.com/deroproject/derosuite/
-GOOS=js GOARCH=wasm go build -o wallet.wasm cmd/webwallet/main.go
-</pre></div>
+<div class="highlight"><pre><span></span><code><span class="err">cd ~/go/src/github.com/deroproject/derosuite/</span>
+<span class="err">GOOS=js GOARCH=wasm go build -o wallet.wasm cmd/webwallet/main.go</span>
+</code></pre></div>
 
 
 <p>You will find a file named wallet.wasm where you excute this command.</p>

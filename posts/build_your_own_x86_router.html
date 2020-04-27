@@ -157,14 +157,14 @@
 <p>为什么要开启Serial Console?因为我们有一个串口...</p>
 <p>这当然不是合理的理由，主要原因有两个，一个是我们后期的iptables操作可能会让ssh短期无法连接，另一个是serial console的层级更低，几乎等同于显示屏，可以便于我们调试一些底层boot信息。</p>
 <p>开启serial console其实很简单，只需要在grub配置中添加一个console到启动想就可以了，具体的方法是编辑/etc/default/grub文件，修改后的内容如下：</p>
-<div class="highlight"><pre><span></span>GRUB_DEFAULT=0
-GRUB_TIMEOUT=1
-GRUB_DISTRIBUTOR=`lsb_release -i -s 2&gt; /dev/null || echo Debian`
-GRUB_CMDLINE_LINUX_DEFAULT=&quot;&quot;
-GRUB_CMDLINE_LINUX=&quot;console=tty0 console=ttyS0,115200&quot;
-GRUB_TERMINAL=serial
-GRUB_SERIAL_COMMAND=&quot;serial --speed=115200 --unit=0 --word=8 --parity=no --stop=1&quot;
-</pre></div>
+<div class="highlight"><pre><span></span><code><span class="err">GRUB_DEFAULT=0</span>
+<span class="err">GRUB_TIMEOUT=1</span>
+<span class="err">GRUB_DISTRIBUTOR=`lsb_release -i -s 2&gt; /dev/null || echo Debian`</span>
+<span class="err">GRUB_CMDLINE_LINUX_DEFAULT=&quot;&quot;</span>
+<span class="err">GRUB_CMDLINE_LINUX=&quot;console=tty0 console=ttyS0,115200&quot;</span>
+<span class="err">GRUB_TERMINAL=serial</span>
+<span class="err">GRUB_SERIAL_COMMAND=&quot;serial --speed=115200 --unit=0 --word=8 --parity=no --stop=1&quot;</span>
+</code></pre></div>
 
 
 <ol>
@@ -173,13 +173,13 @@ GRUB_SERIAL_COMMAND=&quot;serial --speed=115200 --unit=0 --word=8 --parity=no --
 <li>GRUB_SERIAL_COMMAND是设定串口的参数，这里是最普通的8比特数据，1比特停止位，无校验。</li>
 </ol>
 <p>修改好之后运行以下命令重新生成grub.cfg文件，重启就可以看到serial console了。</p>
-<div class="highlight"><pre><span></span>grub-mkconfig -o /boot/grub/grub.cfg
-</pre></div>
+<div class="highlight"><pre><span></span><code><span class="err">grub-mkconfig -o /boot/grub/grub.cfg</span>
+</code></pre></div>
 
 
 <p>在mac的terminal上，可以直接用以下命令连接到串口console</p>
-<div class="highlight"><pre><span></span>screen /dev/tty.usbXXXX 115200
-</pre></div>
+<div class="highlight"><pre><span></span><code><span class="err">screen /dev/tty.usbXXXX 115200</span>
+</code></pre></div>
 
 
 <p>这里的XXXX会因为不同的设备而不同，是由你的USB转串口线决定的。</p>
@@ -187,25 +187,25 @@ GRUB_SERIAL_COMMAND=&quot;serial --speed=115200 --unit=0 --word=8 --parity=no --
 <p>这里我把LAN1口作为WAN口来使用，我这里只考虑WAN口从上游的DHCP服务器自动获取IP的情况，如果需要WAN口有PPPOE拨号功能，请自行查找相关的文档。</p>
 <p>其实在高端的商用路有里，每个LAN都是有一个独立的网段的，这样可以给不同的区域和部门划分不同的访问区域。但在家用路由里，你绝对不希望手机连上WIFI后和访问不了在另一个网段里的NAS。所以我们要把LAN2,LAN3,LAN4并入一个网段，这个时候就需要在这三个接口之间做桥接，生成一个虚拟的接口。</p>
 <p>为了简单的实现这个功能，我们安装bridge-utils工具:</p>
-<div class="highlight"><pre><span></span>apt-get install bridge-utils
-</pre></div>
+<div class="highlight"><pre><span></span><code><span class="err">apt-get install bridge-utils</span>
+</code></pre></div>
 
 
 <p>然后我们修改/etc/network/interfaces文件如下：</p>
-<div class="highlight"><pre><span></span>auto lo
-iface lo inet loopback
-auto eth0
-allow-hotplug eth0
-iface eth0 inet dhcp
-auto br0
-allow-hotplug br0
-iface br0 inet static
-        address 192.168.88.1
-        network 192.168.88.0
-        netmask 255.255.255.0
-        broadcast 192.168.88.255
-        bridge-ports eth1 eth2 eth3
-</pre></div>
+<div class="highlight"><pre><span></span><code><span class="err">auto lo</span>
+<span class="err">iface lo inet loopback</span>
+<span class="err">auto eth0</span>
+<span class="err">allow-hotplug eth0</span>
+<span class="err">iface eth0 inet dhcp</span>
+<span class="err">auto br0</span>
+<span class="err">allow-hotplug br0</span>
+<span class="err">iface br0 inet static</span>
+<span class="err">        address 192.168.88.1</span>
+<span class="err">        network 192.168.88.0</span>
+<span class="err">        netmask 255.255.255.0</span>
+<span class="err">        broadcast 192.168.88.255</span>
+<span class="err">        bridge-ports eth1 eth2 eth3</span>
+</code></pre></div>
 
 
 <ol>
@@ -219,23 +219,23 @@ iface br0 inet static
 </ol>
 <h3>伟大的Dnsmasq</h3>
 <p>Dnsmasq不仅是路由器翻墙的重大功臣，也是构建路由器的重要法宝，因为一个小巧的dnsmasq就可以帮我们完成两项工作，DNS-Forwarder和DHCP Server。在作为路由器来用时，我们先使用到了它的DHCP Server功能，直接用apt就可以安装好dnsmasq了。</p>
-<div class="highlight"><pre><span></span>apt-get install dnsmasq
-</pre></div>
+<div class="highlight"><pre><span></span><code><span class="err">apt-get install dnsmasq</span>
+</code></pre></div>
 
 
 <p>查看一下dnsmasq的版本信息:</p>
-<div class="highlight"><pre><span></span>root@debian:~# dnsmasq -v
-Dnsmasq version 2.72  Copyright (c) 2000-2014 Simon Kelley
-Compile time options: IPv6 GNU-getopt DBus i18n IDN DHCP DHCPv6 no-Lua TFTP conntrack ipset auth DNSSEC loop-detect
-</pre></div>
+<div class="highlight"><pre><span></span><code><span class="err">root@debian:~# dnsmasq -v</span>
+<span class="err">Dnsmasq version 2.72  Copyright (c) 2000-2014 Simon Kelley</span>
+<span class="err">Compile time options: IPv6 GNU-getopt DBus i18n IDN DHCP DHCPv6 no-Lua TFTP conntrack ipset auth DNSSEC loop-detect</span>
+</code></pre></div>
 
 
 <p>很好，有ipset功能。下面我们修改dnsmasq的配置如下：</p>
-<div class="highlight"><pre><span></span>root@debian:~# cat /etc/dnsmasq.conf 
-interface=br0
-dhcp-range=192.168.88.10,192.168.88.250,72h
-conf-dir=/etc/dnsmasq.d/
-</pre></div>
+<div class="highlight"><pre><span></span><code><span class="err">root@debian:~# cat /etc/dnsmasq.conf </span>
+<span class="err">interface=br0</span>
+<span class="err">dhcp-range=192.168.88.10,192.168.88.250,72h</span>
+<span class="err">conf-dir=/etc/dnsmasq.d/</span>
+</code></pre></div>
 
 
 <ol>
@@ -249,16 +249,16 @@ conf-dir=/etc/dnsmasq.d/
 <p>默认情况下，系统的dhcp client会自动从上游获取DNS Server，但是大部分情况下国内的上级DNS Server都是被污染的，除非你在我家偷接路由。</p>
 <p>我们可以通过一些技术手段来让Dnsmasq使用干净的DNS服务器并提供给LAN，但路由器本身的DNS确是被污染的，这会让你在路由器上进行一些涉及联网的操作变得很奇葩，所以我们希望把路由器本身的DNS也设置成Dnsmasq的127.0.0.1。</p>
 <p>这部很简单，只需要编辑/etc/dhcp/dhclient.conf文件，找到：</p>
-<div class="highlight"><pre><span></span>#prepend domain-name-servers 127.0.0.1;
-</pre></div>
+<div class="highlight"><pre><span></span><code><span class="err">#prepend domain-name-servers 127.0.0.1;</span>
+</code></pre></div>
 
 
 <p>把前面的注释符号删掉，这样就会默认在/etc/resolv.conf中添加一个127.0.0.1的DNS服务器，也就是Dnsmasq的Server地址。</p>
 <p>然后找到：</p>
-<div class="highlight"><pre><span></span>request subnet-mask, broadcast-address, time-offset, routers,
-        domain-name, domain-name-servers, host-name,
-        netbios-name-servers, netbios-scope, interface-mtu;
-</pre></div>
+<div class="highlight"><pre><span></span><code><span class="err">request subnet-mask, broadcast-address, time-offset, routers,</span>
+<span class="err">        domain-name, domain-name-servers, host-name,</span>
+<span class="err">        netbios-name-servers, netbios-scope, interface-mtu;</span>
+</code></pre></div>
 
 
 <p>把domain-name-servers删掉，表示不同dhcp服务器请求dns服务器地址，这样下次WAN再连上DHCP网络，/etc/resolv.conf就只有127.0.0.1这一个DNS服务器了。</p>
@@ -268,22 +268,22 @@ conf-dir=/etc/dnsmasq.d/
 <p>其实路由器的核心功能，就是routing，也就是给联网请求选择通路。我们从LAN口接入，想要上网的话，就必须把从LAN口接收到的请求转发到WAN口上，再把从WAN口上收到的数据发回到LAN口，这不是就是NAT嘛，iptables就可以搞定！</p>
 <h4>配置IPtables转发</h4>
 <p>首先我们先清空可能存在的一起iptables规则：</p>
-<div class="highlight"><pre><span></span>iptables -F
-iptables -X
-iptables -t nat -F
-iptables -t nat -X
-iptables -t mangle -F
-iptables -t mangle -X
-iptables -t raw -F
-iptables -t raw -X
-</pre></div>
+<div class="highlight"><pre><span></span><code><span class="err">iptables -F</span>
+<span class="err">iptables -X</span>
+<span class="err">iptables -t nat -F</span>
+<span class="err">iptables -t nat -X</span>
+<span class="err">iptables -t mangle -F</span>
+<span class="err">iptables -t mangle -X</span>
+<span class="err">iptables -t raw -F</span>
+<span class="err">iptables -t raw -X</span>
+</code></pre></div>
 
 
 <p>然后添加以下规则：</p>
-<div class="highlight"><pre><span></span>iptables -A FORWARD -i br0 -s 192.168.1.0/255.255.255.0 -j ACCEPT
-iptables -A FORWARD -i eth0 -d 192.168.1.0/255.255.255.0 -j ACCEPT
-iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
-</pre></div>
+<div class="highlight"><pre><span></span><code><span class="err">iptables -A FORWARD -i br0 -s 192.168.1.0/255.255.255.0 -j ACCEPT</span>
+<span class="err">iptables -A FORWARD -i eth0 -d 192.168.1.0/255.255.255.0 -j ACCEPT</span>
+<span class="err">iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE</span>
+</code></pre></div>
 
 
 <ol>
@@ -292,24 +292,24 @@ iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
 </ol>
 <h4>使能IPV4转发</h4>
 <p>linux系统默认并没有开始ipv4和ipv6数据的转发，所以你光配置iptables转发是不被支持的，这里需要编辑/etc/sysctl.conf文件，找到:</p>
-<div class="highlight"><pre><span></span>#net.ipv4.conf.default.forwarding=1
-</pre></div>
+<div class="highlight"><pre><span></span><code><span class="err">#net.ipv4.conf.default.forwarding=1</span>
+</code></pre></div>
 
 
 <p>把这个注释符删掉开启IPV4转发，但这个修改要重启后才生效，如果要立刻生效，直接使用以下的暴力命令:</p>
-<div class="highlight"><pre><span></span>echo 1 &gt; /proc/sys/net/ipv4/ip_forward
-</pre></div>
+<div class="highlight"><pre><span></span><code><span class="err">echo 1 &gt; /proc/sys/net/ipv4/ip_forward</span>
+</code></pre></div>
 
 
 <h4>一些默认的防火墙安全规则</h4>
 <p>防火墙不能整天不务正业只顾着上网，至少应该有一些基本的安全规则，添加如下基本规则：</p>
-<div class="highlight"><pre><span></span>iptables -P INPUT DROP
-iptables -P OUTPUT ACCEPT
-iptables -P FORWARD DROP
-iptables -I INPUT 1 -i lo -j ACCEPT
-iptables -I INPUT 1 -i br0 -j ACCEPT
-iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
-</pre></div>
+<div class="highlight"><pre><span></span><code><span class="err">iptables -P INPUT DROP</span>
+<span class="err">iptables -P OUTPUT ACCEPT</span>
+<span class="err">iptables -P FORWARD DROP</span>
+<span class="err">iptables -I INPUT 1 -i lo -j ACCEPT</span>
+<span class="err">iptables -I INPUT 1 -i br0 -j ACCEPT</span>
+<span class="err">iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT</span>
+</code></pre></div>
 
 
 <h4>固化Iptables规则</h4>
@@ -317,97 +317,97 @@ iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
 <p>直接apt-get install iptables-persistent就可以了，在安装的过程中就会询问你是否保存当前规则了，而且ipv4和ipv6的都会保存，虽然我们没用到后者。以后每次启动的时候iptables-persistent都会自动帮我们加载保存好的规则。</p>
 <h2>不服跑个分</h2>
 <p>如果我们费了这么大心思装好的路由最后的性能是个渣渣，那我们还用它干啥。所以我们来跑个分，在路由器上装好iperf3之后开启Server模式:</p>
-<div class="highlight"><pre><span></span>iperf -s -p 6000
-</pre></div>
+<div class="highlight"><pre><span></span><code><span class="err">iperf -s -p 6000</span>
+</code></pre></div>
 
 
 <p>从macbook测试到路由器的速度：</p>
-<div class="highlight"><pre><span></span>biqins-MBP:lifetyper.com lifetyper$ iperf3 -c debian -p 6000
-Connecting to host debian, port 6000
-[  6] local 192.168.88.165 port 52954 connected to 192.168.88.1 port 6000
-[ ID] Interval           Transfer     Bandwidth
-[  6]   0.00-1.00   sec   112 MBytes   938 Mbits/sec                  
-[  6]   1.00-2.00   sec   112 MBytes   939 Mbits/sec                  
-[  6]   2.00-3.00   sec   112 MBytes   939 Mbits/sec                  
-[  6]   3.00-4.00   sec   112 MBytes   939 Mbits/sec                  
-[  6]   4.00-5.00   sec   112 MBytes   939 Mbits/sec                  
-[  6]   5.00-6.00   sec   112 MBytes   939 Mbits/sec                  
-[  6]   6.00-7.00   sec   112 MBytes   939 Mbits/sec                  
-[  6]   7.00-8.00   sec   112 MBytes   939 Mbits/sec                  
-[  6]   8.00-9.00   sec   112 MBytes   940 Mbits/sec                  
-[  6]   9.00-10.00  sec   112 MBytes   939 Mbits/sec                  
-- - - - - - - - - - - - - - - - - - - - - - - - -
-[ ID] Interval           Transfer     Bandwidth
-[  6]   0.00-10.00  sec  1.09 GBytes   939 Mbits/sec                  sender
-[  6]   0.00-10.00  sec  1.09 GBytes   939 Mbits/sec                  receiver
-</pre></div>
+<div class="highlight"><pre><span></span><code><span class="c">biqins-MBP:lifetyper.com lifetyper$ iperf3 -c debian -p 6000</span>
+<span class="err">Connecting to host debian, port 6000</span>
+<span class="err">[  6] local 192.168.88.165 port 52954 connected to 192.168.88.1 port 6000</span>
+<span class="err">[ ID] Interval           Transfer     Bandwidth</span>
+<span class="err">[  6]   0.00-1.00   sec   112 MBytes   938 Mbits/sec                  </span>
+<span class="err">[  6]   1.00-2.00   sec   112 MBytes   939 Mbits/sec                  </span>
+<span class="err">[  6]   2.00-3.00   sec   112 MBytes   939 Mbits/sec                  </span>
+<span class="err">[  6]   3.00-4.00   sec   112 MBytes   939 Mbits/sec                  </span>
+<span class="err">[  6]   4.00-5.00   sec   112 MBytes   939 Mbits/sec                  </span>
+<span class="err">[  6]   5.00-6.00   sec   112 MBytes   939 Mbits/sec                  </span>
+<span class="err">[  6]   6.00-7.00   sec   112 MBytes   939 Mbits/sec                  </span>
+<span class="err">[  6]   7.00-8.00   sec   112 MBytes   939 Mbits/sec                  </span>
+<span class="err">[  6]   8.00-9.00   sec   112 MBytes   940 Mbits/sec                  </span>
+<span class="err">[  6]   9.00-10.00  sec   112 MBytes   939 Mbits/sec                  </span>
+<span class="err">- - - - - - - - - - - - - - - - - - - - - - - - -</span>
+<span class="err">[ ID] Interval           Transfer     Bandwidth</span>
+<span class="err">[  6]   0.00-10.00  sec  1.09 GBytes   939 Mbits/sec                  sender</span>
+<span class="err">[  6]   0.00-10.00  sec  1.09 GBytes   939 Mbits/sec                  receiver</span>
+</code></pre></div>
 
 
 <p>从另一个ubuntu主机测试到路由器的速度:</p>
-<div class="highlight"><pre><span></span>lifetyper@ubuntu:~$ iperf3 -c debian -p 6000
-Connecting to host debian, port 6000
-[  4] local 192.168.88.57 port 50410 connected to 192.168.88.1 port 6000
-[ ID] Interval           Transfer     Bandwidth       Retr  Cwnd
-[  4]   0.00-1.00   sec   107 MBytes   897 Mbits/sec    0    171 KBytes       
-[  4]   1.00-2.00   sec   107 MBytes   896 Mbits/sec    0    188 KBytes       
-[  4]   2.00-3.00   sec   107 MBytes   900 Mbits/sec    0    188 KBytes       
-[  4]   3.00-4.00   sec   107 MBytes   896 Mbits/sec    0    205 KBytes       
-[  4]   4.00-5.00   sec   107 MBytes   898 Mbits/sec    0    205 KBytes       
-[  4]   5.00-6.00   sec   107 MBytes   899 Mbits/sec    0    205 KBytes       
-[  4]   6.00-7.00   sec   107 MBytes   898 Mbits/sec    0    205 KBytes       
-[  4]   7.00-8.00   sec   107 MBytes   901 Mbits/sec    0    205 KBytes       
-[  4]   8.00-9.00   sec   107 MBytes   899 Mbits/sec    0    205 KBytes       
-[  4]   9.00-10.00  sec   107 MBytes   900 Mbits/sec    0    205 KBytes       
-- - - - - - - - - - - - - - - - - - - - - - - - -
-[ ID] Interval           Transfer     Bandwidth       Retr
-[  4]   0.00-10.00  sec  1.05 GBytes   898 Mbits/sec    0             sender
-[  4]   0.00-10.00  sec  1.05 GBytes   898 Mbits/sec                  receiver
+<div class="highlight"><pre><span></span><code><span class="n">lifetyper</span><span class="nv">@ubuntu</span><span class="err">:</span><span class="o">~</span><span class="err">$</span><span class="w"> </span><span class="n">iperf3</span><span class="w"> </span><span class="o">-</span><span class="n">c</span><span class="w"> </span><span class="n">debian</span><span class="w"> </span><span class="o">-</span><span class="n">p</span><span class="w"> </span><span class="mi">6000</span><span class="w"></span>
+<span class="n">Connecting</span><span class="w"> </span><span class="k">to</span><span class="w"> </span><span class="k">host</span><span class="w"> </span><span class="n">debian</span><span class="p">,</span><span class="w"> </span><span class="n">port</span><span class="w"> </span><span class="mi">6000</span><span class="w"></span>
+<span class="o">[</span><span class="n">  4</span><span class="o">]</span><span class="w"> </span><span class="k">local</span><span class="w"> </span><span class="mf">192.168.88.57</span><span class="w"> </span><span class="n">port</span><span class="w"> </span><span class="mi">50410</span><span class="w"> </span><span class="n">connected</span><span class="w"> </span><span class="k">to</span><span class="w"> </span><span class="mf">192.168.88.1</span><span class="w"> </span><span class="n">port</span><span class="w"> </span><span class="mi">6000</span><span class="w"></span>
+<span class="o">[</span><span class="n"> ID</span><span class="o">]</span><span class="w"> </span><span class="k">Interval</span><span class="w">           </span><span class="n">Transfer</span><span class="w">     </span><span class="n">Bandwidth</span><span class="w">       </span><span class="n">Retr</span><span class="w">  </span><span class="n">Cwnd</span><span class="w"></span>
+<span class="o">[</span><span class="n">  4</span><span class="o">]</span><span class="w">   </span><span class="mf">0.00</span><span class="o">-</span><span class="mf">1.00</span><span class="w">   </span><span class="n">sec</span><span class="w">   </span><span class="mi">107</span><span class="w"> </span><span class="n">MBytes</span><span class="w">   </span><span class="mi">897</span><span class="w"> </span><span class="n">Mbits</span><span class="o">/</span><span class="n">sec</span><span class="w">    </span><span class="mi">0</span><span class="w">    </span><span class="mi">171</span><span class="w"> </span><span class="n">KBytes</span><span class="w">       </span>
+<span class="o">[</span><span class="n">  4</span><span class="o">]</span><span class="w">   </span><span class="mf">1.00</span><span class="o">-</span><span class="mf">2.00</span><span class="w">   </span><span class="n">sec</span><span class="w">   </span><span class="mi">107</span><span class="w"> </span><span class="n">MBytes</span><span class="w">   </span><span class="mi">896</span><span class="w"> </span><span class="n">Mbits</span><span class="o">/</span><span class="n">sec</span><span class="w">    </span><span class="mi">0</span><span class="w">    </span><span class="mi">188</span><span class="w"> </span><span class="n">KBytes</span><span class="w">       </span>
+<span class="o">[</span><span class="n">  4</span><span class="o">]</span><span class="w">   </span><span class="mf">2.00</span><span class="o">-</span><span class="mf">3.00</span><span class="w">   </span><span class="n">sec</span><span class="w">   </span><span class="mi">107</span><span class="w"> </span><span class="n">MBytes</span><span class="w">   </span><span class="mi">900</span><span class="w"> </span><span class="n">Mbits</span><span class="o">/</span><span class="n">sec</span><span class="w">    </span><span class="mi">0</span><span class="w">    </span><span class="mi">188</span><span class="w"> </span><span class="n">KBytes</span><span class="w">       </span>
+<span class="o">[</span><span class="n">  4</span><span class="o">]</span><span class="w">   </span><span class="mf">3.00</span><span class="o">-</span><span class="mf">4.00</span><span class="w">   </span><span class="n">sec</span><span class="w">   </span><span class="mi">107</span><span class="w"> </span><span class="n">MBytes</span><span class="w">   </span><span class="mi">896</span><span class="w"> </span><span class="n">Mbits</span><span class="o">/</span><span class="n">sec</span><span class="w">    </span><span class="mi">0</span><span class="w">    </span><span class="mi">205</span><span class="w"> </span><span class="n">KBytes</span><span class="w">       </span>
+<span class="o">[</span><span class="n">  4</span><span class="o">]</span><span class="w">   </span><span class="mf">4.00</span><span class="o">-</span><span class="mf">5.00</span><span class="w">   </span><span class="n">sec</span><span class="w">   </span><span class="mi">107</span><span class="w"> </span><span class="n">MBytes</span><span class="w">   </span><span class="mi">898</span><span class="w"> </span><span class="n">Mbits</span><span class="o">/</span><span class="n">sec</span><span class="w">    </span><span class="mi">0</span><span class="w">    </span><span class="mi">205</span><span class="w"> </span><span class="n">KBytes</span><span class="w">       </span>
+<span class="o">[</span><span class="n">  4</span><span class="o">]</span><span class="w">   </span><span class="mf">5.00</span><span class="o">-</span><span class="mf">6.00</span><span class="w">   </span><span class="n">sec</span><span class="w">   </span><span class="mi">107</span><span class="w"> </span><span class="n">MBytes</span><span class="w">   </span><span class="mi">899</span><span class="w"> </span><span class="n">Mbits</span><span class="o">/</span><span class="n">sec</span><span class="w">    </span><span class="mi">0</span><span class="w">    </span><span class="mi">205</span><span class="w"> </span><span class="n">KBytes</span><span class="w">       </span>
+<span class="o">[</span><span class="n">  4</span><span class="o">]</span><span class="w">   </span><span class="mf">6.00</span><span class="o">-</span><span class="mf">7.00</span><span class="w">   </span><span class="n">sec</span><span class="w">   </span><span class="mi">107</span><span class="w"> </span><span class="n">MBytes</span><span class="w">   </span><span class="mi">898</span><span class="w"> </span><span class="n">Mbits</span><span class="o">/</span><span class="n">sec</span><span class="w">    </span><span class="mi">0</span><span class="w">    </span><span class="mi">205</span><span class="w"> </span><span class="n">KBytes</span><span class="w">       </span>
+<span class="o">[</span><span class="n">  4</span><span class="o">]</span><span class="w">   </span><span class="mf">7.00</span><span class="o">-</span><span class="mf">8.00</span><span class="w">   </span><span class="n">sec</span><span class="w">   </span><span class="mi">107</span><span class="w"> </span><span class="n">MBytes</span><span class="w">   </span><span class="mi">901</span><span class="w"> </span><span class="n">Mbits</span><span class="o">/</span><span class="n">sec</span><span class="w">    </span><span class="mi">0</span><span class="w">    </span><span class="mi">205</span><span class="w"> </span><span class="n">KBytes</span><span class="w">       </span>
+<span class="o">[</span><span class="n">  4</span><span class="o">]</span><span class="w">   </span><span class="mf">8.00</span><span class="o">-</span><span class="mf">9.00</span><span class="w">   </span><span class="n">sec</span><span class="w">   </span><span class="mi">107</span><span class="w"> </span><span class="n">MBytes</span><span class="w">   </span><span class="mi">899</span><span class="w"> </span><span class="n">Mbits</span><span class="o">/</span><span class="n">sec</span><span class="w">    </span><span class="mi">0</span><span class="w">    </span><span class="mi">205</span><span class="w"> </span><span class="n">KBytes</span><span class="w">       </span>
+<span class="o">[</span><span class="n">  4</span><span class="o">]</span><span class="w">   </span><span class="mf">9.00</span><span class="o">-</span><span class="mf">10.00</span><span class="w">  </span><span class="n">sec</span><span class="w">   </span><span class="mi">107</span><span class="w"> </span><span class="n">MBytes</span><span class="w">   </span><span class="mi">900</span><span class="w"> </span><span class="n">Mbits</span><span class="o">/</span><span class="n">sec</span><span class="w">    </span><span class="mi">0</span><span class="w">    </span><span class="mi">205</span><span class="w"> </span><span class="n">KBytes</span><span class="w">       </span>
+<span class="o">-</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="o">-</span><span class="w"></span>
+<span class="o">[</span><span class="n"> ID</span><span class="o">]</span><span class="w"> </span><span class="k">Interval</span><span class="w">           </span><span class="n">Transfer</span><span class="w">     </span><span class="n">Bandwidth</span><span class="w">       </span><span class="n">Retr</span><span class="w"></span>
+<span class="o">[</span><span class="n">  4</span><span class="o">]</span><span class="w">   </span><span class="mf">0.00</span><span class="o">-</span><span class="mf">10.00</span><span class="w">  </span><span class="n">sec</span><span class="w">  </span><span class="mf">1.05</span><span class="w"> </span><span class="n">GBytes</span><span class="w">   </span><span class="mi">898</span><span class="w"> </span><span class="n">Mbits</span><span class="o">/</span><span class="n">sec</span><span class="w">    </span><span class="mi">0</span><span class="w">             </span><span class="n">sender</span><span class="w"></span>
+<span class="o">[</span><span class="n">  4</span><span class="o">]</span><span class="w">   </span><span class="mf">0.00</span><span class="o">-</span><span class="mf">10.00</span><span class="w">  </span><span class="n">sec</span><span class="w">  </span><span class="mf">1.05</span><span class="w"> </span><span class="n">GBytes</span><span class="w">   </span><span class="mi">898</span><span class="w"> </span><span class="n">Mbits</span><span class="o">/</span><span class="n">sec</span><span class="w">                  </span><span class="n">receiver</span><span class="w"></span>
 
-iperf Done.
-</pre></div>
+<span class="n">iperf</span><span class="w"> </span><span class="n">Done</span><span class="p">.</span><span class="w"></span>
+</code></pre></div>
 
 
 <p>然后在ubuntu主机开启iperf3服务器，从macbook测网内两机器互访速度:</p>
-<div class="highlight"><pre><span></span>biqins-MBP:lifetyper.com lifetyper$ iperf3 -c ubuntu -p 7000
-Connecting to host ubuntu, port 7000
-[  6] local 192.168.88.165 port 53144 connected to 192.168.88.57 port 7000
-[ ID] Interval           Transfer     Bandwidth
-[  6]   0.00-1.00   sec   105 MBytes   878 Mbits/sec                  
-[  6]   1.00-2.00   sec   104 MBytes   871 Mbits/sec                  
-[  6]   2.00-3.00   sec   104 MBytes   875 Mbits/sec                  
-[  6]   3.00-4.00   sec   105 MBytes   878 Mbits/sec                  
-[  6]   4.00-5.00   sec   105 MBytes   883 Mbits/sec                  
-[  6]   5.00-6.00   sec   106 MBytes   889 Mbits/sec                  
-[  6]   6.00-7.00   sec   104 MBytes   875 Mbits/sec                  
-[  6]   7.00-8.00   sec   106 MBytes   885 Mbits/sec                  
-[  6]   8.00-9.00   sec   106 MBytes   889 Mbits/sec                  
-[  6]   9.00-10.00  sec   106 MBytes   892 Mbits/sec                  
-- - - - - - - - - - - - - - - - - - - - - - - - -
-[ ID] Interval           Transfer     Bandwidth
-[  6]   0.00-10.00  sec  1.03 GBytes   882 Mbits/sec                  sender
-[  6]   0.00-10.00  sec  1.03 GBytes   881 Mbits/sec                  receiver
+<div class="highlight"><pre><span></span><code><span class="n">biqins</span><span class="o">-</span><span class="n">MBP</span><span class="p">:</span><span class="n">lifetyper</span><span class="p">.</span><span class="n">com</span> <span class="n">lifetyper$</span> <span class="n">iperf3</span> <span class="o">-</span><span class="k">c</span> <span class="n">ubuntu</span> <span class="o">-</span><span class="n">p</span> <span class="mi">7000</span>
+<span class="n">Connecting</span> <span class="k">to</span> <span class="k">host</span> <span class="n">ubuntu</span><span class="p">,</span> <span class="n">port</span> <span class="mi">7000</span>
+<span class="p">[</span>  <span class="mi">6</span><span class="p">]</span> <span class="k">local</span> <span class="mi">192</span><span class="p">.</span><span class="mi">168</span><span class="p">.</span><span class="mi">88</span><span class="p">.</span><span class="mi">165</span> <span class="n">port</span> <span class="mi">53144</span> <span class="n">connected</span> <span class="k">to</span> <span class="mi">192</span><span class="p">.</span><span class="mi">168</span><span class="p">.</span><span class="mi">88</span><span class="p">.</span><span class="mi">57</span> <span class="n">port</span> <span class="mi">7000</span>
+<span class="p">[</span> <span class="n">ID</span><span class="p">]</span> <span class="nb">Interval</span>           <span class="n">Transfer</span>     <span class="n">Bandwidth</span>
+<span class="p">[</span>  <span class="mi">6</span><span class="p">]</span>   <span class="mi">0</span><span class="p">.</span><span class="mi">00</span><span class="o">-</span><span class="mi">1</span><span class="p">.</span><span class="mi">00</span>   <span class="n">sec</span>   <span class="mi">105</span> <span class="n">MBytes</span>   <span class="mi">878</span> <span class="n">Mbits</span><span class="o">/</span><span class="n">sec</span>                  
+<span class="p">[</span>  <span class="mi">6</span><span class="p">]</span>   <span class="mi">1</span><span class="p">.</span><span class="mi">00</span><span class="o">-</span><span class="mi">2</span><span class="p">.</span><span class="mi">00</span>   <span class="n">sec</span>   <span class="mi">104</span> <span class="n">MBytes</span>   <span class="mi">871</span> <span class="n">Mbits</span><span class="o">/</span><span class="n">sec</span>                  
+<span class="p">[</span>  <span class="mi">6</span><span class="p">]</span>   <span class="mi">2</span><span class="p">.</span><span class="mi">00</span><span class="o">-</span><span class="mi">3</span><span class="p">.</span><span class="mi">00</span>   <span class="n">sec</span>   <span class="mi">104</span> <span class="n">MBytes</span>   <span class="mi">875</span> <span class="n">Mbits</span><span class="o">/</span><span class="n">sec</span>                  
+<span class="p">[</span>  <span class="mi">6</span><span class="p">]</span>   <span class="mi">3</span><span class="p">.</span><span class="mi">00</span><span class="o">-</span><span class="mi">4</span><span class="p">.</span><span class="mi">00</span>   <span class="n">sec</span>   <span class="mi">105</span> <span class="n">MBytes</span>   <span class="mi">878</span> <span class="n">Mbits</span><span class="o">/</span><span class="n">sec</span>                  
+<span class="p">[</span>  <span class="mi">6</span><span class="p">]</span>   <span class="mi">4</span><span class="p">.</span><span class="mi">00</span><span class="o">-</span><span class="mi">5</span><span class="p">.</span><span class="mi">00</span>   <span class="n">sec</span>   <span class="mi">105</span> <span class="n">MBytes</span>   <span class="mi">883</span> <span class="n">Mbits</span><span class="o">/</span><span class="n">sec</span>                  
+<span class="p">[</span>  <span class="mi">6</span><span class="p">]</span>   <span class="mi">5</span><span class="p">.</span><span class="mi">00</span><span class="o">-</span><span class="mi">6</span><span class="p">.</span><span class="mi">00</span>   <span class="n">sec</span>   <span class="mi">106</span> <span class="n">MBytes</span>   <span class="mi">889</span> <span class="n">Mbits</span><span class="o">/</span><span class="n">sec</span>                  
+<span class="p">[</span>  <span class="mi">6</span><span class="p">]</span>   <span class="mi">6</span><span class="p">.</span><span class="mi">00</span><span class="o">-</span><span class="mi">7</span><span class="p">.</span><span class="mi">00</span>   <span class="n">sec</span>   <span class="mi">104</span> <span class="n">MBytes</span>   <span class="mi">875</span> <span class="n">Mbits</span><span class="o">/</span><span class="n">sec</span>                  
+<span class="p">[</span>  <span class="mi">6</span><span class="p">]</span>   <span class="mi">7</span><span class="p">.</span><span class="mi">00</span><span class="o">-</span><span class="mi">8</span><span class="p">.</span><span class="mi">00</span>   <span class="n">sec</span>   <span class="mi">106</span> <span class="n">MBytes</span>   <span class="mi">885</span> <span class="n">Mbits</span><span class="o">/</span><span class="n">sec</span>                  
+<span class="p">[</span>  <span class="mi">6</span><span class="p">]</span>   <span class="mi">8</span><span class="p">.</span><span class="mi">00</span><span class="o">-</span><span class="mi">9</span><span class="p">.</span><span class="mi">00</span>   <span class="n">sec</span>   <span class="mi">106</span> <span class="n">MBytes</span>   <span class="mi">889</span> <span class="n">Mbits</span><span class="o">/</span><span class="n">sec</span>                  
+<span class="p">[</span>  <span class="mi">6</span><span class="p">]</span>   <span class="mi">9</span><span class="p">.</span><span class="mi">00</span><span class="o">-</span><span class="mi">10</span><span class="p">.</span><span class="mi">00</span>  <span class="n">sec</span>   <span class="mi">106</span> <span class="n">MBytes</span>   <span class="mi">892</span> <span class="n">Mbits</span><span class="o">/</span><span class="n">sec</span>                  
+<span class="o">-</span> <span class="o">-</span> <span class="o">-</span> <span class="o">-</span> <span class="o">-</span> <span class="o">-</span> <span class="o">-</span> <span class="o">-</span> <span class="o">-</span> <span class="o">-</span> <span class="o">-</span> <span class="o">-</span> <span class="o">-</span> <span class="o">-</span> <span class="o">-</span> <span class="o">-</span> <span class="o">-</span> <span class="o">-</span> <span class="o">-</span> <span class="o">-</span> <span class="o">-</span> <span class="o">-</span> <span class="o">-</span> <span class="o">-</span> <span class="o">-</span>
+<span class="p">[</span> <span class="n">ID</span><span class="p">]</span> <span class="nb">Interval</span>           <span class="n">Transfer</span>     <span class="n">Bandwidth</span>
+<span class="p">[</span>  <span class="mi">6</span><span class="p">]</span>   <span class="mi">0</span><span class="p">.</span><span class="mi">00</span><span class="o">-</span><span class="mi">10</span><span class="p">.</span><span class="mi">00</span>  <span class="n">sec</span>  <span class="mi">1</span><span class="p">.</span><span class="mi">03</span> <span class="n">GBytes</span>   <span class="mi">882</span> <span class="n">Mbits</span><span class="o">/</span><span class="n">sec</span>                  <span class="n">sender</span>
+<span class="p">[</span>  <span class="mi">6</span><span class="p">]</span>   <span class="mi">0</span><span class="p">.</span><span class="mi">00</span><span class="o">-</span><span class="mi">10</span><span class="p">.</span><span class="mi">00</span>  <span class="n">sec</span>  <span class="mi">1</span><span class="p">.</span><span class="mi">03</span> <span class="n">GBytes</span>   <span class="mi">881</span> <span class="n">Mbits</span><span class="o">/</span><span class="n">sec</span>                  <span class="n">receiver</span>
 
-iperf Done.
-</pre></div>
+<span class="n">iperf</span> <span class="n">Done</span><span class="p">.</span>
+</code></pre></div>
 
 
 <p>网内互访的速度肯定比直接连路由慢一点，不过平均882Mbps，在用上千兆网之前，基本不要啥自行车了。</p>
 <h2>资源使用情况</h2>
 <p>最后来看看这个路由到底需要多少资源：</p>
-<div class="highlight"><pre><span></span>root@debian:/home/lifetyper# df -h
-Filesystem      Size  Used Avail Use% Mounted on
-/dev/sda1        28G  2.0G   25G   8% /
-udev             10M     0   10M   0% /dev
-tmpfs           381M  5.2M  376M   2% /run
-tmpfs           951M     0  951M   0% /dev/shm
-tmpfs           5.0M     0  5.0M   0% /run/lock
-tmpfs           951M     0  951M   0% /sys/fs/cgroup
-root@debian:/home/lifetyper# free -m
-             total       used       free     shared    buffers     cached
-Mem:          1900        139       1761          5         10         52
--/+ buffers/cache:         76       1824
-Swap:         1285          0       1285
-</pre></div>
+<div class="highlight"><pre><span></span><code><span class="err">root@debian:/home/lifetyper# df -h</span>
+<span class="err">Filesystem      Size  Used Avail Use% Mounted on</span>
+<span class="err">/dev/sda1        28G  2.0G   25G   8% /</span>
+<span class="err">udev             10M     0   10M   0% /dev</span>
+<span class="err">tmpfs           381M  5.2M  376M   2% /run</span>
+<span class="err">tmpfs           951M     0  951M   0% /dev/shm</span>
+<span class="err">tmpfs           5.0M     0  5.0M   0% /run/lock</span>
+<span class="err">tmpfs           951M     0  951M   0% /sys/fs/cgroup</span>
+<span class="err">root@debian:/home/lifetyper# free -m</span>
+<span class="err">             total       used       free     shared    buffers     cached</span>
+<span class="c">Mem:          1900        139       1761          5         10         52</span>
+<span class="err">-/+ buffers/cache:         76       1824</span>
+<span class="c">Swap:         1285          0       1285</span>
+</code></pre></div>
 
 
 <p>2G的磁盘，139M的内存，CPU占用上我用top看，最高的CPU占用程序就是top本身。我本来以为磁盘占用会挺多的，没想到在安装完全部组件，并且把shadowsocks编译环境都搭完之后也才2G，难怪之前别人用edgerouter lite 2G的U盘就可以直接在路由上编译软件包了。</p>
@@ -415,16 +415,16 @@ Swap:         1285          0       1285
 <h4>给路由器一个名字</h4>
 <p>如果你不想每次ssh到路由的时候都输一串ip，其实我们完全可以给路由器一个名称，直接通过主机名来访问它。
 这个很简单，直接修改/etc/hosts文件就可以了，因为dnsmasq是会从这里读取主机名的，读取之后主机名对于dnsmasq来说就像LAN里的主机一样是可以直接解析的，我们在/etc/hosts中添加:</p>
-<div class="highlight"><pre><span></span>192.168.88.1        debian
-</pre></div>
+<div class="highlight"><pre><span></span><code><span class="err">192.168.88.1        debian</span>
+</code></pre></div>
 
 
 <p>重启dnsmasq之后，我们就可以用类似ssh user@debian的方式登录路由了。</p>
 <h4>添加用户到sudo组</h4>
 <p>默认新建的非root用户权限很低，安装了sudo之后也因为默认不在sudo组内所以不能使用sudo命令，解决方法就是先用root登录，然后执行以下命令：</p>
-<div class="highlight"><pre><span></span>apt-get install sudo
-adduser your_user_name sudo
-</pre></div>
+<div class="highlight"><pre><span></span><code><span class="err">apt-get install sudo</span>
+<span class="err">adduser your_user_name sudo</span>
+</code></pre></div>
 
 
 <p>退出之后再用刚才添加的用户名登录，就可以使用sudo了，如果有太多sudo命令要做，直接<code>sudo bash</code>就可以切到root用户了。</p>

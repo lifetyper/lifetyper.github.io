@@ -123,34 +123,34 @@
 <p>首先明确一下，这里只讨论MudbJson版的单端口多用户配置，机场用的SSPanel不在此讨论范围。其实MudbJson是一个非常适合少数几个人一起搭建小机场的配置方式，在保证多用户特性的情况下没有多余的附加组件，可以给不同用户数设置限速和限流量等参数，即使有多个服务器节点存在，也只需要在各个服务期间同步一个json文件就可以了。</p>
 <p>单端口多用户的目的是什么？是集中服务器的端口使用，避免大量开放端口，一个服务器同时开放几百个TCP端口同时都还有不小的数据量，这不用分析都可以猜到是干啥的。而把端口隐藏到443，995这样的常用服务端口上并配合一定的混淆，相对会增加一点探测难度。</p>
 <p>先直接看配置文件：</p>
-<div class="highlight"><pre><span></span>[
-{
-&quot;d&quot;: 0,
-&quot;enable&quot;: 1,
-&quot;method&quot;: &quot;none&quot;,
-&quot;obfs&quot;: &quot;tls1.2_ticket_auth&quot;,
-&quot;passwd&quot;: &quot;JKlzs)9j&quot;,
-&quot;port&quot;: 995,
-&quot;protocol&quot;: &quot;auth_chain_b&quot;,
-&quot;protocol_param&quot;: &quot;#&quot;,
-&quot;transfer_enable&quot;: 9007199254740992,
-&quot;u&quot;: 0,
-&quot;user&quot;: &quot;995&quot;
-},
-{
-&quot;d&quot;: 16668442,
-&quot;enable&quot;: 1,
-&quot;method&quot;: &quot;none&quot;,
-&quot;obfs&quot;: &quot;tls1.2_ticket_auth&quot;,
-&quot;passwd&quot;: &quot;R=KA2VmQ&quot;,
-&quot;port&quot;: 100002,
-&quot;protocol&quot;: &quot;auth_chain_b&quot;,
-&quot;transfer_enable&quot;: 9007199254740992,
-&quot;u&quot;: 673936,
-&quot;user&quot;: &quot;100002&quot;
-}
-]
-</pre></div>
+<div class="highlight"><pre><span></span><code><span class="err">[</span>
+<span class="err">{</span>
+<span class="err">&quot;d&quot;: 0,</span>
+<span class="err">&quot;enable&quot;: 1,</span>
+<span class="err">&quot;method&quot;: &quot;none&quot;,</span>
+<span class="err">&quot;obfs&quot;: &quot;tls1.2_ticket_auth&quot;,</span>
+<span class="err">&quot;passwd&quot;: &quot;JKlzs)9j&quot;,</span>
+<span class="err">&quot;port&quot;: 995,</span>
+<span class="err">&quot;protocol&quot;: &quot;auth_chain_b&quot;,</span>
+<span class="err">&quot;protocol_param&quot;: &quot;#&quot;,</span>
+<span class="err">&quot;transfer_enable&quot;: 9007199254740992,</span>
+<span class="err">&quot;u&quot;: 0,</span>
+<span class="err">&quot;user&quot;: &quot;995&quot;</span>
+<span class="err">},</span>
+<span class="err">{</span>
+<span class="err">&quot;d&quot;: 16668442,</span>
+<span class="err">&quot;enable&quot;: 1,</span>
+<span class="err">&quot;method&quot;: &quot;none&quot;,</span>
+<span class="err">&quot;obfs&quot;: &quot;tls1.2_ticket_auth&quot;,</span>
+<span class="err">&quot;passwd&quot;: &quot;R=KA2VmQ&quot;,</span>
+<span class="err">&quot;port&quot;: 100002,</span>
+<span class="err">&quot;protocol&quot;: &quot;auth_chain_b&quot;,</span>
+<span class="err">&quot;transfer_enable&quot;: 9007199254740992,</span>
+<span class="err">&quot;u&quot;: 673936,</span>
+<span class="err">&quot;user&quot;: &quot;100002&quot;</span>
+<span class="err">}</span>
+<span class="err">]</span>
+</code></pre></div>
 
 
 <p>先建立一个默认的用户，为了方便，我们默认吧用户ID和用户端口写成一样的，这里就是995用户，这个用户最明显的特征，就是protocol param是“#”,这样的参数用于标识这是个默认用户，但这个用户是不可用的，因为protocol param只写个“#”是无效的。</p>
