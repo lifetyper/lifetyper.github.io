@@ -598,7 +598,7 @@ Update:生成bash命令的Python脚本在&lt;a href="https://gist.github.com/lif
 &lt;p&gt;Dero nightly build has already support a very useful new funtion:Web Wallet.It's archived by using golang web assembly build,totally run in your browser.As mentioned by dero dev team, dero gui wallet will be abandoned, all resouce will focused on web wallet.&lt;/p&gt;
 &lt;p&gt;Besides the official derowallet.io, you may want to setup your own web wallet, host on a server for public use or just run it locally.Here is  the step for set up your own dero web wallet.&lt;/p&gt;
 &lt;h2&gt;Compile new version of dero daemon to support web wallet&lt;/h2&gt;
-&lt;p&gt;To support web assembly funtion, you need to use minimum Golang version 1.11.1 for this  build, old version will not work.&lt;/p&gt;
+&lt;p&gt;To support web assembly funtion, you need to use minimum Golang version 1.11.1 for this  build, old version will not work.I use golang 1.11.13 for all these build,higher version golang may lead to wasm file compile fail.&lt;/p&gt;
 &lt;p&gt;git clone the code from dero offcial git repo &lt;a href="https://git.dero.io/DeroProject/derosuite_webwallet"&gt;https://git.dero.io/DeroProject/derosuite_webwallet&lt;/a&gt;. You'd better move the code to your Gopath source folder, the source path for me is &lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;~/go/src/github.com/deroproject/derosuite&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
