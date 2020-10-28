@@ -126,7 +126,6 @@
 <div class="highlight"><pre><span></span><code><span class="err">curl https://rclone.org/install.sh | sudo bash</span>
 </code></pre></div>
 
-
 <h2>配置GoogleDrive账号</h2>
 <p>基本的配置过程可以参考<a href="https://rclone.org/drive/">这里</a>，这里只说一下要点：
 * client id什么的其实都不用管，直接回车就可以了，最终是通过web auth来实现认证的，如果已经登录了Google 账号，全程不需要输入密码。
@@ -139,13 +138,11 @@
 <div class="highlight"><pre><span></span><code><span class="err">rclone copy gdrive:GooglePhotos /SafeHub/GooglePhotos</span>
 </code></pre></div>
 
-
 <p>gdrive就是刚才建立的Googledrive的账号名称，也就是刚才说的以后都是根目录别称的那个，后面的/SafeHub是我自己本机上的一个RAID1磁盘，根据你的情况选择本地路径即可。</p>
 <h2>自动执行</h2>
 <p>先找出配置文件的路径：</p>
 <div class="highlight"><pre><span></span><code><span class="err">rclone config file</span>
 </code></pre></div>
-
 
 <p>然后运行crontab -e来添加一个cronjob，例如我希望他每天2：30分备份一次(已经下载的会自动跳过),就添加这样的一个cron job：</p>
 <div class="highlight"><pre><span></span><code><span class="err">30 2 * * * /usr/bin/rclone --config /root/.config/rclone/rclone.conf copy gdrive:GooglePhotos /SafeHub/GooglePhotos</span>

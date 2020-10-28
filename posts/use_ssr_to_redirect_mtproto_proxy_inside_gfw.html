@@ -151,7 +151,6 @@
         <span class="s1">&#39;iptables -t nat -A OUTPUT -p tcp -m set --match-set telegram dst -j REDIRECT --to-ports 1080</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
 </code></pre></div>
 
-
 <p>产生的bash脚本如下：</p>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
@@ -182,7 +181,6 @@ iptables -t nat -A PREROUTING -p tcp -m <span class="nb">set</span> --match-set 
 iptables -t nat -A OUTPUT -p tcp -m <span class="nb">set</span> --match-set telegram dst -j REDIRECT --to-ports <span class="m">1080</span>
 </code></pre></div>
 </td></tr></table>
-
 <p>这么一看，当初还写什么脚本，IP段也没几个啊，害得我一度以为脚本写错了，是不是漏了什么IP，结果上网站一查还真就这几个IP段。
 Bash脚本应该都看得懂吧，就是把telegram的IP加入一个ipset中(当然，你得先安装ipset，一般默认都没有)，然后把符合tcp协议的、同时目的IP属于这个ipset内的流量，全部转发到ss-redir产生的1080透明代理端口上。</p>
 <h2>在国内VPS安装MTProxy</h2>
@@ -190,7 +188,6 @@ Bash脚本应该都看得懂吧，就是把telegram的IP加入一个ipset中(当
 <p>git clone下来后，改下端口设置就行了。config.py里的Users，其实就是个16位的随机secret，可以用以下命令产生：</p>
 <div class="highlight"><pre><span></span><code><span class="err">head -c 16 /dev/urandom | xxd -ps</span>
 </code></pre></div>
-
 
 <p>你还可以配置多个secret，这样就可以把secret当Users来管理了，虽然我目前还没发现这玩意有什么管理功能。</p>
 <p>对于python脚本的启动管理，我向来喜欢转个supervisor搞定，只需要写个配置文件就行了:</p>
@@ -201,14 +198,12 @@ Bash脚本应该都看得懂吧，就是把telegram的IP加入一个ipset中(当
 <span class="err">autorestart=true</span>
 </code></pre></div>
 
-
 <p>当然，我建议你可以先手工执行以下这个服务器命令，这样会自动echo出产生的MTProxy的地址，省的你自己再去一点点拼起来。</p>
 <h2>固化ipset和iptables规则</h2>
 <p>ipset和iptables默认重启后就会掉了，我们可以先把他们保存到文件：</p>
 <div class="highlight"><pre><span></span><code><span class="err">ipset save &gt; /etc/ipset.conf</span>
 <span class="err">iptables-save  &gt; /etc/iptables.conf</span>
 </code></pre></div>
-
 
 <p>然后在/etc/rc.local里(对应的是ubuntu/debian系统，centos自己想办法)，写入从文件还原ipset和iptables的命令就可以了：</p>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
@@ -224,7 +219,6 @@ iptables-restore &lt; /etc/iptables.conf
 <span class="nb">exit</span> <span class="m">0</span>
 </code></pre></div>
 </td></tr></table>
-
 <p>ubuntu18默认没有/etc/rc.local文件了，自己创建一个就行，记得chomod +x /etc/rc.local给它添加可执行属性。</p>
 
 <div class="sharing">

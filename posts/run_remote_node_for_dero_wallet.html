@@ -139,7 +139,6 @@ Install nginx is easy on ubuntu, install with root account is ok, but don't run 
 <span class="err">apt-get install nginx</span>
 </code></pre></div>
 
-
 <h2>Fetch SSL certificate for your domain</h2>
 <p>We have let's encrypt for free SSL certificate, to obtain SSL certificate easyliy we shall install <a href="https://certbot.eff.org/">certbot</a>.</p>
 <div class="highlight"><pre><span></span><code><span class="err">apt-get update</span>
@@ -149,11 +148,9 @@ Install nginx is easy on ubuntu, install with root account is ok, but don't run 
 <span class="err">apt-get install python-certbot-nginx </span>
 </code></pre></div>
 
-
 <p>After installation, run below command to get the ssl certificate</p>
 <div class="highlight"><pre><span></span><code><span class="err">certbot certonly</span>
 </code></pre></div>
-
 
 <p>Just follow the instruction and enter needed info, and when it comes to this step:</p>
 <div class="highlight"><pre><span></span><code><span class="err">How would you like to authenticate with the ACME CA?</span>
@@ -163,7 +160,6 @@ Install nginx is easy on ubuntu, install with root account is ok, but don't run 
 <span class="c">3: Place files in webroot directory (webroot)</span>
 </code></pre></div>
 
-
 <p>Just type "1" to use nginx web plugin for domain verify.
 After certificate done, take derowallet.com for example, you shall see below message telling you where is your certification and chain stored.</p>
 <div class="highlight"><pre><span></span><code><span class="err">- Congratulations! Your certificate and chain have been saved at:</span>
@@ -172,70 +168,64 @@ After certificate done, take derowallet.com for example, you shall see below mes
 <span class="err">   /etc/letsencrypt/live/derowallet.com/privkey.pem</span>
 </code></pre></div>
 
-
 <p>Note down these two paths, we will use them later.</p>
 <h2>Setup Nginx as DERO rpc service proxy</h2>
 <p>Still take derowallet.com for example, let's create a config file for this proxy in "/etc/nginx/conf.d" and edit it with VIM:
 <code>touch rwallet.conf
 vi rwallet.conf</code>
 Then paste below content in rwallet.conf:</p>
-<div class="highlight"><pre><span></span><code><span class="nt">server</span> <span class="p">{</span>
-    <span class="err">listen</span>          <span class="err">80</span><span class="p">;</span>
-    <span class="err">server_name</span>     <span class="err">derowallet.com</span><span class="p">;</span>
-    <span class="err">rewrite</span> <span class="err">^/(.*)</span>  <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">derowallet</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="err">$</span><span class="mi">1</span> <span class="n">permanent</span><span class="p">;</span>
+<div class="highlight"><pre><span></span><code><span class="n">server</span> <span class="p">{</span>
+    <span class="n">listen</span>          <span class="mi">80</span><span class="p">;</span>
+    <span class="n">server_name</span>     <span class="n">derowallet</span><span class="o">.</span><span class="n">com</span><span class="p">;</span>
+    <span class="n">rewrite</span> <span class="o">^/</span><span class="p">(</span><span class="o">.*</span><span class="p">)</span>  <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">derowallet</span><span class="o">.</span><span class="n">com</span><span class="o">/$</span><span class="mi">1</span> <span class="n">permanent</span><span class="p">;</span>
 <span class="p">}</span>
 
-<span class="nt">server</span> <span class="p">{</span>
-    <span class="err">listen</span>          <span class="err">443</span> <span class="err">ssl</span><span class="p">;</span>
-    <span class="err">server_name</span>     <span class="err">derowallet.com</span><span class="p">;</span>
-    <span class="err">access_log</span>      <span class="err">/var/log/nginx/rwalelt_access.log</span> <span class="err">combined</span><span class="p">;</span>
-    <span class="err">error_log</span>       <span class="err">/var/log/nginx/rwallet_erro.log</span> <span class="err">error</span><span class="p">;</span>
+<span class="n">server</span> <span class="p">{</span>
+    <span class="n">listen</span>          <span class="mi">443</span> <span class="n">ssl</span><span class="p">;</span>
+    <span class="n">server_name</span>     <span class="n">derowallet</span><span class="o">.</span><span class="n">com</span><span class="p">;</span>
+    <span class="n">access_log</span>      <span class="o">/</span><span class="k">var</span><span class="o">/</span><span class="nb">log</span><span class="o">/</span><span class="n">nginx</span><span class="o">/</span><span class="n">rwalelt_access</span><span class="o">.</span><span class="n">log</span> <span class="n">combined</span><span class="p">;</span>
+    <span class="n">error_log</span>       <span class="o">/</span><span class="k">var</span><span class="o">/</span><span class="nb">log</span><span class="o">/</span><span class="n">nginx</span><span class="o">/</span><span class="n">rwallet_erro</span><span class="o">.</span><span class="n">log</span> <span class="n">error</span><span class="p">;</span>
 
-    <span class="err">ssl_certificate</span> <span class="err">/etc/letsencrypt/live/derowallet.com/fullchain.pem</span><span class="p">;</span>
-    <span class="err">ssl_certificate_key</span> <span class="err">/etc/letsencrypt/live/derowallet.com/privkey.pem</span><span class="p">;</span>
+    <span class="n">ssl_certificate</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">letsencrypt</span><span class="o">/</span><span class="n">live</span><span class="o">/</span><span class="n">derowallet</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">fullchain</span><span class="o">.</span><span class="n">pem</span><span class="p">;</span>
+    <span class="n">ssl_certificate_key</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">letsencrypt</span><span class="o">/</span><span class="n">live</span><span class="o">/</span><span class="n">derowallet</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">privkey</span><span class="o">.</span><span class="n">pem</span><span class="p">;</span>
 
 
-    <span class="err">location</span> <span class="err">/</span> <span class="err">{</span>
-        <span class="err">proxy_pass</span>         <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">localhost</span><span class="o">:</span><span class="mi">20206</span><span class="o">/</span><span class="p">;</span>
-        <span class="err">proxy_redirect</span>     <span class="err">off</span><span class="p">;</span>
+    <span class="n">location</span> <span class="o">/</span> <span class="p">{</span>
+        <span class="n">proxy_pass</span>         <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">localhost</span><span class="p">:</span><span class="mi">20206</span><span class="o">/</span><span class="p">;</span>
+        <span class="n">proxy_redirect</span>     <span class="n">off</span><span class="p">;</span>
 
-        <span class="err">proxy_set_header</span>   <span class="err">Host</span>              <span class="err">$http_host</span><span class="p">;</span>
-        <span class="err">proxy_set_header</span>   <span class="err">X-Real-IP</span>         <span class="err">$remote_addr</span><span class="p">;</span>
-        <span class="err">proxy_set_header</span>   <span class="err">X-Forwarded-For</span>   <span class="err">$proxy_add_x_forwarded_for</span><span class="p">;</span>
+        <span class="n">proxy_set_header</span>   <span class="n">Host</span>              <span class="o">$</span><span class="n">http_host</span><span class="p">;</span>
+        <span class="n">proxy_set_header</span>   <span class="n">X</span><span class="o">-</span><span class="n">Real</span><span class="o">-</span><span class="n">IP</span>         <span class="o">$</span><span class="n">remote_addr</span><span class="p">;</span>
+        <span class="n">proxy_set_header</span>   <span class="n">X</span><span class="o">-</span><span class="n">Forwarded</span><span class="o">-</span><span class="n">For</span>   <span class="o">$</span><span class="n">proxy_add_x_forwarded_for</span><span class="p">;</span>
     <span class="p">}</span>
 
-<span class="err">}</span>
+<span class="p">}</span>
 </code></pre></div>
-
 
 <p>Remember to replace derowallet.com with your own domain, and set the correct path for your ssl certificate and chain, then restart nginx service:</p>
 <div class="highlight"><pre><span></span><code><span class="err">/etc/init.d/nginx restart</span>
 </code></pre></div>
-
 
 <p>Now let's visit <a href="https://derowallet.com">https://derowallet.com</a> you should see a "502 bad gateway" error.This means nginx is working as expected, the only problem is you haven't run dero daemon at port 20206 yet.</p>
 <h2>Run dero daemon</h2>
 <h3>install dero daemon</h3>
 <p>First let's go to <a href="https://github.com/deroproject/derosuite/releases/latest">dero official github</a> to download the latest binaries for dero daemon.
 Since we're using ubuntu 16.04 64bit as our VPS os here, we should download linux_amd64 version, extract the tarball and copy the binaries to "/usr/local/bin" folder to make it global available.</p>
-<div class="highlight"><pre><span></span><code><span class="err">wget https://github.com/deroproject/derosuite/releases/download/v2.1.5/dero_linux_amd64_2.1.5-0.alpha.atlantis.10102018.tar.gz</span>
-<span class="err">tar xf dero_linux_amd64_2.1.5-0.alpha.atlantis.10102018.tar.gz</span>
-<span class="err">cp dero_linux_amd64/* /usr/local/bin</span>
+<div class="highlight"><pre><span></span><code><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">deroproject</span><span class="o">/</span><span class="n">derosuite</span><span class="o">/</span><span class="n">releases</span><span class="o">/</span><span class="n">download</span><span class="o">/</span><span class="n">v2</span><span class="o">.</span><span class="mf">1.5</span><span class="o">/</span><span class="n">dero_linux_amd64_2</span><span class="o">.</span><span class="mf">1.5</span><span class="o">-</span><span class="mf">0.</span><span class="n">alpha</span><span class="o">.</span><span class="n">atlantis</span><span class="o">.</span><span class="mf">10102018.</span><span class="n">tar</span><span class="o">.</span><span class="n">gz</span>
+<span class="n">tar</span> <span class="n">xf</span> <span class="n">dero_linux_amd64_2</span><span class="o">.</span><span class="mf">1.5</span><span class="o">-</span><span class="mf">0.</span><span class="n">alpha</span><span class="o">.</span><span class="n">atlantis</span><span class="o">.</span><span class="mf">10102018.</span><span class="n">tar</span><span class="o">.</span><span class="n">gz</span>
+<span class="n">cp</span> <span class="n">dero_linux_amd64</span><span class="o">/*</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">local</span><span class="o">/</span><span class="n">bin</span>
 </code></pre></div>
-
 
 <h3>Create data folder for dero</h3>
 <p>Let's make a folder for dero to store the chain data:</p>
 <div class="highlight"><pre><span></span><code><span class="err">mkdir /root/.dero</span>
 </code></pre></div>
 
-
 <p>using name like ".dero" with a dot in the front will make the folder default hidden for 'ls' command and avoid stupid "rm -rf" command delete it.</p>
 <h3>Run dero daemon</h3>
 <p>Since we create a folder(/root/.dero) for blockchain data store, we should use this folder as data-dir every time we run dero daemon.</p>
 <div class="highlight"><pre><span></span><code><span class="err">derod-linux-amd64 --data-dir=/root/.dero</span>
 </code></pre></div>
-
 
 <p>After this command you should see dero command line daemon start and a folder named "mainnet" created under "/root/.dero" folder.
 This time when you visit https://derowallet.com, browser should return a "Hello world!" message, which means everything is done.</p>
@@ -244,16 +234,13 @@ This time when you visit https://derowallet.com, browser should return a "Hello 
 <div class="highlight"><pre><span></span><code><span class="err">screen -d -m derod-linux-amd64 --data-dir=/root/.dero</span>
 </code></pre></div>
 
-
 <p>Now a new sub-shell has been created and dero daemon running in it, if you want to check the staus of this sub-shell, just type:</p>
 <div class="highlight"><pre><span></span><code><span class="err">screen -r</span>
 </code></pre></div>
 
-
 <p>if there're more than one sub-shell running on your server, you might need to use </p>
 <div class="highlight"><pre><span></span><code><span class="err">screen -ls</span>
 </code></pre></div>
-
 
 <p>to list all running sub-shell and determine which one to enter.
 if you want to leave the sub-shell, don't use ctrl+c which will end the daemon, use key "ctrl+a+d" and you shall return to main shell.</p>
@@ -274,14 +261,12 @@ if you want to leave the sub-shell, don't use ctrl+c which will end the daemon, 
 <span class="n">exit</span> <span class="mi">0</span>
 </code></pre></div>
 
-
 <p>Note that this time we shall use full path for both screen and dero daemon.Restart the server and check https://derowallet.com to see if it works.</p>
 <h2>Using remote node</h2>
 <p>Currently dero GUI wallet doesn't support customized remote node, but we can use it for command line wallet, by using option --data-dir.</p>
 <p>Full command to use the remote node we just set up under mac os is:</p>
 <div class="highlight"><pre><span></span><code><span class="err">dero-wallet-cli-darwin-amd64 --daemon-address=https://derowallet.com</span>
 </code></pre></div>
-
 
 <p>If your node is full synced, your wallet should be ready for use now.</p>
 

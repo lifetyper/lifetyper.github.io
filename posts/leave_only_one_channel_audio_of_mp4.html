@@ -125,11 +125,9 @@
 <div class="highlight"><pre><span></span><code><span class="err">ffmpeg -i origin.mp4 -map_channel 0.1.0 -c:v copy mono.mp4</span>
 </code></pre></div>
 
-
 <p>如果要变成立体声，就是：</p>
 <div class="highlight"><pre><span></span><code><span class="err">ffmpeg -i origin.mp4 -map_channel 0.1.0 -map_channel 0.1.0 -c:v copy stereo.mp4</span>
 </code></pre></div>
-
 
 <p>如果你要保留的音频在右声道，就把0.1.0改成0.1.1就可以了。</p>
 

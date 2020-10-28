@@ -131,31 +131,26 @@
 <div class="highlight"><pre><span></span><code><span class="err">certstrap init --common-name &quot;CA&quot; </span>
 </code></pre></div>
 
-
 <p>这里的common-name是必须的，具体名字你可以自己定，这个命令会生成CA.crt、CA.csr、CA.key这三个文件，</p>
 <h3>合并根证书为pem文件</h3>
 <div class="highlight"><pre><span></span><code><span class="err">cat CA.crt CA.key &gt;CA.pem</span>
 </code></pre></div>
-
 
 <p>很简单，就是把key和cert直接拼起来生成一个包含了二者的pem文件，因为ghostunnel需要使用这样的格式的CA。</p>
 <h3>为节点（客户端、服务器）生成key</h3>
 <div class="highlight"><pre><span></span><code><span class="err">certstrap request-cert --domain cn.ssr.org</span>
 </code></pre></div>
 
-
 <p>这里根据实际域名填写，分别是客户端和服务器端的域名，这会生成cn.ssr.org.key 和cn.ssr.org.csr 两个文件。</p>
 <h3>用根证书为节点签发证书</h3>
 <div class="highlight"><pre><span></span><code><span class="err">certstrap sign cn.ssr.org --CA CA </span>
 </code></pre></div>
 
-
 <p>这里的CA就是我们刚才生成的根证书的名字，这会生成cn.ssr.org.crt</p>
 <h3>生成合并的pkcs12格式keystore文件</h3>
 <p>其实到这里本来就够了，为了方便使用，我们可以生成一个合并的包含了公私钥的keystore文件：</p>
-<div class="highlight"><pre><span></span><code><span class="err">openssl pkcs12 -export -out cn.p12 -inkey cn.ssr.org.key -in cn.ssr.org.crt -certfile CA.crt</span>
+<div class="highlight"><pre><span></span><code><span class="n">openssl</span> <span class="n">pkcs12</span> <span class="o">-</span><span class="k">export</span> <span class="o">-</span><span class="n">out</span> <span class="n">cn</span><span class="o">.</span><span class="n">p12</span> <span class="o">-</span><span class="n">inkey</span> <span class="n">cn</span><span class="o">.</span><span class="n">ssr</span><span class="o">.</span><span class="n">org</span><span class="o">.</span><span class="n">key</span> <span class="o">-</span><span class="ow">in</span> <span class="n">cn</span><span class="o">.</span><span class="n">ssr</span><span class="o">.</span><span class="n">org</span><span class="o">.</span><span class="n">crt</span> <span class="o">-</span><span class="n">certfile</span> <span class="n">CA</span><span class="o">.</span><span class="n">crt</span>
 </code></pre></div>
-
 
 <p>这样会得到一个cn.p12的keystore文件，注意，国内节点（客户端）和国外节点（服务器）都要生成这些证书。</p>
 <h3>最终的文件</h3>
@@ -164,7 +159,6 @@
 <p>我们在国外的服务器(x.ssr.org)上运行一个简单的http服务器，但只监听localhost的8001端口并不开放给公网。</p>
 <div class="highlight"><pre><span></span><code><span class="err">python3 -m http.server 8001 --bind 127.0.0.1</span>
 </code></pre></div>
-
 
 <p>在国外服务器上运行ghostunnel的服务器端，从服务器端的0.0.0.0:8002端口转发到服务器的localhost:8001端口。
 在国内服务器运行ghostunnel的客户端，从客户端的0.0.0.0:8003转发到服务器的0.0.0.0:8002端口。
@@ -184,7 +178,6 @@ client--HTTP--&gt;cn.ssr.org:8003--&gt;TLS--&gt;x.ssr.org:8002--HTTP--&gt;x.ssr.
 <span class="err">    --allow-all</span>
 </code></pre></div>
 
-
 <p>上面这是分别制定key和cert文件的，我们也可以使用合并的keystore文件，命令就变成这样了：</p>
 <div class="highlight"><pre><span></span><code><span class="err">ghostunnel server \</span>
 <span class="err">    --listen 0.0.0.0:8002 \</span>
@@ -194,13 +187,11 @@ client--HTTP--&gt;cn.ssr.org:8003--&gt;TLS--&gt;x.ssr.org:8002--HTTP--&gt;x.ssr.
 <span class="err">    --allow-all</span>
 </code></pre></div>
 
-
 <p>这里的--allow-all表示允许所有客户端连接，也可以通过指定域名证书的方式，限制特定IP（域名）来源的连接，配合自己的私有CA证书，非授权的机器几乎不可能连上服务器。
 指定域名的用法是：
 把--allow-all替换成：</p>
 <div class="highlight"><pre><span></span><code><span class="err">--allow-cn cn.ssr.org</span>
 </code></pre></div>
-
 
 <h2>Ghostunnel客户端配置</h2>
 <p>同样的，分别使用key和cert文件：</p>
@@ -213,7 +204,6 @@ client--HTTP--&gt;cn.ssr.org:8003--&gt;TLS--&gt;x.ssr.org:8002--HTTP--&gt;x.ssr.
 <span class="err">    --unsafe-listen</span>
 </code></pre></div>
 
-
 <p>使用合并的keystore文件：</p>
 <div class="highlight"><pre><span></span><code><span class="err">ghostunnel client \</span>
 <span class="err">    --listen 0.0.0.0:8003 \</span>
@@ -222,7 +212,6 @@ client--HTTP--&gt;cn.ssr.org:8003--&gt;TLS--&gt;x.ssr.org:8002--HTTP--&gt;x.ssr.
 <span class="err">    --cacert out/CA.pem \</span>
 <span class="err">    --unsafe-listen</span>
 </code></pre></div>
-
 
 <p>打完收工。平时如果直接从国内访问国外机器的http端口并且传大量文件，很快就会被rst了，现在我们可以通过国内的cn.ssr.org:8003端口+TLS隧道来访问，实测下来下载几个G的文件也没什么发生，速度还挺稳定。</p>
 

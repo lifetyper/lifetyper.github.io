@@ -5,11 +5,9 @@
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;ffmpeg -i origin.mp4 -map_channel 0.1.0 -c:v copy mono.mp4&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
-
 &lt;p&gt;如果要变成立体声，就是：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;ffmpeg -i origin.mp4 -map_channel 0.1.0 -map_channel 0.1.0 -c:v copy stereo.mp4&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
 
 &lt;p&gt;如果你要保留的音频在右声道，就把0.1.0改成0.1.1就可以了。&lt;/p&gt;</content><category term="misc"></category></entry><entry><title>使用Ghostunnel建立TLS加密隧道</title><link href="posts/use_ghostunnel_to_create_secure_tls_tunnel.html" rel="alternate"></link><published>2019-11-23T11:45:00+08:00</published><updated>2019-11-23T11:45:00+08:00</updated><author><name>毕勤</name></author><id>tag:None,2019-11-23:posts/use_ghostunnel_to_create_secure_tls_tunnel.html</id><summary type="html">&lt;p&gt;我一直感到很奇怪的一点是，TLS在当今各种翻墙工具中被大量使用，但却很少看到单纯的tls隧道的搭建的文章，甚至连这类工具的介绍都很少。&lt;/p&gt;</summary><content type="html">&lt;p&gt;我一直感到很奇怪的一点是，TLS在当今各种翻墙工具中被大量使用，但却很少看到单纯的tls隧道的搭建的文章，甚至连这类工具的介绍都很少。&lt;/p&gt;
 &lt;h2&gt;惨痛的现实&lt;/h2&gt;
@@ -23,31 +21,26 @@
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;certstrap init --common-name &amp;quot;CA&amp;quot; &lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
-
 &lt;p&gt;这里的common-name是必须的，具体名字你可以自己定，这个命令会生成CA.crt、CA.csr、CA.key这三个文件，&lt;/p&gt;
 &lt;h3&gt;合并根证书为pem文件&lt;/h3&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;cat CA.crt CA.key &amp;gt;CA.pem&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
 
 &lt;p&gt;很简单，就是把key和cert直接拼起来生成一个包含了二者的pem文件，因为ghostunnel需要使用这样的格式的CA。&lt;/p&gt;
 &lt;h3&gt;为节点（客户端、服务器）生成key&lt;/h3&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;certstrap request-cert --domain cn.ssr.org&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
-
 &lt;p&gt;这里根据实际域名填写，分别是客户端和服务器端的域名，这会生成cn.ssr.org.key 和cn.ssr.org.csr 两个文件。&lt;/p&gt;
 &lt;h3&gt;用根证书为节点签发证书&lt;/h3&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;certstrap sign cn.ssr.org --CA CA &lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
-
 &lt;p&gt;这里的CA就是我们刚才生成的根证书的名字，这会生成cn.ssr.org.crt&lt;/p&gt;
 &lt;h3&gt;生成合并的pkcs12格式keystore文件&lt;/h3&gt;
 &lt;p&gt;其实到这里本来就够了，为了方便使用，我们可以生成一个合并的包含了公私钥的keystore文件：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;openssl pkcs12 -export -out cn.p12 -inkey cn.ssr.org.key -in cn.ssr.org.crt -certfile CA.crt&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="n"&gt;openssl&lt;/span&gt; &lt;span class="n"&gt;pkcs12&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="k"&gt;export&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;out&lt;/span&gt; &lt;span class="n"&gt;cn&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;p12&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;inkey&lt;/span&gt; &lt;span class="n"&gt;cn&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ssr&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;org&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;key&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;cn&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ssr&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;org&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;crt&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;certfile&lt;/span&gt; &lt;span class="n"&gt;CA&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;crt&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
 
 &lt;p&gt;这样会得到一个cn.p12的keystore文件，注意，国内节点（客户端）和国外节点（服务器）都要生成这些证书。&lt;/p&gt;
 &lt;h3&gt;最终的文件&lt;/h3&gt;
@@ -56,7 +49,6 @@
 &lt;p&gt;我们在国外的服务器(x.ssr.org)上运行一个简单的http服务器，但只监听localhost的8001端口并不开放给公网。&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;python3 -m http.server 8001 --bind 127.0.0.1&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
 
 &lt;p&gt;在国外服务器上运行ghostunnel的服务器端，从服务器端的0.0.0.0:8002端口转发到服务器的localhost:8001端口。
 在国内服务器运行ghostunnel的客户端，从客户端的0.0.0.0:8003转发到服务器的0.0.0.0:8002端口。
@@ -76,7 +68,6 @@ client--HTTP--&amp;gt;cn.ssr.org:8003--&amp;gt;TLS--&amp;gt;x.ssr.org:8002--HTTP
 &lt;span class="err"&gt;    --allow-all&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
-
 &lt;p&gt;上面这是分别制定key和cert文件的，我们也可以使用合并的keystore文件，命令就变成这样了：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;ghostunnel server \&lt;/span&gt;
 &lt;span class="err"&gt;    --listen 0.0.0.0:8002 \&lt;/span&gt;
@@ -86,13 +77,11 @@ client--HTTP--&amp;gt;cn.ssr.org:8003--&amp;gt;TLS--&amp;gt;x.ssr.org:8002--HTTP
 &lt;span class="err"&gt;    --allow-all&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
-
 &lt;p&gt;这里的--allow-all表示允许所有客户端连接，也可以通过指定域名证书的方式，限制特定IP（域名）来源的连接，配合自己的私有CA证书，非授权的机器几乎不可能连上服务器。
 指定域名的用法是：
 把--allow-all替换成：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;--allow-cn cn.ssr.org&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
 
 &lt;h2&gt;Ghostunnel客户端配置&lt;/h2&gt;
 &lt;p&gt;同样的，分别使用key和cert文件：&lt;/p&gt;
@@ -105,7 +94,6 @@ client--HTTP--&amp;gt;cn.ssr.org:8003--&amp;gt;TLS--&amp;gt;x.ssr.org:8002--HTTP
 &lt;span class="err"&gt;    --unsafe-listen&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
-
 &lt;p&gt;使用合并的keystore文件：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;ghostunnel client \&lt;/span&gt;
 &lt;span class="err"&gt;    --listen 0.0.0.0:8003 \&lt;/span&gt;
@@ -114,7 +102,6 @@ client--HTTP--&amp;gt;cn.ssr.org:8003--&amp;gt;TLS--&amp;gt;x.ssr.org:8002--HTTP
 &lt;span class="err"&gt;    --cacert out/CA.pem \&lt;/span&gt;
 &lt;span class="err"&gt;    --unsafe-listen&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
 
 &lt;p&gt;打完收工。平时如果直接从国内访问国外机器的http端口并且传大量文件，很快就会被rst了，现在我们可以通过国内的cn.ssr.org:8003端口+TLS隧道来访问，实测下来下载几个G的文件也没什么发生，速度还挺稳定。&lt;/p&gt;</content><category term="misc"></category></entry><entry><title>为Pelican Blog添加Json Feed</title><link href="posts/add_json_feed_to_pelican_blog.html" rel="alternate"></link><published>2019-09-02T13:54:53+08:00</published><updated>2019-09-02T13:54:53+08:00</updated><author><name>毕勤</name></author><id>tag:None,2019-09-02:posts/add_json_feed_to_pelican_blog.html</id><summary type="html">&lt;p&gt;不废话，只是记录一下。json feed比atom和rss feed真的好用太多了，爬虫看到这个估计都要感动的哭起来，用wget都能写爬虫了。&lt;/p&gt;</summary><content type="html">&lt;h2&gt;为Pelican添加Plugins目录&lt;/h2&gt;
 &lt;p&gt;找到你的pelicanconf.py文件，在同路径添加一个plugins目录（名字可以改），然后从&lt;a href="https://github.com/andrewheiss/pelican_json_feed"&gt;这里&lt;/a&gt;clone这个插件过来到plugins目录。&lt;/p&gt;
@@ -126,7 +113,6 @@ client--HTTP--&amp;gt;cn.ssr.org:8003--&amp;gt;TLS--&amp;gt;x.ssr.org:8002--HTTP
 &lt;span class="err"&gt;FEED_ALL_JSON = &amp;#39;feeds.json&amp;#39;  &lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
-
 &lt;p&gt;FEED_ALL_JSON的文件名可以自己定义。&lt;/p&gt;
 &lt;h2&gt;修一个小bug&lt;/h2&gt;
 &lt;p&gt;打开插件的json_feed.py文件，这个项目真的有点老了，json.dump函数现在只接受两个参数，不知道这个工程写的时候是不是参数都不一样，把最后一个encode参数删掉才行，否则会爆错。&lt;/p&gt;
@@ -134,14 +120,12 @@ client--HTTP--&amp;gt;cn.ssr.org:8003--&amp;gt;TLS--&amp;gt;x.ssr.org:8002--HTTP
 &lt;span class="err"&gt;        json.dump(self.feed, fp)&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
-
 &lt;h2&gt;编辑blog模板&lt;/h2&gt;
 &lt;p&gt;服务爬虫，更容易的找到你的json_feed，在base.html模板的header中添加：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="cp"&gt;{%&lt;/span&gt; &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="nv"&gt;FEED_ALL_JSON&lt;/span&gt; &lt;span class="cp"&gt;%}&lt;/span&gt;&lt;span class="x"&gt;&lt;/span&gt;
 &lt;span class="x"&gt;&amp;lt;link rel=&amp;quot;alternate&amp;quot; type=&amp;quot;application/json&amp;quot; title=&amp;quot;JSON Feed&amp;quot; href=&amp;quot;&lt;/span&gt;&lt;span class="cp"&gt;{{&lt;/span&gt; &lt;span class="nv"&gt;FEED_DOMAIN&lt;/span&gt; &lt;span class="cp"&gt;}}&lt;/span&gt;&lt;span class="x"&gt;/&lt;/span&gt;&lt;span class="cp"&gt;{{&lt;/span&gt; &lt;span class="nv"&gt;FEED_ALL_JSON&lt;/span&gt; &lt;span class="cp"&gt;}}&lt;/span&gt;&lt;span class="x"&gt;&amp;quot;&amp;gt;&lt;/span&gt;
 &lt;span class="cp"&gt;{%&lt;/span&gt; &lt;span class="k"&gt;endif&lt;/span&gt; &lt;span class="cp"&gt;%}&lt;/span&gt;&lt;span class="x"&gt;&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
 
 &lt;p&gt;然后重新发布，好了。&lt;/p&gt;</content><category term="misc"></category></entry><entry><title>基于ZeroTier和Openwrt路由器的内网互访方案</title><link href="posts/access_remote_lan_through_zerotier.html" rel="alternate"></link><published>2019-04-24T17:11:30+08:00</published><updated>2019-04-24T17:11:30+08:00</updated><author><name>毕勤</name></author><id>tag:None,2019-04-24:posts/access_remote_lan_through_zerotier.html</id><summary type="html">&lt;p&gt;相信这个标题就已经很吸引人了，因为很多人都有类似的需求，在家里访问公司服务器或工作机的内容，在公司访问家里服务器的数据，本文讨论的就是这个目的的实现。&lt;/p&gt;</summary><content type="html">&lt;h2&gt;方案选择&lt;/h2&gt;
 &lt;p&gt;现在用的方案里，无非是两种，一种是像&lt;a href="https://github.com/fatedier/frp/"&gt;FRP&lt;/a&gt;这样的基于公网服务器进行端口转发的，这个有一个门槛是必须有一个公网VPS，速度要快的话自然是国内VPS最好，但国内的VPS带宽价格却是最贵的。而且当你需要转发多个同类型服务时，还需要记忆一大堆的端口，对于一些不支持自定义端口的app来说更是痛苦。&lt;/p&gt;
@@ -168,7 +152,6 @@ client--HTTP--&amp;gt;cn.ssr.org:8003--&amp;gt;TLS--&amp;gt;x.ssr.org:8002--HTTP
 &lt;span class="err"&gt;192.168.99.0/24 via 10.242.100.121&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
-
 &lt;p&gt;第一个表示10.242.0.0/16这是同一个局域网，你们分配IP在这个范围的直连就行了，不用过别的网关了。&lt;/p&gt;
 &lt;p&gt;第二条也很好理解，公司的路由器后网段是192.168.88.0/24，而公司路由器上的zerotier分配到的IP是10.242.100.216(这个可以在zerotier网站查，也可以通过ifconfig命令在路由器查)，那么zerotier局域网内的其他IP要访问这个192.168.88.0/24网段的话，自然要通过10.242.100.216作为网关。&lt;/p&gt;
 &lt;p&gt;第三条就完全是第二条的家庭版，不解释了。&lt;/p&gt;
@@ -192,25 +175,21 @@ client--HTTP--&amp;gt;cn.ssr.org:8003--&amp;gt;TLS--&amp;gt;x.ssr.org:8002--HTTP
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;ip route add 192.168.99.0/24 via 10.242.100.121&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
-
 &lt;p&gt;使用route命令可以查看到这样一条route记录&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;Kernel IP routing table&lt;/span&gt;
 &lt;span class="err"&gt;Destination     Gateway         Genmask         Flags Metric Ref    Use Iface&lt;/span&gt;
 &lt;span class="err"&gt;192.168.99.0    10.242.100.121  255.255.255.0   UG    0      0        0 ztzlgmpcam&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
-
 &lt;p&gt;类似的，在家里的路由器添加一条到公司192.168.88.0/24网段的路由表:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;ip route add 192.168.88.0/24 via 10.242.100.216&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
 
 &lt;p&gt;添加后用route命令应该看到这样的一条路由表：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;Kernel IP routing table&lt;/span&gt;
 &lt;span class="err"&gt;Destination     Gateway         Genmask         Flags Metric Ref    Use Iface&lt;/span&gt;
 &lt;span class="err"&gt;192.168.88.0    10.242.100.216  255.255.255.0   UG    0      0        0 ztzlgmpcam&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
 
 &lt;p&gt;这个时候，从双方局域网的任何一台设备，都应该可以直接访问双方局域网的任意一个IP了。&lt;/p&gt;
 &lt;h4&gt;固化版本&lt;/h4&gt;
@@ -221,14 +200,12 @@ client--HTTP--&amp;gt;cn.ssr.org:8003--&amp;gt;TLS--&amp;gt;x.ssr.org:8002--HTTP
 &lt;span class="err"&gt;    option gateway &amp;#39;10.242.100.121&amp;#39;&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
-
 &lt;p&gt;家庭版本的写法，添加：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;config route&lt;/span&gt;
 &lt;span class="err"&gt;    option interface &amp;#39;ztzlgmpcam&amp;#39;&lt;/span&gt;
 &lt;span class="err"&gt;    option target &amp;#39;192.168.88.0/24&amp;#39;&lt;/span&gt;
 &lt;span class="err"&gt;    option gateway &amp;#39;10.242.100.216&amp;#39;&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
 
 &lt;p&gt;同样的，根据你的实际情况，替换interface为你的zerotier虚拟网卡的名称，以及后面的目标网段，和目标网段上的路由器分配到的zerotier IP。&lt;/p&gt;
 &lt;p&gt;然后/etc/init.d/network restart就可以生效了，这样的路由表重启后是不会丢失的。&lt;/p&gt;
@@ -265,7 +242,6 @@ client--HTTP--&amp;gt;cn.ssr.org:8003--&amp;gt;TLS--&amp;gt;x.ssr.org:8002--HTTP
         &lt;span class="s1"&gt;&amp;#39;iptables -t nat -A OUTPUT -p tcp -m set --match-set telegram dst -j REDIRECT --to-ports 1080&lt;/span&gt;&lt;span class="se"&gt;\n&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
-
 &lt;p&gt;产生的bash脚本如下：&lt;/p&gt;
 &lt;table class="highlighttable"&gt;&lt;tr&gt;&lt;td class="linenos"&gt;&lt;div class="linenodiv"&gt;&lt;pre&gt; 1
  2
@@ -296,7 +272,6 @@ iptables -t nat -A PREROUTING -p tcp -m &lt;span class="nb"&gt;set&lt;/span&gt; 
 iptables -t nat -A OUTPUT -p tcp -m &lt;span class="nb"&gt;set&lt;/span&gt; --match-set telegram dst -j REDIRECT --to-ports &lt;span class="m"&gt;1080&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
-
 &lt;p&gt;这么一看，当初还写什么脚本，IP段也没几个啊，害得我一度以为脚本写错了，是不是漏了什么IP，结果上网站一查还真就这几个IP段。
 Bash脚本应该都看得懂吧，就是把telegram的IP加入一个ipset中(当然，你得先安装ipset，一般默认都没有)，然后把符合tcp协议的、同时目的IP属于这个ipset内的流量，全部转发到ss-redir产生的1080透明代理端口上。&lt;/p&gt;
 &lt;h2&gt;在国内VPS安装MTProxy&lt;/h2&gt;
@@ -304,7 +279,6 @@ Bash脚本应该都看得懂吧，就是把telegram的IP加入一个ipset中(当
 &lt;p&gt;git clone下来后，改下端口设置就行了。config.py里的Users，其实就是个16位的随机secret，可以用以下命令产生：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;head -c 16 /dev/urandom | xxd -ps&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
 
 &lt;p&gt;你还可以配置多个secret，这样就可以把secret当Users来管理了，虽然我目前还没发现这玩意有什么管理功能。&lt;/p&gt;
 &lt;p&gt;对于python脚本的启动管理，我向来喜欢转个supervisor搞定，只需要写个配置文件就行了:&lt;/p&gt;
@@ -315,14 +289,12 @@ Bash脚本应该都看得懂吧，就是把telegram的IP加入一个ipset中(当
 &lt;span class="err"&gt;autorestart=true&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
-
 &lt;p&gt;当然，我建议你可以先手工执行以下这个服务器命令，这样会自动echo出产生的MTProxy的地址，省的你自己再去一点点拼起来。&lt;/p&gt;
 &lt;h2&gt;固化ipset和iptables规则&lt;/h2&gt;
 &lt;p&gt;ipset和iptables默认重启后就会掉了，我们可以先把他们保存到文件：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;ipset save &amp;gt; /etc/ipset.conf&lt;/span&gt;
 &lt;span class="err"&gt;iptables-save  &amp;gt; /etc/iptables.conf&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
 
 &lt;p&gt;然后在/etc/rc.local里(对应的是ubuntu/debian系统，centos自己想办法)，写入从文件还原ipset和iptables的命令就可以了：&lt;/p&gt;
 &lt;table class="highlighttable"&gt;&lt;tr&gt;&lt;td class="linenos"&gt;&lt;div class="linenodiv"&gt;&lt;pre&gt;1
@@ -338,7 +310,6 @@ iptables-restore &amp;lt; /etc/iptables.conf
 &lt;span class="nb"&gt;exit&lt;/span&gt; &lt;span class="m"&gt;0&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
-
 &lt;p&gt;ubuntu18默认没有/etc/rc.local文件了，自己创建一个就行，记得chomod +x /etc/rc.local给它添加可执行属性。&lt;/p&gt;</content><category term="misc"></category></entry><entry><title>ShadowsocksR MudbJSON版的单端口多用户配置</title><link href="posts/multiuser_on_single_port_for_SSR_mudbjson.html" rel="alternate"></link><published>2019-02-25T14:39:43+08:00</published><updated>2019-02-25T14:39:43+08:00</updated><author><name>毕勤</name></author><id>tag:None,2019-02-25:posts/multiuser_on_single_port_for_SSR_mudbjson.html</id><summary type="html">&lt;p&gt;网上最早的也最权威的关于SSR单端口多用户的配置是破娃酱写的，虽然文章已经被删了，但用&lt;a href="http://web.archive.org/web/20170727124018/https://breakwa11.blogspot.com/2017/01/shadowsocksr-mu.html"&gt;archive&lt;/a&gt;还是可以看到的，只是文章有些地方写的还不够细致，容易产生误解。最近自己刚好也在尝试这个配置，重新记录并说明一下，方便以后查看。&lt;/p&gt;</summary><content type="html">&lt;p&gt;网上最早的也最权威的关于SSR单端口多用户的配置是破娃酱写的，虽然文章已经被删了，但用&lt;a href="http://web.archive.org/web/20170727124018/https://breakwa11.blogspot.com/2017/01/shadowsocksr-mu.html"&gt;archive&lt;/a&gt;还是可以看到的，只是文章有些地方写的还不够细致，容易产生误解。最近自己刚好也在尝试这个配置，重新记录并说明一下，方便以后查看。&lt;/p&gt;
 &lt;p&gt;首先明确一下，这里只讨论MudbJson版的单端口多用户配置，机场用的SSPanel不在此讨论范围。其实MudbJson是一个非常适合少数几个人一起搭建小机场的配置方式，在保证多用户特性的情况下没有多余的附加组件，可以给不同用户数设置限速和限流量等参数，即使有多个服务器节点存在，也只需要在各个服务期间同步一个json文件就可以了。&lt;/p&gt;
 &lt;p&gt;单端口多用户的目的是什么？是集中服务器的端口使用，避免大量开放端口，一个服务器同时开放几百个TCP端口同时都还有不小的数据量，这不用分析都可以猜到是干啥的。而把端口隐藏到443，995这样的常用服务端口上并配合一定的混淆，相对会增加一点探测难度。&lt;/p&gt;
@@ -372,7 +343,6 @@ iptables-restore &amp;lt; /etc/iptables.conf
 &lt;span class="err"&gt;]&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
-
 &lt;p&gt;先建立一个默认的用户，为了方便，我们默认吧用户ID和用户端口写成一样的，这里就是995用户，这个用户最明显的特征，就是protocol param是“#”,这样的参数用于标识这是个默认用户，但这个用户是不可用的，因为protocol param只写个“#”是无效的。&lt;/p&gt;
 &lt;p&gt;然后再新建一个用户，用户ID大于65535，同样的端口也大于65535，因为大于65535的端口都是不存在的，所以表示这是个单端口多用户账户，这个用户的加密混淆这些东西可以和默认用户一样也可以随便写，因为这些都是被忽略的。除了用户端口，密码之外，一切都使用默认用户的配置。&lt;/p&gt;
 &lt;p&gt;所以，这里的100002用户，需要使用&lt;strong&gt;默认用户的端口、密码&lt;/strong&gt;、协议、混淆方式来连接SSR服务器，后面添加的其他用户也是一样，那么连密码都一样的话怎么区分不同的用户呢？那就需要使用protocol param了，protocol param就是这个用户的ID和自己密码的组合，即 100002:R=KA2VmQ。&lt;/p&gt;
@@ -383,7 +353,6 @@ iptables-restore &amp;lt; /etc/iptables.conf
 &lt;p&gt;安装过程非常简单，一条命令就搞定：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;curl https://rclone.org/install.sh | sudo bash&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
 
 &lt;h2&gt;配置GoogleDrive账号&lt;/h2&gt;
 &lt;p&gt;基本的配置过程可以参考&lt;a href="https://rclone.org/drive/"&gt;这里&lt;/a&gt;，这里只说一下要点：
@@ -397,13 +366,11 @@ iptables-restore &amp;lt; /etc/iptables.conf
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;rclone copy gdrive:GooglePhotos /SafeHub/GooglePhotos&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
-
 &lt;p&gt;gdrive就是刚才建立的Googledrive的账号名称，也就是刚才说的以后都是根目录别称的那个，后面的/SafeHub是我自己本机上的一个RAID1磁盘，根据你的情况选择本地路径即可。&lt;/p&gt;
 &lt;h2&gt;自动执行&lt;/h2&gt;
 &lt;p&gt;先找出配置文件的路径：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;rclone config file&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
 
 &lt;p&gt;然后运行crontab -e来添加一个cronjob，例如我希望他每天2：30分备份一次(已经下载的会自动跳过),就添加这样的一个cron job：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;30 2 * * * /usr/bin/rclone --config /root/.config/rclone/rclone.conf copy gdrive:GooglePhotos /SafeHub/GooglePhotos&lt;/span&gt;
@@ -414,31 +381,30 @@ iptables-restore &amp;lt; /etc/iptables.conf
 &lt;h2&gt;否定的第一套方案&lt;/h2&gt;
 &lt;p&gt;最开始的方案基本上就是靠着Google搜Netflix Proxy找到的，简单的说就是在可以看Netflix的VPS A上搭一个TCP反代，在VPS B上用dnsmasq之类的工具劫持DNS解析，把Netflix的相关域名都解析到VPS A上，这样VPS B就可以借用A的反代来访问Netflix了。
 废话不多少直接上代码，VPS A上安装sniproxy，配置如下：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="k"&gt;user&lt;/span&gt; &lt;span class="n"&gt;nobody&lt;/span&gt;
-&lt;span class="n"&gt;resolver&lt;/span&gt; &lt;span class="err"&gt;{&lt;/span&gt;
-    &lt;span class="n"&gt;nameserver&lt;/span&gt; &lt;span class="mi"&gt;8&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="mi"&gt;8&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="mi"&gt;8&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="mi"&gt;8&lt;/span&gt;
-    &lt;span class="k"&gt;mode&lt;/span&gt; &lt;span class="n"&gt;ipv4_only&lt;/span&gt;
-&lt;span class="err"&gt;}&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="n"&gt;user&lt;/span&gt; &lt;span class="n"&gt;nobody&lt;/span&gt;
+&lt;span class="n"&gt;resolver&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;nameserver&lt;/span&gt; &lt;span class="mf"&gt;8.8&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="mf"&gt;8.8&lt;/span&gt;
+    &lt;span class="n"&gt;mode&lt;/span&gt; &lt;span class="n"&gt;ipv4_only&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
 
-&lt;span class="k"&gt;listen&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;443&lt;/span&gt; &lt;span class="err"&gt;{&lt;/span&gt;
+&lt;span class="n"&gt;listen&lt;/span&gt; &lt;span class="mf"&gt;0.0&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="mf"&gt;0.0&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;443&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
 &lt;span class="n"&gt;proto&lt;/span&gt; &lt;span class="n"&gt;tls&lt;/span&gt;
-&lt;span class="k"&gt;table&lt;/span&gt; &lt;span class="n"&gt;https_hosts&lt;/span&gt;
-&lt;span class="n"&gt;access_log&lt;/span&gt; &lt;span class="err"&gt;{&lt;/span&gt;
-  &lt;span class="n"&gt;filename&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;var&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;log&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;https_access&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;log&lt;/span&gt;
+&lt;span class="n"&gt;table&lt;/span&gt; &lt;span class="n"&gt;https_hosts&lt;/span&gt;
+&lt;span class="n"&gt;access_log&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+  &lt;span class="n"&gt;filename&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="k"&gt;var&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="nb"&gt;log&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;https_access&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;log&lt;/span&gt;
   &lt;span class="n"&gt;priority&lt;/span&gt; &lt;span class="n"&gt;notice&lt;/span&gt;
- &lt;span class="err"&gt;}&lt;/span&gt;
-&lt;span class="err"&gt;}&lt;/span&gt;
+ &lt;span class="p"&gt;}&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
 
-&lt;span class="k"&gt;table&lt;/span&gt; &lt;span class="n"&gt;https_hosts&lt;/span&gt; &lt;span class="err"&gt;{&lt;/span&gt;
-    &lt;span class="p"&gt;(.&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="o"&gt;|&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="n"&gt;netflix&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;com$&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;
-    &lt;span class="p"&gt;(.&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="o"&gt;|&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="n"&gt;netflix&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;net$&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;
-    &lt;span class="p"&gt;(.&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="o"&gt;|&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="n"&gt;nflxext&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;com$&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;
-    &lt;span class="p"&gt;(.&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="o"&gt;|&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="n"&gt;nflxso&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;net$&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;
-    &lt;span class="p"&gt;(.&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="o"&gt;|&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="n"&gt;nflximg&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;net$&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;
-    &lt;span class="p"&gt;(.&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="o"&gt;|&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="n"&gt;nflxvideo&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;net$&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;
-&lt;span class="err"&gt;}&lt;/span&gt;
+&lt;span class="n"&gt;table&lt;/span&gt; &lt;span class="n"&gt;https_hosts&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;.*.|&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="n"&gt;netflix&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;com&lt;/span&gt;&lt;span class="o"&gt;$&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;
+    &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;.*.|&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="n"&gt;netflix&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;net&lt;/span&gt;&lt;span class="o"&gt;$&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;
+    &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;.*.|&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="n"&gt;nflxext&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;com&lt;/span&gt;&lt;span class="o"&gt;$&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;
+    &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;.*.|&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="n"&gt;nflxso&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;net&lt;/span&gt;&lt;span class="o"&gt;$&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;
+    &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;.*.|&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="n"&gt;nflximg&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;net&lt;/span&gt;&lt;span class="o"&gt;$&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;
+    &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;.*.|&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="n"&gt;nflxvideo&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;net&lt;/span&gt;&lt;span class="o"&gt;$&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
 
 &lt;p&gt;VPS B上安装dnsmasq，配置如下：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;no-resolv&lt;/span&gt;
@@ -452,116 +418,109 @@ iptables-restore &amp;lt; /etc/iptables.conf
 &lt;span class="err"&gt;address=/nflxvideo.net/18.215.191.191&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
-
 &lt;p&gt;这种方案之所以被否定，是因为本质上依赖DNS劫持。你可以劫持VPS B本身的DNS解析，但你在VPS B上搭建梯子后，你并没有办法保证劫持连上这个梯子的用户的DNS。大部分用户使用ssr-redir提供的透明代理，基于域名转发，这样是可以的，但还是有部分用户不适用远端的DNS解析而使用本地的解析，这样就无法成功劫持了。所以对这部分用户来说，流量还是会经过VPS B的代理，但会不被劫持的访问原始的Netflix服务器，最终导致播放失败。&lt;/p&gt;
 &lt;h2&gt;新方案&lt;/h2&gt;
 &lt;p&gt;其实我把问题想得太复杂了，这不就是普通的透明代理转发吗？shadowsocks(R)就可以实现啊，只不过两台墙外的VPS用加密代理实在是浪费CPU资源，普通的代理就足够了。所以我决定在VPS A用Tinyproxy架设https代理，然后在VPS B用redsocks转成透明代理然后转发。&lt;/p&gt;
 &lt;h3&gt;架设Tinyproxy Https代理&lt;/h3&gt;
 &lt;p&gt;其实很简单，直接apt-get install tinyproxy就可以了。设置上我也几乎没有修改，仅仅是添加了一个Allow语句，给VPS B的IP放行，否则是无法使用的。而且这样默认也屏蔽了其他IP的访问，避免了变成冤大头。
 最后的配置如下：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;User tinyproxy&lt;/span&gt;
-&lt;span class="err"&gt;Group tinyproxy&lt;/span&gt;
-&lt;span class="err"&gt;Port 8888&lt;/span&gt;
-&lt;span class="err"&gt;Timeout 600&lt;/span&gt;
-&lt;span class="err"&gt;DefaultErrorFile &amp;quot;/usr/share/tinyproxy/default.html&amp;quot;&lt;/span&gt;
-&lt;span class="err"&gt;StatFile &amp;quot;/usr/share/tinyproxy/stats.html&amp;quot;&lt;/span&gt;
-&lt;span class="err"&gt;Logfile &amp;quot;/var/log/tinyproxy/tinyproxy.log&amp;quot;&lt;/span&gt;
-&lt;span class="err"&gt;LogLevel Info&lt;/span&gt;
-&lt;span class="err"&gt;PidFile &amp;quot;/run/tinyproxy/tinyproxy.pid&amp;quot;&lt;/span&gt;
-&lt;span class="err"&gt;MaxClients 100&lt;/span&gt;
-&lt;span class="err"&gt;MinSpareServers 5&lt;/span&gt;
-&lt;span class="err"&gt;MaxSpareServers 20&lt;/span&gt;
-&lt;span class="err"&gt;StartServers 10&lt;/span&gt;
-&lt;span class="err"&gt;MaxRequestsPerChild 0&lt;/span&gt;
-&lt;span class="err"&gt;Allow 127.0.0.1&lt;/span&gt;
-&lt;span class="err"&gt;Allow YOUR_VPS_B_IP&lt;/span&gt;
-&lt;span class="err"&gt;ViaProxyName &amp;quot;tinyproxy&amp;quot;&lt;/span&gt;
-&lt;span class="err"&gt;ConnectPort 443&lt;/span&gt;
-&lt;span class="err"&gt;ConnectPort 563&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="n"&gt;User&lt;/span&gt; &lt;span class="n"&gt;tinyproxy&lt;/span&gt;
+&lt;span class="n"&gt;Group&lt;/span&gt; &lt;span class="n"&gt;tinyproxy&lt;/span&gt;
+&lt;span class="n"&gt;Port&lt;/span&gt; &lt;span class="mi"&gt;8888&lt;/span&gt;
+&lt;span class="n"&gt;Timeout&lt;/span&gt; &lt;span class="mi"&gt;600&lt;/span&gt;
+&lt;span class="n"&gt;DefaultErrorFile&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;/usr/share/tinyproxy/default.html&amp;quot;&lt;/span&gt;
+&lt;span class="n"&gt;StatFile&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;/usr/share/tinyproxy/stats.html&amp;quot;&lt;/span&gt;
+&lt;span class="n"&gt;Logfile&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;/var/log/tinyproxy/tinyproxy.log&amp;quot;&lt;/span&gt;
+&lt;span class="n"&gt;LogLevel&lt;/span&gt; &lt;span class="n"&gt;Info&lt;/span&gt;
+&lt;span class="n"&gt;PidFile&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;/run/tinyproxy/tinyproxy.pid&amp;quot;&lt;/span&gt;
+&lt;span class="n"&gt;MaxClients&lt;/span&gt; &lt;span class="mi"&gt;100&lt;/span&gt;
+&lt;span class="n"&gt;MinSpareServers&lt;/span&gt; &lt;span class="mi"&gt;5&lt;/span&gt;
+&lt;span class="n"&gt;MaxSpareServers&lt;/span&gt; &lt;span class="mi"&gt;20&lt;/span&gt;
+&lt;span class="n"&gt;StartServers&lt;/span&gt; &lt;span class="mi"&gt;10&lt;/span&gt;
+&lt;span class="n"&gt;MaxRequestsPerChild&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;
+&lt;span class="n"&gt;Allow&lt;/span&gt; &lt;span class="mf"&gt;127.0&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="mf"&gt;0.1&lt;/span&gt;
+&lt;span class="n"&gt;Allow&lt;/span&gt; &lt;span class="n"&gt;YOUR_VPS_B_IP&lt;/span&gt;
+&lt;span class="n"&gt;ViaProxyName&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;tinyproxy&amp;quot;&lt;/span&gt;
+&lt;span class="n"&gt;ConnectPort&lt;/span&gt; &lt;span class="mi"&gt;443&lt;/span&gt;
+&lt;span class="n"&gt;ConnectPort&lt;/span&gt; &lt;span class="mi"&gt;563&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
 
 &lt;h3&gt;架设Redsocks代理&lt;/h3&gt;
 &lt;p&gt;也是直接apt-get install redsocks，配置中只需要设置好https代理的IP和端口就行，记得https代理的类型是填http-connect。&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="nt"&gt;base&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
-    &lt;span class="err"&gt;//&lt;/span&gt; &lt;span class="n"&gt;debug&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;connection&lt;/span&gt; &lt;span class="kc"&gt;progress&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="n"&gt;client&lt;/span&gt; &lt;span class="n"&gt;list&lt;/span&gt; &lt;span class="kc"&gt;on&lt;/span&gt; &lt;span class="n"&gt;SIGUSR1&lt;/span&gt;
-    &lt;span class="n"&gt;log_debug&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="kc"&gt;off&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="n"&gt;base&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="o"&gt;//&lt;/span&gt; &lt;span class="n"&gt;debug&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;connection&lt;/span&gt; &lt;span class="n"&gt;progress&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="n"&gt;client&lt;/span&gt; &lt;span class="n"&gt;list&lt;/span&gt; &lt;span class="n"&gt;on&lt;/span&gt; &lt;span class="n"&gt;SIGUSR1&lt;/span&gt;
+    &lt;span class="n"&gt;log_debug&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;off&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
 
-    &lt;span class="err"&gt;//&lt;/span&gt; &lt;span class="n"&gt;info&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="kc"&gt;start&lt;/span&gt; &lt;span class="n"&gt;and&lt;/span&gt; &lt;span class="kc"&gt;end&lt;/span&gt; &lt;span class="n"&gt;of&lt;/span&gt; &lt;span class="n"&gt;client&lt;/span&gt; &lt;span class="n"&gt;session&lt;/span&gt;
-    &lt;span class="n"&gt;log_info&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="kc"&gt;on&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="o"&gt;//&lt;/span&gt; &lt;span class="n"&gt;info&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;start&lt;/span&gt; &lt;span class="ow"&gt;and&lt;/span&gt; &lt;span class="n"&gt;end&lt;/span&gt; &lt;span class="n"&gt;of&lt;/span&gt; &lt;span class="n"&gt;client&lt;/span&gt; &lt;span class="n"&gt;session&lt;/span&gt;
+    &lt;span class="n"&gt;log_info&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;on&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
 
-    &lt;span class="c"&gt;/* possible `log&amp;#39; values are:&lt;/span&gt;
-&lt;span class="c"&gt;     *   stderr&lt;/span&gt;
-&lt;span class="c"&gt;     *   &amp;quot;file:/path/to/file&amp;quot;&lt;/span&gt;
-&lt;span class="c"&gt;     *   syslog:FACILITY  facility is any of &amp;quot;daemon&amp;quot;, &amp;quot;local0&amp;quot;...&amp;quot;local7&amp;quot;&lt;/span&gt;
-&lt;span class="c"&gt;     */&lt;/span&gt;
-    &lt;span class="err"&gt;log&lt;/span&gt; &lt;span class="err"&gt;=&lt;/span&gt; &lt;span class="err"&gt;&amp;quot;&lt;/span&gt;&lt;span class="n"&gt;syslog&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="n"&gt;daemon&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;;&lt;/span&gt;
+    &lt;span class="o"&gt;/*&lt;/span&gt; &lt;span class="n"&gt;possible&lt;/span&gt; &lt;span class="err"&gt;`&lt;/span&gt;&lt;span class="nb"&gt;log&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39; values are:&lt;/span&gt;
+     &lt;span class="o"&gt;*&lt;/span&gt;   &lt;span class="n"&gt;stderr&lt;/span&gt;
+     &lt;span class="o"&gt;*&lt;/span&gt;   &lt;span class="s2"&gt;&amp;quot;file:/path/to/file&amp;quot;&lt;/span&gt;
+     &lt;span class="o"&gt;*&lt;/span&gt;   &lt;span class="n"&gt;syslog&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="n"&gt;FACILITY&lt;/span&gt;  &lt;span class="n"&gt;facility&lt;/span&gt; &lt;span class="k"&gt;is&lt;/span&gt; &lt;span class="n"&gt;any&lt;/span&gt; &lt;span class="n"&gt;of&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;daemon&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;local0&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;...&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;local7&amp;quot;&lt;/span&gt;
+     &lt;span class="o"&gt;*/&lt;/span&gt;
+    &lt;span class="nb"&gt;log&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;syslog:daemon&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
 
-&lt;span class="s2"&gt;    // detach from console&lt;/span&gt;
-&lt;span class="s2"&gt;    daemon = on;&lt;/span&gt;
+    &lt;span class="o"&gt;//&lt;/span&gt; &lt;span class="n"&gt;detach&lt;/span&gt; &lt;span class="n"&gt;from&lt;/span&gt; &lt;span class="n"&gt;console&lt;/span&gt;
+    &lt;span class="n"&gt;daemon&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;on&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
 
-&lt;span class="s2"&gt;    /* Change uid, gid and root directory, these options require root&lt;/span&gt;
-&lt;span class="s2"&gt;     * privilegies on startup.&lt;/span&gt;
-&lt;span class="s2"&gt;     * Note, your chroot may requre /etc/localtime if you write log to syslog.&lt;/span&gt;
-&lt;span class="s2"&gt;     * Log is opened before chroot &amp;amp; uid changing.&lt;/span&gt;
-&lt;span class="s2"&gt;     */&lt;/span&gt;
-&lt;span class="s2"&gt;    user = redsocks;&lt;/span&gt;
-&lt;span class="s2"&gt;    group = redsocks;&lt;/span&gt;
-&lt;span class="s2"&gt;    // chroot = &amp;quot;&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;var&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;chroot&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;;&lt;/span&gt;
+    &lt;span class="o"&gt;/*&lt;/span&gt; &lt;span class="n"&gt;Change&lt;/span&gt; &lt;span class="n"&gt;uid&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;gid&lt;/span&gt; &lt;span class="ow"&gt;and&lt;/span&gt; &lt;span class="n"&gt;root&lt;/span&gt; &lt;span class="n"&gt;directory&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;these&lt;/span&gt; &lt;span class="n"&gt;options&lt;/span&gt; &lt;span class="n"&gt;require&lt;/span&gt; &lt;span class="n"&gt;root&lt;/span&gt;
+     &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;privilegies&lt;/span&gt; &lt;span class="n"&gt;on&lt;/span&gt; &lt;span class="n"&gt;startup&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;
+     &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;Note&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;your&lt;/span&gt; &lt;span class="n"&gt;chroot&lt;/span&gt; &lt;span class="n"&gt;may&lt;/span&gt; &lt;span class="n"&gt;requre&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;etc&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;localtime&lt;/span&gt; &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;you&lt;/span&gt; &lt;span class="n"&gt;write&lt;/span&gt; &lt;span class="nb"&gt;log&lt;/span&gt; &lt;span class="n"&gt;to&lt;/span&gt; &lt;span class="n"&gt;syslog&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;
+     &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;Log&lt;/span&gt; &lt;span class="k"&gt;is&lt;/span&gt; &lt;span class="n"&gt;opened&lt;/span&gt; &lt;span class="n"&gt;before&lt;/span&gt; &lt;span class="n"&gt;chroot&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="n"&gt;uid&lt;/span&gt; &lt;span class="n"&gt;changing&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;
+     &lt;span class="o"&gt;*/&lt;/span&gt;
+    &lt;span class="n"&gt;user&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;redsocks&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;group&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;redsocks&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="o"&gt;//&lt;/span&gt; &lt;span class="n"&gt;chroot&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;/var/chroot&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
 
-&lt;span class="s2"&gt;    /* possible `redirector&amp;#39; values are:&lt;/span&gt;
-&lt;span class="s2"&gt;     *   iptables   - for Linux&lt;/span&gt;
-&lt;span class="s2"&gt;     *   ipf        - for FreeBSD&lt;/span&gt;
-&lt;span class="s2"&gt;     *   pf         - for OpenBSD&lt;/span&gt;
-&lt;span class="s2"&gt;     *   generic    - some generic redirector that MAY work&lt;/span&gt;
-&lt;span class="s2"&gt;     */&lt;/span&gt;
-&lt;span class="s2"&gt;    redirector = iptables;&lt;/span&gt;
-&lt;span class="s2"&gt;}&lt;/span&gt;
+    &lt;span class="o"&gt;/*&lt;/span&gt; &lt;span class="n"&gt;possible&lt;/span&gt; &lt;span class="err"&gt;`&lt;/span&gt;&lt;span class="n"&gt;redirector&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39; values are:&lt;/span&gt;
+     &lt;span class="o"&gt;*&lt;/span&gt;   &lt;span class="n"&gt;iptables&lt;/span&gt;   &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;Linux&lt;/span&gt;
+     &lt;span class="o"&gt;*&lt;/span&gt;   &lt;span class="n"&gt;ipf&lt;/span&gt;        &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;FreeBSD&lt;/span&gt;
+     &lt;span class="o"&gt;*&lt;/span&gt;   &lt;span class="n"&gt;pf&lt;/span&gt;         &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;OpenBSD&lt;/span&gt;
+     &lt;span class="o"&gt;*&lt;/span&gt;   &lt;span class="n"&gt;generic&lt;/span&gt;    &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;some&lt;/span&gt; &lt;span class="n"&gt;generic&lt;/span&gt; &lt;span class="n"&gt;redirector&lt;/span&gt; &lt;span class="n"&gt;that&lt;/span&gt; &lt;span class="n"&gt;MAY&lt;/span&gt; &lt;span class="n"&gt;work&lt;/span&gt;
+     &lt;span class="o"&gt;*/&lt;/span&gt;
+    &lt;span class="n"&gt;redirector&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;iptables&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
 
-&lt;span class="s2"&gt;redsocks {&lt;/span&gt;
-&lt;span class="s2"&gt;    /* `local_ip&amp;#39; defaults to 127.0.0.1 for security reasons,&lt;/span&gt;
-&lt;span class="s2"&gt;     * use 0.0.0.0 if you want to listen on every interface.&lt;/span&gt;
-&lt;span class="s2"&gt;     * `local_*&amp;#39; are used as port to redirect to.&lt;/span&gt;
-&lt;span class="s2"&gt;     */&lt;/span&gt;
-&lt;span class="s2"&gt;    local_ip = 127.0.0.1;&lt;/span&gt;
-&lt;span class="s2"&gt;    local_port = 12345;&lt;/span&gt;
+&lt;span class="n"&gt;redsocks&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="o"&gt;/*&lt;/span&gt; &lt;span class="err"&gt;`&lt;/span&gt;&lt;span class="n"&gt;local_ip&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39; defaults to 127.0.0.1 for security reasons,&lt;/span&gt;
+     &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;use&lt;/span&gt; &lt;span class="mf"&gt;0.0&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="mf"&gt;0.0&lt;/span&gt; &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;you&lt;/span&gt; &lt;span class="n"&gt;want&lt;/span&gt; &lt;span class="n"&gt;to&lt;/span&gt; &lt;span class="n"&gt;listen&lt;/span&gt; &lt;span class="n"&gt;on&lt;/span&gt; &lt;span class="n"&gt;every&lt;/span&gt; &lt;span class="n"&gt;interface&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;
+     &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="err"&gt;`&lt;/span&gt;&lt;span class="n"&gt;local_&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39; are used as port to redirect to.&lt;/span&gt;
+     &lt;span class="o"&gt;*/&lt;/span&gt;
+    &lt;span class="n"&gt;local_ip&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mf"&gt;127.0&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="mf"&gt;0.1&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;local_port&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;12345&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
 
-&lt;span class="s2"&gt;    // `ip&amp;#39; and `port&amp;#39; are IP and tcp-port of proxy-server&lt;/span&gt;
-&lt;span class="s2"&gt;    // You can also use hostname instead of IP, only one (random)&lt;/span&gt;
-&lt;span class="s2"&gt;    // address of multihomed host will be used.&lt;/span&gt;
-&lt;span class="s2"&gt;    ip = YOUR_VPS_A_IP; &lt;/span&gt;
-&lt;span class="s2"&gt;    port = 8888;&lt;/span&gt;
+    &lt;span class="o"&gt;//&lt;/span&gt; &lt;span class="err"&gt;`&lt;/span&gt;&lt;span class="n"&gt;ip&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39; and `port&amp;#39;&lt;/span&gt; &lt;span class="n"&gt;are&lt;/span&gt; &lt;span class="n"&gt;IP&lt;/span&gt; &lt;span class="ow"&gt;and&lt;/span&gt; &lt;span class="n"&gt;tcp&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;port&lt;/span&gt; &lt;span class="n"&gt;of&lt;/span&gt; &lt;span class="n"&gt;proxy&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;server&lt;/span&gt;
+    &lt;span class="o"&gt;//&lt;/span&gt; &lt;span class="n"&gt;You&lt;/span&gt; &lt;span class="n"&gt;can&lt;/span&gt; &lt;span class="n"&gt;also&lt;/span&gt; &lt;span class="n"&gt;use&lt;/span&gt; &lt;span class="n"&gt;hostname&lt;/span&gt; &lt;span class="n"&gt;instead&lt;/span&gt; &lt;span class="n"&gt;of&lt;/span&gt; &lt;span class="n"&gt;IP&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;only&lt;/span&gt; &lt;span class="n"&gt;one&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;random&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="o"&gt;//&lt;/span&gt; &lt;span class="n"&gt;address&lt;/span&gt; &lt;span class="n"&gt;of&lt;/span&gt; &lt;span class="n"&gt;multihomed&lt;/span&gt; &lt;span class="n"&gt;host&lt;/span&gt; &lt;span class="n"&gt;will&lt;/span&gt; &lt;span class="n"&gt;be&lt;/span&gt; &lt;span class="n"&gt;used&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;
+    &lt;span class="n"&gt;ip&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;YOUR_VPS_A_IP&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; 
+    &lt;span class="n"&gt;port&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;8888&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
 
 
-&lt;span class="s2"&gt;    // known types: socks4, socks5, http-connect, http-relay&lt;/span&gt;
-&lt;span class="s2"&gt;    type = http-connect;&lt;/span&gt;
+    &lt;span class="o"&gt;//&lt;/span&gt; &lt;span class="n"&gt;known&lt;/span&gt; &lt;span class="n"&gt;types&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;socks4&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;socks5&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;http&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;connect&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;http&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;relay&lt;/span&gt;
+    &lt;span class="n"&gt;type&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;http&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;connect&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
 
-&lt;span class="s2"&gt;    // login = &amp;quot;&lt;/span&gt;&lt;span class="n"&gt;foobar&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;;&lt;/span&gt;
-&lt;span class="s2"&gt;    // password = &amp;quot;&lt;/span&gt;&lt;span class="n"&gt;baz&lt;/span&gt;&lt;span class="err"&gt;&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="o"&gt;//&lt;/span&gt; &lt;span class="n"&gt;login&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;foobar&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="o"&gt;//&lt;/span&gt; &lt;span class="n"&gt;password&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;baz&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
 &lt;span class="p"&gt;}&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
 
 &lt;p&gt;然后配置iptables，先建立一个REDSOCKS链:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;iptables -t nat -N REDSOCKS&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
-
 &lt;p&gt;这里有两套思路进行转发，一套是找出Netflix所有的IP地址，然后添加到REDSOCKS链，例如：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;iptables -t nat -A OUTPUT -d 198.38.0.0/16 -j REDSOCKS&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
 
 &lt;p&gt;但问题是Netflix使用了akamai的CDN服务器，IP地址范围是在太大了，我已经把Netflix整个&lt;a href="https://ipinfo.io/AS2906"&gt;AS的地址&lt;/a&gt;都添加了也还是会提示在使用proxy。&lt;/p&gt;
 &lt;p&gt;干脆暴力点，直接把所有https流量都添加进去:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;iptables -t nat -A OUTPUT -p tcp --dport 443 -j REDSOCKS&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
-
 &lt;p&gt;最后，转发到redsocks的透明代理端口：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;iptables -t nat -A REDSOCKS -p tcp -j REDIRECT --to-ports 12345&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
 
 &lt;p&gt;最后记得用iptables-persistent之类的工具保存一下iptables规则，这样不论是从VPS B本机访问，还是透过VPS B上的代理，最后Netflix的HTTPS流量都会通过VPS A访问，而Netflix是全Https的，所以http部分我们不需要关心。&lt;/p&gt;
 &lt;h2&gt;更小的IP范围&lt;/h2&gt;
@@ -570,7 +529,6 @@ iptables-restore &amp;lt; /etc/iptables.conf
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;ipset create aws hash:net&lt;/span&gt;
 &lt;span class="err"&gt;ipset create netflix hash:net&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
 
 &lt;p&gt;怎么转成命令我就懒得写了，&lt;a href="https://www.lifetyper.com/files/ipset.sh"&gt;这里&lt;/a&gt;有现成的脚本。
 Update:生成bash命令的Python脚本在&lt;a href="https://gist.github.com/lifetyper/347cf7c4dbadee91e80670acb064b670"&gt;这里&lt;/a&gt;，自己去看吧。&lt;/p&gt;
@@ -581,7 +539,6 @@ Update:生成bash命令的Python脚本在&lt;a href="https://gist.github.com/lif
 &lt;span class="err"&gt;iptables -t nat -A OUTPUT -p tcp --dport 443 -m set --match-set netflix dst -j REDIRECT --to-ports 12345&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
-
 &lt;p&gt;可能的问题：
 * 你的代理服务器本身就是AWS服务器，这个就比较尴尬了，自己添加一个排除规则吧，其实AWS的服务器就算能看Netflix也是暂时的，早晚被封。
 * 重启后ipset丢失，这是个问题，我目前也不知道有什么更优雅的方式来解决，简单点可以在启动项里重写ipset。&lt;/p&gt;
@@ -589,7 +546,6 @@ Update:生成bash命令的Python脚本在&lt;a href="https://gist.github.com/lif
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;ipset save &amp;gt; /etc/ipset.conf&lt;/span&gt;
 &lt;span class="err"&gt;iptables-save  &amp;gt; /etc/iptables.conf&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
 
 &lt;p&gt;然后在/etc/rc.local里写入：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;ipset restore &amp;lt; /etc/ipset.conf&lt;/span&gt;
@@ -603,24 +559,20 @@ Update:生成bash命令的Python脚本在&lt;a href="https://gist.github.com/lif
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;~/go/src/github.com/deroproject/derosuite&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
-
 &lt;p&gt;Then build it with command:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;go install github.com/deroproject/derosuite/cmd/...&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
 
 &lt;p&gt;You shall find binary file under $GOPATH/bin folder.&lt;/p&gt;
 &lt;p&gt;If you want to deploy your web wallet to a linux web server but your building system is others, you can specify the GOOS and GOARCH for this build&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;GOOS=linux GOARH=amd64 go install github.com/deroproject/derosuite/cmd/...&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
-
 &lt;h2&gt;Compile web assembly file for web wallet&lt;/h2&gt;
 &lt;p&gt;All core wallet function is implemented in the web wallet web assembly file, you can build it with command:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;cd ~/go/src/github.com/deroproject/derosuite/&lt;/span&gt;
 &lt;span class="err"&gt;GOOS=js GOARCH=wasm go build -o wallet.wasm cmd/webwallet/main.go&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
 
 &lt;p&gt;You will find a file named wallet.wasm where you excute this command.&lt;/p&gt;
 &lt;h2&gt;Get the web root for web wallet&lt;/h2&gt;
@@ -652,7 +604,6 @@ Install nginx is easy on ubuntu, install with root account is ok, but don't run 
 &lt;span class="err"&gt;apt-get install nginx&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
-
 &lt;h2&gt;Fetch SSL certificate for your domain&lt;/h2&gt;
 &lt;p&gt;We have let's encrypt for free SSL certificate, to obtain SSL certificate easyliy we shall install &lt;a href="https://certbot.eff.org/"&gt;certbot&lt;/a&gt;.&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;apt-get update&lt;/span&gt;
@@ -662,11 +613,9 @@ Install nginx is easy on ubuntu, install with root account is ok, but don't run 
 &lt;span class="err"&gt;apt-get install python-certbot-nginx &lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
-
 &lt;p&gt;After installation, run below command to get the ssl certificate&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;certbot certonly&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
 
 &lt;p&gt;Just follow the instruction and enter needed info, and when it comes to this step:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;How would you like to authenticate with the ACME CA?&lt;/span&gt;
@@ -676,7 +625,6 @@ Install nginx is easy on ubuntu, install with root account is ok, but don't run 
 &lt;span class="c"&gt;3: Place files in webroot directory (webroot)&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
-
 &lt;p&gt;Just type "1" to use nginx web plugin for domain verify.
 After certificate done, take derowallet.com for example, you shall see below message telling you where is your certification and chain stored.&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;- Congratulations! Your certificate and chain have been saved at:&lt;/span&gt;
@@ -685,70 +633,64 @@ After certificate done, take derowallet.com for example, you shall see below mes
 &lt;span class="err"&gt;   /etc/letsencrypt/live/derowallet.com/privkey.pem&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
-
 &lt;p&gt;Note down these two paths, we will use them later.&lt;/p&gt;
 &lt;h2&gt;Setup Nginx as DERO rpc service proxy&lt;/h2&gt;
 &lt;p&gt;Still take derowallet.com for example, let's create a config file for this proxy in "/etc/nginx/conf.d" and edit it with VIM:
 &lt;code&gt;touch rwallet.conf
 vi rwallet.conf&lt;/code&gt;
 Then paste below content in rwallet.conf:&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="nt"&gt;server&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
-    &lt;span class="err"&gt;listen&lt;/span&gt;          &lt;span class="err"&gt;80&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
-    &lt;span class="err"&gt;server_name&lt;/span&gt;     &lt;span class="err"&gt;derowallet.com&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
-    &lt;span class="err"&gt;rewrite&lt;/span&gt; &lt;span class="err"&gt;^/(.*)&lt;/span&gt;  &lt;span class="n"&gt;https&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="o"&gt;//&lt;/span&gt;&lt;span class="n"&gt;derowallet&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;com&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="err"&gt;$&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt; &lt;span class="n"&gt;permanent&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="n"&gt;server&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;listen&lt;/span&gt;          &lt;span class="mi"&gt;80&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;server_name&lt;/span&gt;     &lt;span class="n"&gt;derowallet&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;com&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;rewrite&lt;/span&gt; &lt;span class="o"&gt;^/&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;.*&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;  &lt;span class="n"&gt;https&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="o"&gt;//&lt;/span&gt;&lt;span class="n"&gt;derowallet&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;com&lt;/span&gt;&lt;span class="o"&gt;/$&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt; &lt;span class="n"&gt;permanent&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
 &lt;span class="p"&gt;}&lt;/span&gt;
 
-&lt;span class="nt"&gt;server&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
-    &lt;span class="err"&gt;listen&lt;/span&gt;          &lt;span class="err"&gt;443&lt;/span&gt; &lt;span class="err"&gt;ssl&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
-    &lt;span class="err"&gt;server_name&lt;/span&gt;     &lt;span class="err"&gt;derowallet.com&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
-    &lt;span class="err"&gt;access_log&lt;/span&gt;      &lt;span class="err"&gt;/var/log/nginx/rwalelt_access.log&lt;/span&gt; &lt;span class="err"&gt;combined&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
-    &lt;span class="err"&gt;error_log&lt;/span&gt;       &lt;span class="err"&gt;/var/log/nginx/rwallet_erro.log&lt;/span&gt; &lt;span class="err"&gt;error&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="n"&gt;server&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;listen&lt;/span&gt;          &lt;span class="mi"&gt;443&lt;/span&gt; &lt;span class="n"&gt;ssl&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;server_name&lt;/span&gt;     &lt;span class="n"&gt;derowallet&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;com&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;access_log&lt;/span&gt;      &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="k"&gt;var&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="nb"&gt;log&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;nginx&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;rwalelt_access&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;log&lt;/span&gt; &lt;span class="n"&gt;combined&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;error_log&lt;/span&gt;       &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="k"&gt;var&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="nb"&gt;log&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;nginx&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;rwallet_erro&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;log&lt;/span&gt; &lt;span class="n"&gt;error&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
 
-    &lt;span class="err"&gt;ssl_certificate&lt;/span&gt; &lt;span class="err"&gt;/etc/letsencrypt/live/derowallet.com/fullchain.pem&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
-    &lt;span class="err"&gt;ssl_certificate_key&lt;/span&gt; &lt;span class="err"&gt;/etc/letsencrypt/live/derowallet.com/privkey.pem&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;ssl_certificate&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;etc&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;letsencrypt&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;live&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;derowallet&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;com&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;fullchain&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;pem&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;ssl_certificate_key&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;etc&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;letsencrypt&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;live&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;derowallet&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;com&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;privkey&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;pem&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
 
 
-    &lt;span class="err"&gt;location&lt;/span&gt; &lt;span class="err"&gt;/&lt;/span&gt; &lt;span class="err"&gt;{&lt;/span&gt;
-        &lt;span class="err"&gt;proxy_pass&lt;/span&gt;         &lt;span class="n"&gt;http&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="o"&gt;//&lt;/span&gt;&lt;span class="n"&gt;localhost&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;20206&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
-        &lt;span class="err"&gt;proxy_redirect&lt;/span&gt;     &lt;span class="err"&gt;off&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;location&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;proxy_pass&lt;/span&gt;         &lt;span class="n"&gt;http&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="o"&gt;//&lt;/span&gt;&lt;span class="n"&gt;localhost&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;20206&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="n"&gt;proxy_redirect&lt;/span&gt;     &lt;span class="n"&gt;off&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
 
-        &lt;span class="err"&gt;proxy_set_header&lt;/span&gt;   &lt;span class="err"&gt;Host&lt;/span&gt;              &lt;span class="err"&gt;$http_host&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
-        &lt;span class="err"&gt;proxy_set_header&lt;/span&gt;   &lt;span class="err"&gt;X-Real-IP&lt;/span&gt;         &lt;span class="err"&gt;$remote_addr&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
-        &lt;span class="err"&gt;proxy_set_header&lt;/span&gt;   &lt;span class="err"&gt;X-Forwarded-For&lt;/span&gt;   &lt;span class="err"&gt;$proxy_add_x_forwarded_for&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="n"&gt;proxy_set_header&lt;/span&gt;   &lt;span class="n"&gt;Host&lt;/span&gt;              &lt;span class="o"&gt;$&lt;/span&gt;&lt;span class="n"&gt;http_host&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="n"&gt;proxy_set_header&lt;/span&gt;   &lt;span class="n"&gt;X&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;Real&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;IP&lt;/span&gt;         &lt;span class="o"&gt;$&lt;/span&gt;&lt;span class="n"&gt;remote_addr&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="n"&gt;proxy_set_header&lt;/span&gt;   &lt;span class="n"&gt;X&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;Forwarded&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;For&lt;/span&gt;   &lt;span class="o"&gt;$&lt;/span&gt;&lt;span class="n"&gt;proxy_add_x_forwarded_for&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
     &lt;span class="p"&gt;}&lt;/span&gt;
 
-&lt;span class="err"&gt;}&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
 
 &lt;p&gt;Remember to replace derowallet.com with your own domain, and set the correct path for your ssl certificate and chain, then restart nginx service:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;/etc/init.d/nginx restart&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
 
 &lt;p&gt;Now let's visit &lt;a href="https://derowallet.com"&gt;https://derowallet.com&lt;/a&gt; you should see a "502 bad gateway" error.This means nginx is working as expected, the only problem is you haven't run dero daemon at port 20206 yet.&lt;/p&gt;
 &lt;h2&gt;Run dero daemon&lt;/h2&gt;
 &lt;h3&gt;install dero daemon&lt;/h3&gt;
 &lt;p&gt;First let's go to &lt;a href="https://github.com/deroproject/derosuite/releases/latest"&gt;dero official github&lt;/a&gt; to download the latest binaries for dero daemon.
 Since we're using ubuntu 16.04 64bit as our VPS os here, we should download linux_amd64 version, extract the tarball and copy the binaries to "/usr/local/bin" folder to make it global available.&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;wget https://github.com/deroproject/derosuite/releases/download/v2.1.5/dero_linux_amd64_2.1.5-0.alpha.atlantis.10102018.tar.gz&lt;/span&gt;
-&lt;span class="err"&gt;tar xf dero_linux_amd64_2.1.5-0.alpha.atlantis.10102018.tar.gz&lt;/span&gt;
-&lt;span class="err"&gt;cp dero_linux_amd64/* /usr/local/bin&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="n"&gt;wget&lt;/span&gt; &lt;span class="n"&gt;https&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="o"&gt;//&lt;/span&gt;&lt;span class="n"&gt;github&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;com&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;deroproject&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;derosuite&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;releases&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;download&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;v2&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="mf"&gt;1.5&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;dero_linux_amd64_2&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="mf"&gt;1.5&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mf"&gt;0.&lt;/span&gt;&lt;span class="n"&gt;alpha&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;atlantis&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="mf"&gt;10102018.&lt;/span&gt;&lt;span class="n"&gt;tar&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;gz&lt;/span&gt;
+&lt;span class="n"&gt;tar&lt;/span&gt; &lt;span class="n"&gt;xf&lt;/span&gt; &lt;span class="n"&gt;dero_linux_amd64_2&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="mf"&gt;1.5&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mf"&gt;0.&lt;/span&gt;&lt;span class="n"&gt;alpha&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;atlantis&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="mf"&gt;10102018.&lt;/span&gt;&lt;span class="n"&gt;tar&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;gz&lt;/span&gt;
+&lt;span class="n"&gt;cp&lt;/span&gt; &lt;span class="n"&gt;dero_linux_amd64&lt;/span&gt;&lt;span class="o"&gt;/*&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;usr&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;local&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;bin&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
 
 &lt;h3&gt;Create data folder for dero&lt;/h3&gt;
 &lt;p&gt;Let's make a folder for dero to store the chain data:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;mkdir /root/.dero&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
-
 &lt;p&gt;using name like ".dero" with a dot in the front will make the folder default hidden for 'ls' command and avoid stupid "rm -rf" command delete it.&lt;/p&gt;
 &lt;h3&gt;Run dero daemon&lt;/h3&gt;
 &lt;p&gt;Since we create a folder(/root/.dero) for blockchain data store, we should use this folder as data-dir every time we run dero daemon.&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;derod-linux-amd64 --data-dir=/root/.dero&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
 
 &lt;p&gt;After this command you should see dero command line daemon start and a folder named "mainnet" created under "/root/.dero" folder.
 This time when you visit https://derowallet.com, browser should return a "Hello world!" message, which means everything is done.&lt;/p&gt;
@@ -757,16 +699,13 @@ This time when you visit https://derowallet.com, browser should return a "Hello 
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;screen -d -m derod-linux-amd64 --data-dir=/root/.dero&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
-
 &lt;p&gt;Now a new sub-shell has been created and dero daemon running in it, if you want to check the staus of this sub-shell, just type:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;screen -r&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
-
 &lt;p&gt;if there're more than one sub-shell running on your server, you might need to use &lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;screen -ls&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
 
 &lt;p&gt;to list all running sub-shell and determine which one to enter.
 if you want to leave the sub-shell, don't use ctrl+c which will end the daemon, use key "ctrl+a+d" and you shall return to main shell.&lt;/p&gt;
@@ -787,14 +726,12 @@ if you want to leave the sub-shell, don't use ctrl+c which will end the daemon, 
 &lt;span class="n"&gt;exit&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
-
 &lt;p&gt;Note that this time we shall use full path for both screen and dero daemon.Restart the server and check https://derowallet.com to see if it works.&lt;/p&gt;
 &lt;h2&gt;Using remote node&lt;/h2&gt;
 &lt;p&gt;Currently dero GUI wallet doesn't support customized remote node, but we can use it for command line wallet, by using option --data-dir.&lt;/p&gt;
 &lt;p&gt;Full command to use the remote node we just set up under mac os is:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;dero-wallet-cli-darwin-amd64 --daemon-address=https://derowallet.com&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
 
 &lt;p&gt;If your node is full synced, your wallet should be ready for use now.&lt;/p&gt;</content><category term="misc"></category></entry><entry><title>迁移到GithubPages后的域名设置问题</title><link href="posts/blog_moved_to_github_pages_and_domain_config.html" rel="alternate"></link><published>2018-07-22T16:55:00+08:00</published><updated>2018-07-22T16:55:00+08:00</updated><author><name>毕勤</name></author><id>tag:None,2018-07-22:posts/blog_moved_to_github_pages_and_domain_config.html</id><summary type="html">&lt;p&gt;基本上我一年也写不了一篇文章，服务器主要是拿来翻墙的，碰上服务器速度变慢了就得迁移一次，虽然已经是基于pelican的静态网站，但nginx还是得重新配置一次。。。&lt;/p&gt;</summary><content type="html">&lt;p&gt;基本上我一年也写不了一篇文章，服务器主要是拿来翻墙的，碰上服务器速度变慢了就得迁移一次，虽然已经是基于pelican的静态网站，但nginx还是得重新配置一次。&lt;/p&gt;
 &lt;p&gt;刚好发现github pages已经对custom domain开放https功能了，这样基本上也就够了。静态blog基本上迁移没什么好废话的，就是这个custom domain的设置有点麻烦。&lt;/p&gt;
@@ -854,7 +791,6 @@ if you want to leave the sub-shell, don't use ctrl+c which will end the daemon, 
 &lt;span class="err"&gt;GRUB_SERIAL_COMMAND=&amp;quot;serial --speed=115200 --unit=0 --word=8 --parity=no --stop=1&amp;quot;&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
-
 &lt;ol&gt;
 &lt;li&gt;修改GRUB_TIMEOUT是为了节省启动时间&lt;/li&gt;
 &lt;li&gt;GRUB_CM_LINE_LINUX那行表示我们要同事开启两个console，一个是tty0(显示器)，另一个是ttyS0(串口)，串口速率是115200。&lt;/li&gt;
@@ -864,11 +800,9 @@ if you want to leave the sub-shell, don't use ctrl+c which will end the daemon, 
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;grub-mkconfig -o /boot/grub/grub.cfg&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
-
 &lt;p&gt;在mac的terminal上，可以直接用以下命令连接到串口console&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;screen /dev/tty.usbXXXX 115200&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
 
 &lt;p&gt;这里的XXXX会因为不同的设备而不同，是由你的USB转串口线决定的。&lt;/p&gt;
 &lt;h3&gt;WAN与Bridge LAN&lt;/h3&gt;
@@ -877,7 +811,6 @@ if you want to leave the sub-shell, don't use ctrl+c which will end the daemon, 
 &lt;p&gt;为了简单的实现这个功能，我们安装bridge-utils工具:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;apt-get install bridge-utils&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
 
 &lt;p&gt;然后我们修改/etc/network/interfaces文件如下：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;auto lo&lt;/span&gt;
@@ -895,7 +828,6 @@ if you want to leave the sub-shell, don't use ctrl+c which will end the daemon, 
 &lt;span class="err"&gt;        bridge-ports eth1 eth2 eth3&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
-
 &lt;ol&gt;
 &lt;li&gt;这里的192.168.88.1是路由器本身在LAN中的地址，也会是LAN中设备以后的网关。&lt;/li&gt;
 &lt;li&gt;192.168.88.0是网络号，因为我们用了24位掩码，也就是255.255.255.0。&lt;/li&gt;
@@ -910,13 +842,11 @@ if you want to leave the sub-shell, don't use ctrl+c which will end the daemon, 
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;apt-get install dnsmasq&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
-
 &lt;p&gt;查看一下dnsmasq的版本信息:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;root@debian:~# dnsmasq -v&lt;/span&gt;
 &lt;span class="err"&gt;Dnsmasq version 2.72  Copyright (c) 2000-2014 Simon Kelley&lt;/span&gt;
 &lt;span class="err"&gt;Compile time options: IPv6 GNU-getopt DBus i18n IDN DHCP DHCPv6 no-Lua TFTP conntrack ipset auth DNSSEC loop-detect&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
 
 &lt;p&gt;很好，有ipset功能。下面我们修改dnsmasq的配置如下：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;root@debian:~# cat /etc/dnsmasq.conf &lt;/span&gt;
@@ -924,7 +854,6 @@ if you want to leave the sub-shell, don't use ctrl+c which will end the daemon, 
 &lt;span class="err"&gt;dhcp-range=192.168.88.10,192.168.88.250,72h&lt;/span&gt;
 &lt;span class="err"&gt;conf-dir=/etc/dnsmasq.d/&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
 
 &lt;ol&gt;
 &lt;li&gt;interface为br0，表示让dnsmasq监听br0也就是我们的LAN接口，处理DNS和DHCP请求。&lt;/li&gt;
@@ -940,14 +869,12 @@ if you want to leave the sub-shell, don't use ctrl+c which will end the daemon, 
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;#prepend domain-name-servers 127.0.0.1;&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
-
 &lt;p&gt;把前面的注释符号删掉，这样就会默认在/etc/resolv.conf中添加一个127.0.0.1的DNS服务器，也就是Dnsmasq的Server地址。&lt;/p&gt;
 &lt;p&gt;然后找到：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;request subnet-mask, broadcast-address, time-offset, routers,&lt;/span&gt;
 &lt;span class="err"&gt;        domain-name, domain-name-servers, host-name,&lt;/span&gt;
 &lt;span class="err"&gt;        netbios-name-servers, netbios-scope, interface-mtu;&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
 
 &lt;p&gt;把domain-name-servers删掉，表示不同dhcp服务器请求dns服务器地址，这样下次WAN再连上DHCP网络，/etc/resolv.conf就只有127.0.0.1这一个DNS服务器了。&lt;/p&gt;
 &lt;h3&gt;上网&lt;/h3&gt;
@@ -966,13 +893,11 @@ if you want to leave the sub-shell, don't use ctrl+c which will end the daemon, 
 &lt;span class="err"&gt;iptables -t raw -X&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
-
 &lt;p&gt;然后添加以下规则：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;iptables -A FORWARD -i br0 -s 192.168.1.0/255.255.255.0 -j ACCEPT&lt;/span&gt;
 &lt;span class="err"&gt;iptables -A FORWARD -i eth0 -d 192.168.1.0/255.255.255.0 -j ACCEPT&lt;/span&gt;
 &lt;span class="err"&gt;iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
 
 &lt;ol&gt;
 &lt;li&gt;前两条表示接受从br0和eth0接口输入的数据&lt;/li&gt;
@@ -983,11 +908,9 @@ if you want to leave the sub-shell, don't use ctrl+c which will end the daemon, 
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;#net.ipv4.conf.default.forwarding=1&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
-
 &lt;p&gt;把这个注释符删掉开启IPV4转发，但这个修改要重启后才生效，如果要立刻生效，直接使用以下的暴力命令:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;echo 1 &amp;gt; /proc/sys/net/ipv4/ip_forward&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
 
 &lt;h4&gt;一些默认的防火墙安全规则&lt;/h4&gt;
 &lt;p&gt;防火墙不能整天不务正业只顾着上网，至少应该有一些基本的安全规则，添加如下基本规则：&lt;/p&gt;
@@ -999,7 +922,6 @@ if you want to leave the sub-shell, don't use ctrl+c which will end the daemon, 
 &lt;span class="err"&gt;iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
-
 &lt;h4&gt;固化Iptables规则&lt;/h4&gt;
 &lt;p&gt;你可以用iptables-save和iptables-restore配合rc.local启动脚本来保存恢复防火墙规则，但其实有更简单的做法:iptables-persistent。&lt;/p&gt;
 &lt;p&gt;直接apt-get install iptables-persistent就可以了，在安装的过程中就会询问你是否保存当前规则了，而且ipv4和ipv6的都会保存，虽然我们没用到后者。以后每次启动的时候iptables-persistent都会自动帮我们加载保存好的规则。&lt;/p&gt;
@@ -1007,7 +929,6 @@ if you want to leave the sub-shell, don't use ctrl+c which will end the daemon, 
 &lt;p&gt;如果我们费了这么大心思装好的路由最后的性能是个渣渣，那我们还用它干啥。所以我们来跑个分，在路由器上装好iperf3之后开启Server模式:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;iperf -s -p 6000&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
 
 &lt;p&gt;从macbook测试到路由器的速度：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="c"&gt;biqins-MBP:lifetyper.com lifetyper$ iperf3 -c debian -p 6000&lt;/span&gt;
@@ -1029,7 +950,6 @@ if you want to leave the sub-shell, don't use ctrl+c which will end the daemon, 
 &lt;span class="err"&gt;[  6]   0.00-10.00  sec  1.09 GBytes   939 Mbits/sec                  sender&lt;/span&gt;
 &lt;span class="err"&gt;[  6]   0.00-10.00  sec  1.09 GBytes   939 Mbits/sec                  receiver&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
 
 &lt;p&gt;从另一个ubuntu主机测试到路由器的速度:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="n"&gt;lifetyper&lt;/span&gt;&lt;span class="nv"&gt;@ubuntu&lt;/span&gt;&lt;span class="err"&gt;:&lt;/span&gt;&lt;span class="o"&gt;~&lt;/span&gt;&lt;span class="err"&gt;$&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;iperf3&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;c&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;debian&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;p&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="mi"&gt;6000&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
@@ -1054,7 +974,6 @@ if you want to leave the sub-shell, don't use ctrl+c which will end the daemon, 
 &lt;span class="n"&gt;iperf&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;Done&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
-
 &lt;p&gt;然后在ubuntu主机开启iperf3服务器，从macbook测网内两机器互访速度:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="n"&gt;biqins&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;MBP&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="n"&gt;lifetyper&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;com&lt;/span&gt; &lt;span class="n"&gt;lifetyper$&lt;/span&gt; &lt;span class="n"&gt;iperf3&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="k"&gt;c&lt;/span&gt; &lt;span class="n"&gt;ubuntu&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;p&lt;/span&gt; &lt;span class="mi"&gt;7000&lt;/span&gt;
 &lt;span class="n"&gt;Connecting&lt;/span&gt; &lt;span class="k"&gt;to&lt;/span&gt; &lt;span class="k"&gt;host&lt;/span&gt; &lt;span class="n"&gt;ubuntu&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;port&lt;/span&gt; &lt;span class="mi"&gt;7000&lt;/span&gt;
@@ -1078,7 +997,6 @@ if you want to leave the sub-shell, don't use ctrl+c which will end the daemon, 
 &lt;span class="n"&gt;iperf&lt;/span&gt; &lt;span class="n"&gt;Done&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
-
 &lt;p&gt;网内互访的速度肯定比直接连路由慢一点，不过平均882Mbps，在用上千兆网之前，基本不要啥自行车了。&lt;/p&gt;
 &lt;h2&gt;资源使用情况&lt;/h2&gt;
 &lt;p&gt;最后来看看这个路由到底需要多少资源：&lt;/p&gt;
@@ -1097,7 +1015,6 @@ if you want to leave the sub-shell, don't use ctrl+c which will end the daemon, 
 &lt;span class="c"&gt;Swap:         1285          0       1285&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
-
 &lt;p&gt;2G的磁盘，139M的内存，CPU占用上我用top看，最高的CPU占用程序就是top本身。我本来以为磁盘占用会挺多的，没想到在安装完全部组件，并且把shadowsocks编译环境都搭完之后也才2G，难怪之前别人用edgerouter lite 2G的U盘就可以直接在路由上编译软件包了。&lt;/p&gt;
 &lt;h3&gt;一些小贴士(不定期更新)&lt;/h3&gt;
 &lt;h4&gt;给路由器一个名字&lt;/h4&gt;
@@ -1106,14 +1023,12 @@ if you want to leave the sub-shell, don't use ctrl+c which will end the daemon, 
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;192.168.88.1        debian&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
-
 &lt;p&gt;重启dnsmasq之后，我们就可以用类似ssh user@debian的方式登录路由了。&lt;/p&gt;
 &lt;h4&gt;添加用户到sudo组&lt;/h4&gt;
 &lt;p&gt;默认新建的非root用户权限很低，安装了sudo之后也因为默认不在sudo组内所以不能使用sudo命令，解决方法就是先用root登录，然后执行以下命令：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;apt-get install sudo&lt;/span&gt;
 &lt;span class="err"&gt;adduser your_user_name sudo&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
 
 &lt;p&gt;退出之后再用刚才添加的用户名登录，就可以使用sudo了，如果有太多sudo命令要做，直接&lt;code&gt;sudo bash&lt;/code&gt;就可以切到root用户了。&lt;/p&gt;</content><category term="misc"></category></entry><entry><title>Initial</title><link href="posts/blog_initial.html" rel="alternate"></link><published>2017-03-03T14:32:12+08:00</published><updated>2017-03-03T14:32:12+08:00</updated><author><name>毕勤</name></author><id>tag:None,2017-03-03:posts/blog_initial.html</id><summary type="html">&lt;p&gt;因为实在不知道怎么给这个场景取标题了，也不记得是这里第几次自杀后重生了。没有丢数据，也没有任何其他的问题，只是忽然觉得一个blog要配置php，要配置mysql，要配置nginx来支持实在太多余。我想要一个可以随便找块磁盘就可以完整备份全站，随便找个空间上传一下就可以重新部署的系统，一个像latex一样合理的受代码精准控制格式的撰写语言，另外我要看得懂他们系统的语言，所以是pelican...&lt;/p&gt;</summary><content type="html">&lt;p&gt;因为实在不知道怎么给这个场景取标题了，也不记得是这里第几次自杀后重生了。&lt;/p&gt;
 &lt;p&gt;没有丢数据，也没有任何其他的问题，只是忽然觉得一个blog要配置php，要配置mysql，要配置nginx来支持实在太多余。我想要一个可以随便找块磁盘就可以完整备份全站，随便找个空间上传一下就可以重新部署的系统，一个像latex一样合理的受代码精准控制格式的撰写语言，另外我要看得懂他们系统的语言，所以是&lt;a href="https://blog.getpelican.com/"&gt;pelican&lt;/a&gt;。&lt;/p&gt;

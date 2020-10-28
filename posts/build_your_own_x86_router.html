@@ -166,7 +166,6 @@
 <span class="err">GRUB_SERIAL_COMMAND=&quot;serial --speed=115200 --unit=0 --word=8 --parity=no --stop=1&quot;</span>
 </code></pre></div>
 
-
 <ol>
 <li>修改GRUB_TIMEOUT是为了节省启动时间</li>
 <li>GRUB_CM_LINE_LINUX那行表示我们要同事开启两个console，一个是tty0(显示器)，另一个是ttyS0(串口)，串口速率是115200。</li>
@@ -176,11 +175,9 @@
 <div class="highlight"><pre><span></span><code><span class="err">grub-mkconfig -o /boot/grub/grub.cfg</span>
 </code></pre></div>
 
-
 <p>在mac的terminal上，可以直接用以下命令连接到串口console</p>
 <div class="highlight"><pre><span></span><code><span class="err">screen /dev/tty.usbXXXX 115200</span>
 </code></pre></div>
-
 
 <p>这里的XXXX会因为不同的设备而不同，是由你的USB转串口线决定的。</p>
 <h3>WAN与Bridge LAN</h3>
@@ -189,7 +186,6 @@
 <p>为了简单的实现这个功能，我们安装bridge-utils工具:</p>
 <div class="highlight"><pre><span></span><code><span class="err">apt-get install bridge-utils</span>
 </code></pre></div>
-
 
 <p>然后我们修改/etc/network/interfaces文件如下：</p>
 <div class="highlight"><pre><span></span><code><span class="err">auto lo</span>
@@ -207,7 +203,6 @@
 <span class="err">        bridge-ports eth1 eth2 eth3</span>
 </code></pre></div>
 
-
 <ol>
 <li>这里的192.168.88.1是路由器本身在LAN中的地址，也会是LAN中设备以后的网关。</li>
 <li>192.168.88.0是网络号，因为我们用了24位掩码，也就是255.255.255.0。</li>
@@ -222,13 +217,11 @@
 <div class="highlight"><pre><span></span><code><span class="err">apt-get install dnsmasq</span>
 </code></pre></div>
 
-
 <p>查看一下dnsmasq的版本信息:</p>
 <div class="highlight"><pre><span></span><code><span class="err">root@debian:~# dnsmasq -v</span>
 <span class="err">Dnsmasq version 2.72  Copyright (c) 2000-2014 Simon Kelley</span>
 <span class="err">Compile time options: IPv6 GNU-getopt DBus i18n IDN DHCP DHCPv6 no-Lua TFTP conntrack ipset auth DNSSEC loop-detect</span>
 </code></pre></div>
-
 
 <p>很好，有ipset功能。下面我们修改dnsmasq的配置如下：</p>
 <div class="highlight"><pre><span></span><code><span class="err">root@debian:~# cat /etc/dnsmasq.conf </span>
@@ -236,7 +229,6 @@
 <span class="err">dhcp-range=192.168.88.10,192.168.88.250,72h</span>
 <span class="err">conf-dir=/etc/dnsmasq.d/</span>
 </code></pre></div>
-
 
 <ol>
 <li>interface为br0，表示让dnsmasq监听br0也就是我们的LAN接口，处理DNS和DHCP请求。</li>
@@ -252,14 +244,12 @@
 <div class="highlight"><pre><span></span><code><span class="err">#prepend domain-name-servers 127.0.0.1;</span>
 </code></pre></div>
 
-
 <p>把前面的注释符号删掉，这样就会默认在/etc/resolv.conf中添加一个127.0.0.1的DNS服务器，也就是Dnsmasq的Server地址。</p>
 <p>然后找到：</p>
 <div class="highlight"><pre><span></span><code><span class="err">request subnet-mask, broadcast-address, time-offset, routers,</span>
 <span class="err">        domain-name, domain-name-servers, host-name,</span>
 <span class="err">        netbios-name-servers, netbios-scope, interface-mtu;</span>
 </code></pre></div>
-
 
 <p>把domain-name-servers删掉，表示不同dhcp服务器请求dns服务器地址，这样下次WAN再连上DHCP网络，/etc/resolv.conf就只有127.0.0.1这一个DNS服务器了。</p>
 <h3>上网</h3>
@@ -278,13 +268,11 @@
 <span class="err">iptables -t raw -X</span>
 </code></pre></div>
 
-
 <p>然后添加以下规则：</p>
 <div class="highlight"><pre><span></span><code><span class="err">iptables -A FORWARD -i br0 -s 192.168.1.0/255.255.255.0 -j ACCEPT</span>
 <span class="err">iptables -A FORWARD -i eth0 -d 192.168.1.0/255.255.255.0 -j ACCEPT</span>
 <span class="err">iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE</span>
 </code></pre></div>
-
 
 <ol>
 <li>前两条表示接受从br0和eth0接口输入的数据</li>
@@ -295,11 +283,9 @@
 <div class="highlight"><pre><span></span><code><span class="err">#net.ipv4.conf.default.forwarding=1</span>
 </code></pre></div>
 
-
 <p>把这个注释符删掉开启IPV4转发，但这个修改要重启后才生效，如果要立刻生效，直接使用以下的暴力命令:</p>
 <div class="highlight"><pre><span></span><code><span class="err">echo 1 &gt; /proc/sys/net/ipv4/ip_forward</span>
 </code></pre></div>
-
 
 <h4>一些默认的防火墙安全规则</h4>
 <p>防火墙不能整天不务正业只顾着上网，至少应该有一些基本的安全规则，添加如下基本规则：</p>
@@ -311,7 +297,6 @@
 <span class="err">iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT</span>
 </code></pre></div>
 
-
 <h4>固化Iptables规则</h4>
 <p>你可以用iptables-save和iptables-restore配合rc.local启动脚本来保存恢复防火墙规则，但其实有更简单的做法:iptables-persistent。</p>
 <p>直接apt-get install iptables-persistent就可以了，在安装的过程中就会询问你是否保存当前规则了，而且ipv4和ipv6的都会保存，虽然我们没用到后者。以后每次启动的时候iptables-persistent都会自动帮我们加载保存好的规则。</p>
@@ -319,7 +304,6 @@
 <p>如果我们费了这么大心思装好的路由最后的性能是个渣渣，那我们还用它干啥。所以我们来跑个分，在路由器上装好iperf3之后开启Server模式:</p>
 <div class="highlight"><pre><span></span><code><span class="err">iperf -s -p 6000</span>
 </code></pre></div>
-
 
 <p>从macbook测试到路由器的速度：</p>
 <div class="highlight"><pre><span></span><code><span class="c">biqins-MBP:lifetyper.com lifetyper$ iperf3 -c debian -p 6000</span>
@@ -341,7 +325,6 @@
 <span class="err">[  6]   0.00-10.00  sec  1.09 GBytes   939 Mbits/sec                  sender</span>
 <span class="err">[  6]   0.00-10.00  sec  1.09 GBytes   939 Mbits/sec                  receiver</span>
 </code></pre></div>
-
 
 <p>从另一个ubuntu主机测试到路由器的速度:</p>
 <div class="highlight"><pre><span></span><code><span class="n">lifetyper</span><span class="nv">@ubuntu</span><span class="err">:</span><span class="o">~</span><span class="err">$</span><span class="w"> </span><span class="n">iperf3</span><span class="w"> </span><span class="o">-</span><span class="n">c</span><span class="w"> </span><span class="n">debian</span><span class="w"> </span><span class="o">-</span><span class="n">p</span><span class="w"> </span><span class="mi">6000</span><span class="w"></span>
@@ -366,7 +349,6 @@
 <span class="n">iperf</span><span class="w"> </span><span class="n">Done</span><span class="p">.</span><span class="w"></span>
 </code></pre></div>
 
-
 <p>然后在ubuntu主机开启iperf3服务器，从macbook测网内两机器互访速度:</p>
 <div class="highlight"><pre><span></span><code><span class="n">biqins</span><span class="o">-</span><span class="n">MBP</span><span class="p">:</span><span class="n">lifetyper</span><span class="p">.</span><span class="n">com</span> <span class="n">lifetyper$</span> <span class="n">iperf3</span> <span class="o">-</span><span class="k">c</span> <span class="n">ubuntu</span> <span class="o">-</span><span class="n">p</span> <span class="mi">7000</span>
 <span class="n">Connecting</span> <span class="k">to</span> <span class="k">host</span> <span class="n">ubuntu</span><span class="p">,</span> <span class="n">port</span> <span class="mi">7000</span>
@@ -390,7 +372,6 @@
 <span class="n">iperf</span> <span class="n">Done</span><span class="p">.</span>
 </code></pre></div>
 
-
 <p>网内互访的速度肯定比直接连路由慢一点，不过平均882Mbps，在用上千兆网之前，基本不要啥自行车了。</p>
 <h2>资源使用情况</h2>
 <p>最后来看看这个路由到底需要多少资源：</p>
@@ -409,7 +390,6 @@
 <span class="c">Swap:         1285          0       1285</span>
 </code></pre></div>
 
-
 <p>2G的磁盘，139M的内存，CPU占用上我用top看，最高的CPU占用程序就是top本身。我本来以为磁盘占用会挺多的，没想到在安装完全部组件，并且把shadowsocks编译环境都搭完之后也才2G，难怪之前别人用edgerouter lite 2G的U盘就可以直接在路由上编译软件包了。</p>
 <h3>一些小贴士(不定期更新)</h3>
 <h4>给路由器一个名字</h4>
@@ -418,14 +398,12 @@
 <div class="highlight"><pre><span></span><code><span class="err">192.168.88.1        debian</span>
 </code></pre></div>
 
-
 <p>重启dnsmasq之后，我们就可以用类似ssh user@debian的方式登录路由了。</p>
 <h4>添加用户到sudo组</h4>
 <p>默认新建的非root用户权限很低，安装了sudo之后也因为默认不在sudo组内所以不能使用sudo命令，解决方法就是先用root登录，然后执行以下命令：</p>
 <div class="highlight"><pre><span></span><code><span class="err">apt-get install sudo</span>
 <span class="err">adduser your_user_name sudo</span>
 </code></pre></div>
-
 
 <p>退出之后再用刚才添加的用户名登录，就可以使用sudo了，如果有太多sudo命令要做，直接<code>sudo bash</code>就可以切到root用户了。</p>
 

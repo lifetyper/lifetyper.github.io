@@ -129,7 +129,6 @@
 <span class="err">FEED_ALL_JSON = &#39;feeds.json&#39;  </span>
 </code></pre></div>
 
-
 <p>FEED_ALL_JSON的文件名可以自己定义。</p>
 <h2>修一个小bug</h2>
 <p>打开插件的json_feed.py文件，这个项目真的有点老了，json.dump函数现在只接受两个参数，不知道这个工程写的时候是不是参数都不一样，把最后一个encode参数删掉才行，否则会爆错。</p>
@@ -137,14 +136,12 @@
 <span class="err">        json.dump(self.feed, fp)</span>
 </code></pre></div>
 
-
 <h2>编辑blog模板</h2>
 <p>服务爬虫，更容易的找到你的json_feed，在base.html模板的header中添加：</p>
 <div class="highlight"><pre><span></span><code><span class="cp">{%</span> <span class="k">if</span> <span class="nv">FEED_ALL_JSON</span> <span class="cp">%}</span><span class="x"></span>
 <span class="x">&lt;link rel=&quot;alternate&quot; type=&quot;application/json&quot; title=&quot;JSON Feed&quot; href=&quot;</span><span class="cp">{{</span> <span class="nv">FEED_DOMAIN</span> <span class="cp">}}</span><span class="x">/</span><span class="cp">{{</span> <span class="nv">FEED_ALL_JSON</span> <span class="cp">}}</span><span class="x">&quot;&gt;</span>
 <span class="cp">{%</span> <span class="k">endif</span> <span class="cp">%}</span><span class="x"></span>
 </code></pre></div>
-
 
 <p>然后重新发布，好了。</p>
 

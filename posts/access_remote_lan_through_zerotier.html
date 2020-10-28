@@ -144,7 +144,6 @@
 <span class="err">192.168.99.0/24 via 10.242.100.121</span>
 </code></pre></div>
 
-
 <p>第一个表示10.242.0.0/16这是同一个局域网，你们分配IP在这个范围的直连就行了，不用过别的网关了。</p>
 <p>第二条也很好理解，公司的路由器后网段是192.168.88.0/24，而公司路由器上的zerotier分配到的IP是10.242.100.216(这个可以在zerotier网站查，也可以通过ifconfig命令在路由器查)，那么zerotier局域网内的其他IP要访问这个192.168.88.0/24网段的话，自然要通过10.242.100.216作为网关。</p>
 <p>第三条就完全是第二条的家庭版，不解释了。</p>
@@ -168,25 +167,21 @@
 <div class="highlight"><pre><span></span><code><span class="err">ip route add 192.168.99.0/24 via 10.242.100.121</span>
 </code></pre></div>
 
-
 <p>使用route命令可以查看到这样一条route记录</p>
 <div class="highlight"><pre><span></span><code><span class="err">Kernel IP routing table</span>
 <span class="err">Destination     Gateway         Genmask         Flags Metric Ref    Use Iface</span>
 <span class="err">192.168.99.0    10.242.100.121  255.255.255.0   UG    0      0        0 ztzlgmpcam</span>
 </code></pre></div>
 
-
 <p>类似的，在家里的路由器添加一条到公司192.168.88.0/24网段的路由表:</p>
 <div class="highlight"><pre><span></span><code><span class="err">ip route add 192.168.88.0/24 via 10.242.100.216</span>
 </code></pre></div>
-
 
 <p>添加后用route命令应该看到这样的一条路由表：</p>
 <div class="highlight"><pre><span></span><code><span class="err">Kernel IP routing table</span>
 <span class="err">Destination     Gateway         Genmask         Flags Metric Ref    Use Iface</span>
 <span class="err">192.168.88.0    10.242.100.216  255.255.255.0   UG    0      0        0 ztzlgmpcam</span>
 </code></pre></div>
-
 
 <p>这个时候，从双方局域网的任何一台设备，都应该可以直接访问双方局域网的任意一个IP了。</p>
 <h4>固化版本</h4>
@@ -197,14 +192,12 @@
 <span class="err">    option gateway &#39;10.242.100.121&#39;</span>
 </code></pre></div>
 
-
 <p>家庭版本的写法，添加：</p>
 <div class="highlight"><pre><span></span><code><span class="err">config route</span>
 <span class="err">    option interface &#39;ztzlgmpcam&#39;</span>
 <span class="err">    option target &#39;192.168.88.0/24&#39;</span>
 <span class="err">    option gateway &#39;10.242.100.216&#39;</span>
 </code></pre></div>
-
 
 <p>同样的，根据你的实际情况，替换interface为你的zerotier虚拟网卡的名称，以及后面的目标网段，和目标网段上的路由器分配到的zerotier IP。</p>
 <p>然后/etc/init.d/network restart就可以生效了，这样的路由表重启后是不会丢失的。</p>
