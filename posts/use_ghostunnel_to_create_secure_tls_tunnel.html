@@ -149,7 +149,7 @@
 <p>这里的CA就是我们刚才生成的根证书的名字，这会生成cn.ssr.org.crt</p>
 <h3>生成合并的pkcs12格式keystore文件</h3>
 <p>其实到这里本来就够了，为了方便使用，我们可以生成一个合并的包含了公私钥的keystore文件：</p>
-<div class="highlight"><pre><span></span><code><span class="n">openssl</span> <span class="n">pkcs12</span> <span class="o">-</span><span class="k">export</span> <span class="o">-</span><span class="n">out</span> <span class="n">cn</span><span class="o">.</span><span class="n">p12</span> <span class="o">-</span><span class="n">inkey</span> <span class="n">cn</span><span class="o">.</span><span class="n">ssr</span><span class="o">.</span><span class="n">org</span><span class="o">.</span><span class="n">key</span> <span class="o">-</span><span class="ow">in</span> <span class="n">cn</span><span class="o">.</span><span class="n">ssr</span><span class="o">.</span><span class="n">org</span><span class="o">.</span><span class="n">crt</span> <span class="o">-</span><span class="n">certfile</span> <span class="n">CA</span><span class="o">.</span><span class="n">crt</span>
+<div class="highlight"><pre><span></span><code><span class="err">openssl pkcs12 -export -out cn.p12 -inkey cn.ssr.org.key -in cn.ssr.org.crt -certfile CA.crt</span>
 </code></pre></div>
 
 <p>这样会得到一个cn.p12的keystore文件，注意，国内节点（客户端）和国外节点（服务器）都要生成这些证书。</p>

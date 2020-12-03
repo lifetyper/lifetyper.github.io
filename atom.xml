@@ -39,7 +39,7 @@
 &lt;p&gt;这里的CA就是我们刚才生成的根证书的名字，这会生成cn.ssr.org.crt&lt;/p&gt;
 &lt;h3&gt;生成合并的pkcs12格式keystore文件&lt;/h3&gt;
 &lt;p&gt;其实到这里本来就够了，为了方便使用，我们可以生成一个合并的包含了公私钥的keystore文件：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="n"&gt;openssl&lt;/span&gt; &lt;span class="n"&gt;pkcs12&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="k"&gt;export&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;out&lt;/span&gt; &lt;span class="n"&gt;cn&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;p12&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;inkey&lt;/span&gt; &lt;span class="n"&gt;cn&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ssr&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;org&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;key&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;cn&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ssr&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;org&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;crt&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;certfile&lt;/span&gt; &lt;span class="n"&gt;CA&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;crt&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;openssl pkcs12 -export -out cn.p12 -inkey cn.ssr.org.key -in cn.ssr.org.crt -certfile CA.crt&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;这样会得到一个cn.p12的keystore文件，注意，国内节点（客户端）和国外节点（服务器）都要生成这些证书。&lt;/p&gt;
@@ -381,29 +381,29 @@ iptables-restore &amp;lt; /etc/iptables.conf
 &lt;h2&gt;否定的第一套方案&lt;/h2&gt;
 &lt;p&gt;最开始的方案基本上就是靠着Google搜Netflix Proxy找到的，简单的说就是在可以看Netflix的VPS A上搭一个TCP反代，在VPS B上用dnsmasq之类的工具劫持DNS解析，把Netflix的相关域名都解析到VPS A上，这样VPS B就可以借用A的反代来访问Netflix了。
 废话不多少直接上代码，VPS A上安装sniproxy，配置如下：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="n"&gt;user&lt;/span&gt; &lt;span class="n"&gt;nobody&lt;/span&gt;
-&lt;span class="n"&gt;resolver&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
-    &lt;span class="n"&gt;nameserver&lt;/span&gt; &lt;span class="mf"&gt;8.8&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="mf"&gt;8.8&lt;/span&gt;
-    &lt;span class="n"&gt;mode&lt;/span&gt; &lt;span class="n"&gt;ipv4_only&lt;/span&gt;
-&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="k"&gt;user&lt;/span&gt; &lt;span class="n"&gt;nobody&lt;/span&gt;
+&lt;span class="n"&gt;resolver&lt;/span&gt; &lt;span class="err"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;nameserver&lt;/span&gt; &lt;span class="mi"&gt;8&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="mi"&gt;8&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="mi"&gt;8&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="mi"&gt;8&lt;/span&gt;
+    &lt;span class="k"&gt;mode&lt;/span&gt; &lt;span class="n"&gt;ipv4_only&lt;/span&gt;
+&lt;span class="err"&gt;}&lt;/span&gt;
 
-&lt;span class="n"&gt;listen&lt;/span&gt; &lt;span class="mf"&gt;0.0&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="mf"&gt;0.0&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;443&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+&lt;span class="k"&gt;listen&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;443&lt;/span&gt; &lt;span class="err"&gt;{&lt;/span&gt;
 &lt;span class="n"&gt;proto&lt;/span&gt; &lt;span class="n"&gt;tls&lt;/span&gt;
-&lt;span class="n"&gt;table&lt;/span&gt; &lt;span class="n"&gt;https_hosts&lt;/span&gt;
-&lt;span class="n"&gt;access_log&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
-  &lt;span class="n"&gt;filename&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="k"&gt;var&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="nb"&gt;log&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;https_access&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;log&lt;/span&gt;
+&lt;span class="k"&gt;table&lt;/span&gt; &lt;span class="n"&gt;https_hosts&lt;/span&gt;
+&lt;span class="n"&gt;access_log&lt;/span&gt; &lt;span class="err"&gt;{&lt;/span&gt;
+  &lt;span class="n"&gt;filename&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;var&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;log&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;https_access&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;log&lt;/span&gt;
   &lt;span class="n"&gt;priority&lt;/span&gt; &lt;span class="n"&gt;notice&lt;/span&gt;
- &lt;span class="p"&gt;}&lt;/span&gt;
-&lt;span class="p"&gt;}&lt;/span&gt;
+ &lt;span class="err"&gt;}&lt;/span&gt;
+&lt;span class="err"&gt;}&lt;/span&gt;
 
-&lt;span class="n"&gt;table&lt;/span&gt; &lt;span class="n"&gt;https_hosts&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
-    &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;.*.|&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="n"&gt;netflix&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;com&lt;/span&gt;&lt;span class="o"&gt;$&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;
-    &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;.*.|&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="n"&gt;netflix&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;net&lt;/span&gt;&lt;span class="o"&gt;$&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;
-    &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;.*.|&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="n"&gt;nflxext&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;com&lt;/span&gt;&lt;span class="o"&gt;$&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;
-    &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;.*.|&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="n"&gt;nflxso&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;net&lt;/span&gt;&lt;span class="o"&gt;$&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;
-    &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;.*.|&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="n"&gt;nflximg&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;net&lt;/span&gt;&lt;span class="o"&gt;$&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;
-    &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;.*.|&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="n"&gt;nflxvideo&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;net&lt;/span&gt;&lt;span class="o"&gt;$&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;
-&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;span class="k"&gt;table&lt;/span&gt; &lt;span class="n"&gt;https_hosts&lt;/span&gt; &lt;span class="err"&gt;{&lt;/span&gt;
+    &lt;span class="p"&gt;(.&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="o"&gt;|&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="n"&gt;netflix&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;com$&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;
+    &lt;span class="p"&gt;(.&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="o"&gt;|&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="n"&gt;netflix&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;net$&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;
+    &lt;span class="p"&gt;(.&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="o"&gt;|&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="n"&gt;nflxext&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;com$&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;
+    &lt;span class="p"&gt;(.&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="o"&gt;|&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="n"&gt;nflxso&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;net$&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;
+    &lt;span class="p"&gt;(.&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="o"&gt;|&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="n"&gt;nflximg&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;net$&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;
+    &lt;span class="p"&gt;(.&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="o"&gt;|&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="n"&gt;nflxvideo&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;net$&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;
+&lt;span class="err"&gt;}&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;VPS B上安装dnsmasq，配置如下：&lt;/p&gt;
@@ -424,84 +424,84 @@ iptables-restore &amp;lt; /etc/iptables.conf
 &lt;h3&gt;架设Tinyproxy Https代理&lt;/h3&gt;
 &lt;p&gt;其实很简单，直接apt-get install tinyproxy就可以了。设置上我也几乎没有修改，仅仅是添加了一个Allow语句，给VPS B的IP放行，否则是无法使用的。而且这样默认也屏蔽了其他IP的访问，避免了变成冤大头。
 最后的配置如下：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="n"&gt;User&lt;/span&gt; &lt;span class="n"&gt;tinyproxy&lt;/span&gt;
-&lt;span class="n"&gt;Group&lt;/span&gt; &lt;span class="n"&gt;tinyproxy&lt;/span&gt;
-&lt;span class="n"&gt;Port&lt;/span&gt; &lt;span class="mi"&gt;8888&lt;/span&gt;
-&lt;span class="n"&gt;Timeout&lt;/span&gt; &lt;span class="mi"&gt;600&lt;/span&gt;
-&lt;span class="n"&gt;DefaultErrorFile&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;/usr/share/tinyproxy/default.html&amp;quot;&lt;/span&gt;
-&lt;span class="n"&gt;StatFile&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;/usr/share/tinyproxy/stats.html&amp;quot;&lt;/span&gt;
-&lt;span class="n"&gt;Logfile&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;/var/log/tinyproxy/tinyproxy.log&amp;quot;&lt;/span&gt;
-&lt;span class="n"&gt;LogLevel&lt;/span&gt; &lt;span class="n"&gt;Info&lt;/span&gt;
-&lt;span class="n"&gt;PidFile&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;/run/tinyproxy/tinyproxy.pid&amp;quot;&lt;/span&gt;
-&lt;span class="n"&gt;MaxClients&lt;/span&gt; &lt;span class="mi"&gt;100&lt;/span&gt;
-&lt;span class="n"&gt;MinSpareServers&lt;/span&gt; &lt;span class="mi"&gt;5&lt;/span&gt;
-&lt;span class="n"&gt;MaxSpareServers&lt;/span&gt; &lt;span class="mi"&gt;20&lt;/span&gt;
-&lt;span class="n"&gt;StartServers&lt;/span&gt; &lt;span class="mi"&gt;10&lt;/span&gt;
-&lt;span class="n"&gt;MaxRequestsPerChild&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;
-&lt;span class="n"&gt;Allow&lt;/span&gt; &lt;span class="mf"&gt;127.0&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="mf"&gt;0.1&lt;/span&gt;
-&lt;span class="n"&gt;Allow&lt;/span&gt; &lt;span class="n"&gt;YOUR_VPS_B_IP&lt;/span&gt;
-&lt;span class="n"&gt;ViaProxyName&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;tinyproxy&amp;quot;&lt;/span&gt;
-&lt;span class="n"&gt;ConnectPort&lt;/span&gt; &lt;span class="mi"&gt;443&lt;/span&gt;
-&lt;span class="n"&gt;ConnectPort&lt;/span&gt; &lt;span class="mi"&gt;563&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;User tinyproxy&lt;/span&gt;
+&lt;span class="err"&gt;Group tinyproxy&lt;/span&gt;
+&lt;span class="err"&gt;Port 8888&lt;/span&gt;
+&lt;span class="err"&gt;Timeout 600&lt;/span&gt;
+&lt;span class="err"&gt;DefaultErrorFile &amp;quot;/usr/share/tinyproxy/default.html&amp;quot;&lt;/span&gt;
+&lt;span class="err"&gt;StatFile &amp;quot;/usr/share/tinyproxy/stats.html&amp;quot;&lt;/span&gt;
+&lt;span class="err"&gt;Logfile &amp;quot;/var/log/tinyproxy/tinyproxy.log&amp;quot;&lt;/span&gt;
+&lt;span class="err"&gt;LogLevel Info&lt;/span&gt;
+&lt;span class="err"&gt;PidFile &amp;quot;/run/tinyproxy/tinyproxy.pid&amp;quot;&lt;/span&gt;
+&lt;span class="err"&gt;MaxClients 100&lt;/span&gt;
+&lt;span class="err"&gt;MinSpareServers 5&lt;/span&gt;
+&lt;span class="err"&gt;MaxSpareServers 20&lt;/span&gt;
+&lt;span class="err"&gt;StartServers 10&lt;/span&gt;
+&lt;span class="err"&gt;MaxRequestsPerChild 0&lt;/span&gt;
+&lt;span class="err"&gt;Allow 127.0.0.1&lt;/span&gt;
+&lt;span class="err"&gt;Allow YOUR_VPS_B_IP&lt;/span&gt;
+&lt;span class="err"&gt;ViaProxyName &amp;quot;tinyproxy&amp;quot;&lt;/span&gt;
+&lt;span class="err"&gt;ConnectPort 443&lt;/span&gt;
+&lt;span class="err"&gt;ConnectPort 563&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
 &lt;h3&gt;架设Redsocks代理&lt;/h3&gt;
 &lt;p&gt;也是直接apt-get install redsocks，配置中只需要设置好https代理的IP和端口就行，记得https代理的类型是填http-connect。&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="n"&gt;base&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
-    &lt;span class="o"&gt;//&lt;/span&gt; &lt;span class="n"&gt;debug&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;connection&lt;/span&gt; &lt;span class="n"&gt;progress&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="n"&gt;client&lt;/span&gt; &lt;span class="n"&gt;list&lt;/span&gt; &lt;span class="n"&gt;on&lt;/span&gt; &lt;span class="n"&gt;SIGUSR1&lt;/span&gt;
-    &lt;span class="n"&gt;log_debug&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;off&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="nt"&gt;base&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="err"&gt;//&lt;/span&gt; &lt;span class="n"&gt;debug&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;connection&lt;/span&gt; &lt;span class="kc"&gt;progress&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="n"&gt;client&lt;/span&gt; &lt;span class="n"&gt;list&lt;/span&gt; &lt;span class="kc"&gt;on&lt;/span&gt; &lt;span class="n"&gt;SIGUSR1&lt;/span&gt;
+    &lt;span class="n"&gt;log_debug&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="kc"&gt;off&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
 
-    &lt;span class="o"&gt;//&lt;/span&gt; &lt;span class="n"&gt;info&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;start&lt;/span&gt; &lt;span class="ow"&gt;and&lt;/span&gt; &lt;span class="n"&gt;end&lt;/span&gt; &lt;span class="n"&gt;of&lt;/span&gt; &lt;span class="n"&gt;client&lt;/span&gt; &lt;span class="n"&gt;session&lt;/span&gt;
-    &lt;span class="n"&gt;log_info&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;on&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="err"&gt;//&lt;/span&gt; &lt;span class="n"&gt;info&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="kc"&gt;start&lt;/span&gt; &lt;span class="n"&gt;and&lt;/span&gt; &lt;span class="kc"&gt;end&lt;/span&gt; &lt;span class="n"&gt;of&lt;/span&gt; &lt;span class="n"&gt;client&lt;/span&gt; &lt;span class="n"&gt;session&lt;/span&gt;
+    &lt;span class="n"&gt;log_info&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="kc"&gt;on&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
 
-    &lt;span class="o"&gt;/*&lt;/span&gt; &lt;span class="n"&gt;possible&lt;/span&gt; &lt;span class="err"&gt;`&lt;/span&gt;&lt;span class="nb"&gt;log&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39; values are:&lt;/span&gt;
-     &lt;span class="o"&gt;*&lt;/span&gt;   &lt;span class="n"&gt;stderr&lt;/span&gt;
-     &lt;span class="o"&gt;*&lt;/span&gt;   &lt;span class="s2"&gt;&amp;quot;file:/path/to/file&amp;quot;&lt;/span&gt;
-     &lt;span class="o"&gt;*&lt;/span&gt;   &lt;span class="n"&gt;syslog&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="n"&gt;FACILITY&lt;/span&gt;  &lt;span class="n"&gt;facility&lt;/span&gt; &lt;span class="k"&gt;is&lt;/span&gt; &lt;span class="n"&gt;any&lt;/span&gt; &lt;span class="n"&gt;of&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;daemon&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;local0&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;...&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;local7&amp;quot;&lt;/span&gt;
-     &lt;span class="o"&gt;*/&lt;/span&gt;
-    &lt;span class="nb"&gt;log&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;syslog:daemon&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="c"&gt;/* possible `log&amp;#39; values are:&lt;/span&gt;
+&lt;span class="c"&gt;     *   stderr&lt;/span&gt;
+&lt;span class="c"&gt;     *   &amp;quot;file:/path/to/file&amp;quot;&lt;/span&gt;
+&lt;span class="c"&gt;     *   syslog:FACILITY  facility is any of &amp;quot;daemon&amp;quot;, &amp;quot;local0&amp;quot;...&amp;quot;local7&amp;quot;&lt;/span&gt;
+&lt;span class="c"&gt;     */&lt;/span&gt;
+    &lt;span class="err"&gt;log&lt;/span&gt; &lt;span class="err"&gt;=&lt;/span&gt; &lt;span class="err"&gt;&amp;quot;&lt;/span&gt;&lt;span class="n"&gt;syslog&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="n"&gt;daemon&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;;&lt;/span&gt;
 
-    &lt;span class="o"&gt;//&lt;/span&gt; &lt;span class="n"&gt;detach&lt;/span&gt; &lt;span class="n"&gt;from&lt;/span&gt; &lt;span class="n"&gt;console&lt;/span&gt;
-    &lt;span class="n"&gt;daemon&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;on&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="s2"&gt;    // detach from console&lt;/span&gt;
+&lt;span class="s2"&gt;    daemon = on;&lt;/span&gt;
 
-    &lt;span class="o"&gt;/*&lt;/span&gt; &lt;span class="n"&gt;Change&lt;/span&gt; &lt;span class="n"&gt;uid&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;gid&lt;/span&gt; &lt;span class="ow"&gt;and&lt;/span&gt; &lt;span class="n"&gt;root&lt;/span&gt; &lt;span class="n"&gt;directory&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;these&lt;/span&gt; &lt;span class="n"&gt;options&lt;/span&gt; &lt;span class="n"&gt;require&lt;/span&gt; &lt;span class="n"&gt;root&lt;/span&gt;
-     &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;privilegies&lt;/span&gt; &lt;span class="n"&gt;on&lt;/span&gt; &lt;span class="n"&gt;startup&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;
-     &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;Note&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;your&lt;/span&gt; &lt;span class="n"&gt;chroot&lt;/span&gt; &lt;span class="n"&gt;may&lt;/span&gt; &lt;span class="n"&gt;requre&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;etc&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;localtime&lt;/span&gt; &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;you&lt;/span&gt; &lt;span class="n"&gt;write&lt;/span&gt; &lt;span class="nb"&gt;log&lt;/span&gt; &lt;span class="n"&gt;to&lt;/span&gt; &lt;span class="n"&gt;syslog&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;
-     &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;Log&lt;/span&gt; &lt;span class="k"&gt;is&lt;/span&gt; &lt;span class="n"&gt;opened&lt;/span&gt; &lt;span class="n"&gt;before&lt;/span&gt; &lt;span class="n"&gt;chroot&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="n"&gt;uid&lt;/span&gt; &lt;span class="n"&gt;changing&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;
-     &lt;span class="o"&gt;*/&lt;/span&gt;
-    &lt;span class="n"&gt;user&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;redsocks&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
-    &lt;span class="n"&gt;group&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;redsocks&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
-    &lt;span class="o"&gt;//&lt;/span&gt; &lt;span class="n"&gt;chroot&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;/var/chroot&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="s2"&gt;    /* Change uid, gid and root directory, these options require root&lt;/span&gt;
+&lt;span class="s2"&gt;     * privilegies on startup.&lt;/span&gt;
+&lt;span class="s2"&gt;     * Note, your chroot may requre /etc/localtime if you write log to syslog.&lt;/span&gt;
+&lt;span class="s2"&gt;     * Log is opened before chroot &amp;amp; uid changing.&lt;/span&gt;
+&lt;span class="s2"&gt;     */&lt;/span&gt;
+&lt;span class="s2"&gt;    user = redsocks;&lt;/span&gt;
+&lt;span class="s2"&gt;    group = redsocks;&lt;/span&gt;
+&lt;span class="s2"&gt;    // chroot = &amp;quot;&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;var&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;chroot&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;;&lt;/span&gt;
 
-    &lt;span class="o"&gt;/*&lt;/span&gt; &lt;span class="n"&gt;possible&lt;/span&gt; &lt;span class="err"&gt;`&lt;/span&gt;&lt;span class="n"&gt;redirector&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39; values are:&lt;/span&gt;
-     &lt;span class="o"&gt;*&lt;/span&gt;   &lt;span class="n"&gt;iptables&lt;/span&gt;   &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;Linux&lt;/span&gt;
-     &lt;span class="o"&gt;*&lt;/span&gt;   &lt;span class="n"&gt;ipf&lt;/span&gt;        &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;FreeBSD&lt;/span&gt;
-     &lt;span class="o"&gt;*&lt;/span&gt;   &lt;span class="n"&gt;pf&lt;/span&gt;         &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;OpenBSD&lt;/span&gt;
-     &lt;span class="o"&gt;*&lt;/span&gt;   &lt;span class="n"&gt;generic&lt;/span&gt;    &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;some&lt;/span&gt; &lt;span class="n"&gt;generic&lt;/span&gt; &lt;span class="n"&gt;redirector&lt;/span&gt; &lt;span class="n"&gt;that&lt;/span&gt; &lt;span class="n"&gt;MAY&lt;/span&gt; &lt;span class="n"&gt;work&lt;/span&gt;
-     &lt;span class="o"&gt;*/&lt;/span&gt;
-    &lt;span class="n"&gt;redirector&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;iptables&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
-&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;span class="s2"&gt;    /* possible `redirector&amp;#39; values are:&lt;/span&gt;
+&lt;span class="s2"&gt;     *   iptables   - for Linux&lt;/span&gt;
+&lt;span class="s2"&gt;     *   ipf        - for FreeBSD&lt;/span&gt;
+&lt;span class="s2"&gt;     *   pf         - for OpenBSD&lt;/span&gt;
+&lt;span class="s2"&gt;     *   generic    - some generic redirector that MAY work&lt;/span&gt;
+&lt;span class="s2"&gt;     */&lt;/span&gt;
+&lt;span class="s2"&gt;    redirector = iptables;&lt;/span&gt;
+&lt;span class="s2"&gt;}&lt;/span&gt;
 
-&lt;span class="n"&gt;redsocks&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
-    &lt;span class="o"&gt;/*&lt;/span&gt; &lt;span class="err"&gt;`&lt;/span&gt;&lt;span class="n"&gt;local_ip&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39; defaults to 127.0.0.1 for security reasons,&lt;/span&gt;
-     &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;use&lt;/span&gt; &lt;span class="mf"&gt;0.0&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="mf"&gt;0.0&lt;/span&gt; &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;you&lt;/span&gt; &lt;span class="n"&gt;want&lt;/span&gt; &lt;span class="n"&gt;to&lt;/span&gt; &lt;span class="n"&gt;listen&lt;/span&gt; &lt;span class="n"&gt;on&lt;/span&gt; &lt;span class="n"&gt;every&lt;/span&gt; &lt;span class="n"&gt;interface&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;
-     &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="err"&gt;`&lt;/span&gt;&lt;span class="n"&gt;local_&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39; are used as port to redirect to.&lt;/span&gt;
-     &lt;span class="o"&gt;*/&lt;/span&gt;
-    &lt;span class="n"&gt;local_ip&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mf"&gt;127.0&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="mf"&gt;0.1&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
-    &lt;span class="n"&gt;local_port&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;12345&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="s2"&gt;redsocks {&lt;/span&gt;
+&lt;span class="s2"&gt;    /* `local_ip&amp;#39; defaults to 127.0.0.1 for security reasons,&lt;/span&gt;
+&lt;span class="s2"&gt;     * use 0.0.0.0 if you want to listen on every interface.&lt;/span&gt;
+&lt;span class="s2"&gt;     * `local_*&amp;#39; are used as port to redirect to.&lt;/span&gt;
+&lt;span class="s2"&gt;     */&lt;/span&gt;
+&lt;span class="s2"&gt;    local_ip = 127.0.0.1;&lt;/span&gt;
+&lt;span class="s2"&gt;    local_port = 12345;&lt;/span&gt;
 
-    &lt;span class="o"&gt;//&lt;/span&gt; &lt;span class="err"&gt;`&lt;/span&gt;&lt;span class="n"&gt;ip&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39; and `port&amp;#39;&lt;/span&gt; &lt;span class="n"&gt;are&lt;/span&gt; &lt;span class="n"&gt;IP&lt;/span&gt; &lt;span class="ow"&gt;and&lt;/span&gt; &lt;span class="n"&gt;tcp&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;port&lt;/span&gt; &lt;span class="n"&gt;of&lt;/span&gt; &lt;span class="n"&gt;proxy&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;server&lt;/span&gt;
-    &lt;span class="o"&gt;//&lt;/span&gt; &lt;span class="n"&gt;You&lt;/span&gt; &lt;span class="n"&gt;can&lt;/span&gt; &lt;span class="n"&gt;also&lt;/span&gt; &lt;span class="n"&gt;use&lt;/span&gt; &lt;span class="n"&gt;hostname&lt;/span&gt; &lt;span class="n"&gt;instead&lt;/span&gt; &lt;span class="n"&gt;of&lt;/span&gt; &lt;span class="n"&gt;IP&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;only&lt;/span&gt; &lt;span class="n"&gt;one&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;random&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-    &lt;span class="o"&gt;//&lt;/span&gt; &lt;span class="n"&gt;address&lt;/span&gt; &lt;span class="n"&gt;of&lt;/span&gt; &lt;span class="n"&gt;multihomed&lt;/span&gt; &lt;span class="n"&gt;host&lt;/span&gt; &lt;span class="n"&gt;will&lt;/span&gt; &lt;span class="n"&gt;be&lt;/span&gt; &lt;span class="n"&gt;used&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;
-    &lt;span class="n"&gt;ip&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;YOUR_VPS_A_IP&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; 
-    &lt;span class="n"&gt;port&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;8888&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="s2"&gt;    // `ip&amp;#39; and `port&amp;#39; are IP and tcp-port of proxy-server&lt;/span&gt;
+&lt;span class="s2"&gt;    // You can also use hostname instead of IP, only one (random)&lt;/span&gt;
+&lt;span class="s2"&gt;    // address of multihomed host will be used.&lt;/span&gt;
+&lt;span class="s2"&gt;    ip = YOUR_VPS_A_IP; &lt;/span&gt;
+&lt;span class="s2"&gt;    port = 8888;&lt;/span&gt;
 
 
-    &lt;span class="o"&gt;//&lt;/span&gt; &lt;span class="n"&gt;known&lt;/span&gt; &lt;span class="n"&gt;types&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;socks4&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;socks5&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;http&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;connect&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;http&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;relay&lt;/span&gt;
-    &lt;span class="n"&gt;type&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;http&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;connect&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="s2"&gt;    // known types: socks4, socks5, http-connect, http-relay&lt;/span&gt;
+&lt;span class="s2"&gt;    type = http-connect;&lt;/span&gt;
 
-    &lt;span class="o"&gt;//&lt;/span&gt; &lt;span class="n"&gt;login&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;foobar&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
-    &lt;span class="o"&gt;//&lt;/span&gt; &lt;span class="n"&gt;password&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;baz&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="s2"&gt;    // login = &amp;quot;&lt;/span&gt;&lt;span class="n"&gt;foobar&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;;&lt;/span&gt;
+&lt;span class="s2"&gt;    // password = &amp;quot;&lt;/span&gt;&lt;span class="n"&gt;baz&lt;/span&gt;&lt;span class="err"&gt;&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
 &lt;span class="p"&gt;}&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
@@ -639,32 +639,32 @@ After certificate done, take derowallet.com for example, you shall see below mes
 &lt;code&gt;touch rwallet.conf
 vi rwallet.conf&lt;/code&gt;
 Then paste below content in rwallet.conf:&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="n"&gt;server&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
-    &lt;span class="n"&gt;listen&lt;/span&gt;          &lt;span class="mi"&gt;80&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
-    &lt;span class="n"&gt;server_name&lt;/span&gt;     &lt;span class="n"&gt;derowallet&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;com&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
-    &lt;span class="n"&gt;rewrite&lt;/span&gt; &lt;span class="o"&gt;^/&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;.*&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;  &lt;span class="n"&gt;https&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="o"&gt;//&lt;/span&gt;&lt;span class="n"&gt;derowallet&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;com&lt;/span&gt;&lt;span class="o"&gt;/$&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt; &lt;span class="n"&gt;permanent&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="nt"&gt;server&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="err"&gt;listen&lt;/span&gt;          &lt;span class="err"&gt;80&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="err"&gt;server_name&lt;/span&gt;     &lt;span class="err"&gt;derowallet.com&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="err"&gt;rewrite&lt;/span&gt; &lt;span class="err"&gt;^/(.*)&lt;/span&gt;  &lt;span class="n"&gt;https&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="o"&gt;//&lt;/span&gt;&lt;span class="n"&gt;derowallet&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;com&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="err"&gt;$&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt; &lt;span class="n"&gt;permanent&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
 &lt;span class="p"&gt;}&lt;/span&gt;
 
-&lt;span class="n"&gt;server&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
-    &lt;span class="n"&gt;listen&lt;/span&gt;          &lt;span class="mi"&gt;443&lt;/span&gt; &lt;span class="n"&gt;ssl&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
-    &lt;span class="n"&gt;server_name&lt;/span&gt;     &lt;span class="n"&gt;derowallet&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;com&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
-    &lt;span class="n"&gt;access_log&lt;/span&gt;      &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="k"&gt;var&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="nb"&gt;log&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;nginx&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;rwalelt_access&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;log&lt;/span&gt; &lt;span class="n"&gt;combined&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
-    &lt;span class="n"&gt;error_log&lt;/span&gt;       &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="k"&gt;var&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="nb"&gt;log&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;nginx&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;rwallet_erro&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;log&lt;/span&gt; &lt;span class="n"&gt;error&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="nt"&gt;server&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="err"&gt;listen&lt;/span&gt;          &lt;span class="err"&gt;443&lt;/span&gt; &lt;span class="err"&gt;ssl&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="err"&gt;server_name&lt;/span&gt;     &lt;span class="err"&gt;derowallet.com&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="err"&gt;access_log&lt;/span&gt;      &lt;span class="err"&gt;/var/log/nginx/rwalelt_access.log&lt;/span&gt; &lt;span class="err"&gt;combined&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="err"&gt;error_log&lt;/span&gt;       &lt;span class="err"&gt;/var/log/nginx/rwallet_erro.log&lt;/span&gt; &lt;span class="err"&gt;error&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
 
-    &lt;span class="n"&gt;ssl_certificate&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;etc&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;letsencrypt&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;live&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;derowallet&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;com&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;fullchain&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;pem&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
-    &lt;span class="n"&gt;ssl_certificate_key&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;etc&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;letsencrypt&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;live&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;derowallet&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;com&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;privkey&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;pem&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="err"&gt;ssl_certificate&lt;/span&gt; &lt;span class="err"&gt;/etc/letsencrypt/live/derowallet.com/fullchain.pem&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="err"&gt;ssl_certificate_key&lt;/span&gt; &lt;span class="err"&gt;/etc/letsencrypt/live/derowallet.com/privkey.pem&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
 
 
-    &lt;span class="n"&gt;location&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
-        &lt;span class="n"&gt;proxy_pass&lt;/span&gt;         &lt;span class="n"&gt;http&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="o"&gt;//&lt;/span&gt;&lt;span class="n"&gt;localhost&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;20206&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
-        &lt;span class="n"&gt;proxy_redirect&lt;/span&gt;     &lt;span class="n"&gt;off&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="err"&gt;location&lt;/span&gt; &lt;span class="err"&gt;/&lt;/span&gt; &lt;span class="err"&gt;{&lt;/span&gt;
+        &lt;span class="err"&gt;proxy_pass&lt;/span&gt;         &lt;span class="n"&gt;http&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="o"&gt;//&lt;/span&gt;&lt;span class="n"&gt;localhost&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;20206&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="err"&gt;proxy_redirect&lt;/span&gt;     &lt;span class="err"&gt;off&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
 
-        &lt;span class="n"&gt;proxy_set_header&lt;/span&gt;   &lt;span class="n"&gt;Host&lt;/span&gt;              &lt;span class="o"&gt;$&lt;/span&gt;&lt;span class="n"&gt;http_host&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
-        &lt;span class="n"&gt;proxy_set_header&lt;/span&gt;   &lt;span class="n"&gt;X&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;Real&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;IP&lt;/span&gt;         &lt;span class="o"&gt;$&lt;/span&gt;&lt;span class="n"&gt;remote_addr&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
-        &lt;span class="n"&gt;proxy_set_header&lt;/span&gt;   &lt;span class="n"&gt;X&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;Forwarded&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;For&lt;/span&gt;   &lt;span class="o"&gt;$&lt;/span&gt;&lt;span class="n"&gt;proxy_add_x_forwarded_for&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="err"&gt;proxy_set_header&lt;/span&gt;   &lt;span class="err"&gt;Host&lt;/span&gt;              &lt;span class="err"&gt;$http_host&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="err"&gt;proxy_set_header&lt;/span&gt;   &lt;span class="err"&gt;X-Real-IP&lt;/span&gt;         &lt;span class="err"&gt;$remote_addr&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="err"&gt;proxy_set_header&lt;/span&gt;   &lt;span class="err"&gt;X-Forwarded-For&lt;/span&gt;   &lt;span class="err"&gt;$proxy_add_x_forwarded_for&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
     &lt;span class="p"&gt;}&lt;/span&gt;
 
-&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;span class="err"&gt;}&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;Remember to replace derowallet.com with your own domain, and set the correct path for your ssl certificate and chain, then restart nginx service:&lt;/p&gt;
@@ -676,9 +676,9 @@ Then paste below content in rwallet.conf:&lt;/p&gt;
 &lt;h3&gt;install dero daemon&lt;/h3&gt;
 &lt;p&gt;First let's go to &lt;a href="https://github.com/deroproject/derosuite/releases/latest"&gt;dero official github&lt;/a&gt; to download the latest binaries for dero daemon.
 Since we're using ubuntu 16.04 64bit as our VPS os here, we should download linux_amd64 version, extract the tarball and copy the binaries to "/usr/local/bin" folder to make it global available.&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="n"&gt;wget&lt;/span&gt; &lt;span class="n"&gt;https&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="o"&gt;//&lt;/span&gt;&lt;span class="n"&gt;github&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;com&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;deroproject&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;derosuite&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;releases&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;download&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;v2&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="mf"&gt;1.5&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;dero_linux_amd64_2&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="mf"&gt;1.5&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mf"&gt;0.&lt;/span&gt;&lt;span class="n"&gt;alpha&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;atlantis&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="mf"&gt;10102018.&lt;/span&gt;&lt;span class="n"&gt;tar&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;gz&lt;/span&gt;
-&lt;span class="n"&gt;tar&lt;/span&gt; &lt;span class="n"&gt;xf&lt;/span&gt; &lt;span class="n"&gt;dero_linux_amd64_2&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="mf"&gt;1.5&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mf"&gt;0.&lt;/span&gt;&lt;span class="n"&gt;alpha&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;atlantis&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="mf"&gt;10102018.&lt;/span&gt;&lt;span class="n"&gt;tar&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;gz&lt;/span&gt;
-&lt;span class="n"&gt;cp&lt;/span&gt; &lt;span class="n"&gt;dero_linux_amd64&lt;/span&gt;&lt;span class="o"&gt;/*&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;usr&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;local&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;bin&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;wget https://github.com/deroproject/derosuite/releases/download/v2.1.5/dero_linux_amd64_2.1.5-0.alpha.atlantis.10102018.tar.gz&lt;/span&gt;
+&lt;span class="err"&gt;tar xf dero_linux_amd64_2.1.5-0.alpha.atlantis.10102018.tar.gz&lt;/span&gt;
+&lt;span class="err"&gt;cp dero_linux_amd64/* /usr/local/bin&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
 &lt;h3&gt;Create data folder for dero&lt;/h3&gt;
